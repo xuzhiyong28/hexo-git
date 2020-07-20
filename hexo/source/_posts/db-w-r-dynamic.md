@@ -19,7 +19,7 @@ date: 2020-07-20 10:14:00
 - 业务服务器将写操作发给数据库主机，将读操作发给数据库从机
 
 ![](db-w-r-dynamic/db1.png)
-
+<!--more-->
 # 读写分离常见问题与解决
 
 ## 主从延迟
@@ -29,6 +29,22 @@ date: 2020-07-20 10:14:00
 2. 读从机失败后再读一次主机。这种方式与业务无偶尔，只需要在公共类上处理。不足之处在于如果有很多二次读取，将大大增加主机的读操作压力。
 
 # Spring实现读写分离
+
+## 实现代码
+### 导出MAVEN包
+```
+import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
+
+/***
+ * 动态数据库
+ */
+public class DynamicDataSource extends AbstractRoutingDataSource {
+    protected Object determineCurrentLookupKey() {
+        return DBContextHolder.get();
+    }
+}
+```
+
 
 
 
