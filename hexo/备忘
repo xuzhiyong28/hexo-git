@@ -1,0 +1,36 @@
+教程
+https://www.cnblogs.com/liuxianan/p/build-blog-website-by-hexo-github.html#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C
+hexo g # 生成服务
+hexo s # 启动，本地测试
+
+如何提交到github
+hexo g -d
+生成并本地预览
+hexo s -d
+
+新建一个页面  在根目录下
+hexo new 名字 #这里名字不要加引号
+
+安装Hexo Admin 插件
+npm install --save hexo-admin
+插件使用方法
+hexo s -d 启动后 打开http://localhost:4000/admin/
+
+
+hexo模板
+=============================================================
+title: Hello World
+tags:
+  - hexo
+categories: []
+date: 2020-07-18 10:14:00
+---
+这是我的第一篇博客，你好，Hexoxxxxddewrwerwerwer。
+=============================================================
+
+
+解决hexo图片无法加载问题
+https://www.dazhuanlan.com/2019/12/18/5df99e24d6d27/
+
+md语法详解
+https://www.jianshu.com/p/399e5a3c7cc5
