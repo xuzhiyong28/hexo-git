@@ -4,7 +4,8 @@ tags:
   - mysql
   - 架构
   - shardingjdbc
-categories: []
+categories: 
+  - shardingjdbc
 description : 采用shardingjdbc实现按年分库按月分表
 date: 2020-07-20 10:14:00
 ---

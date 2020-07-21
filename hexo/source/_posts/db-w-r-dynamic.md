@@ -3,7 +3,8 @@ title: 读写分离设计与思考
 tags:
   - mysql
   - 架构
-categories: []
+categories: 
+  - 架构
 description : 高性能数据库集群的第一种方式是“读写分离”
 date: 2020-07-20 10:14:00
 ---
