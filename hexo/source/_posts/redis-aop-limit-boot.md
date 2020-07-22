@@ -3,18 +3,16 @@ title: 基于springBoot-aop实现redis分布式限流
 tags:
   - redis
   - 项目实践
-categories: 
-  - redis
+  - java
+categories: redis
 description : 基于springBoot+redis+aop+自定义标签实现分布式限流
 date: 2019-02-18 17:14:00
 ---
-
 ## 项目介绍
 ### 原理
 通过给api-url设置一个redis-key并设置过期时间。当每次url被请求时key的值加一，如果在过期时间内增加到一定数量后则进行限流。在原理上通过使用redis键值过期时间作为限流的单位时间，在单位时间内如果访问的次数大于指定次数后禁止继续访问，当键值过期后再次访问时重新计算单位时间内的允许访问次数。
 
 采用aop+自定义注解的方式，在每次调用controller类时对方法进行增强，aop扫描所有注有**@RateLimiter**的方法并环绕增强。
-
 ### 项目测试
 
 ```java
@@ -466,4 +464,3 @@ public class TestController {
     }
 }
 ```
-

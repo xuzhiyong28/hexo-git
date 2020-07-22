@@ -39,3 +39,6 @@ https://www.jianshu.com/p/399e5a3c7cc5
 安装代码高亮插件
 npm install hexo-prism-plugin --save
 https://github.com/ele828/hexo-prism-plugin
+
+
+MD插入图片代码 ： ![](db-w-r-dynamic/db1.png)
