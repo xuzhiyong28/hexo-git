@@ -2,7 +2,6 @@
 title: 基于springBoot-aop实现redis分布式限流
 tags:
   - redis
-  - 项目实践
   - java
 categories: redis
 description : 基于springBoot+redis+aop+自定义标签实现分布式限流

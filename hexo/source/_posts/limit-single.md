@@ -1,10 +1,10 @@
 ---
-title: 限流原理与guava单机限流使用
+title: 限流原理与guava单机限流
 tags:
   - 项目实践
   - java
 categories:  java
-description : 限流原理与guava单机限流使用
+description : 介绍两种限流算法(漏桶算法/令牌桶算法)与guava单机限流使用
 date: 2019-02-18 17:14:00
 ---
 ## 限流算法
@@ -50,9 +50,29 @@ limiter.tryAcquire(int permits,long timeout, TimeUnit unit)
 ### 平滑突发限流
 这种实现将突发请求速率平均为了固定请求速率
 ```
-//表示桶容量初始为5，且每秒5个的速率新增令牌，即每隔200毫秒新增一个令牌
+//表示桶容量初始为5，每秒5个的速率新增令牌，即每隔200毫秒新增一个令牌
 RateLimiter limiter = RateLimiter.create(5);
 ```
+
+```
+RateLimiter limiter = RateLimiter.create(5);
+System.out.println(limiter.acquire());
+System.out.println(limiter.acquire());
+System.out.println(limiter.acquire());
+System.out.println(limiter.acquire());
+System.out.println(limiter.acquire());
+System.out.println(limiter.acquire());
+//输出
+0.0
+0.185957
+0.19372
+0.197661
+0.199752
+0.174605
+```
+首先初始化了一个速率为5r/s的令牌桶，接下去每次获取一个，按照200ms生成一个的话，每次获取需要阻塞0.19=200ms的时间
+
+
 ```
 RateLimiter limiter = RateLimiter.create(5);
 System.out.println(limiter.acquire(200));
@@ -66,6 +86,62 @@ System.out.println((System.currentTimeMillis() - start) + " ms");
 ```
 首先创建了一个容量初始为5，且每秒5个的速率新增令牌，即每隔200毫秒新增一个令牌。
 第一次调用acquire(200)从桶中获取200个令牌，由于令牌桶是支持突发的，所以第一次允许获取200个，当第二次调用acquire(1)从桶中获取1个令牌时，由于前面透支了，按照每秒5个的速率则需要在40秒后才能获得令牌，所以需要**阻塞等待**桶中补充令牌。
+
+**tryAcquire方法使用**
+
+```
+//RateLimiter.create(5) 表示桶容量为5且每秒新增5个令牌，即每隔200毫秒新增一个令牌；
+RateLimiter limiter = RateLimiter.create(5);
+//因为允许突发，第一次取100个，那么接下去20秒的请求都会被拒绝
+System.out.println(limiter.tryAcquire(100));
+long start = System.currentTimeMillis();
+System.out.println(limiter.tryAcquire(5,60,TimeUnit.SECONDS));
+System.out.println((System.currentTimeMillis() - start) + " ms");
+//到这一步已经桶里面已经没有令牌了,所以接下去返回false
+System.out.println(limiter.tryAcquire(1));
+TimeUnit.SECONDS.sleep(1);
+//等待1秒后，桶里新生成了5个令牌，所以接下去获取返回true
+System.out.println(limiter.tryAcquire(5));
+输出结果
+true
+true
+19999 ms
+false
+true
+```
+
+
+平滑方式自己感觉会有一点点担心，例如是允许突发的，如果突发的数量太多一瞬间就压垮服务器了，所以Guava还提供了**平滑预热限流**
+### 平滑预热限流
+
+```
+permitsPerSecond表示每秒新增的令牌数，warmupPeriod表示在从冷启动速率过渡到平均速率的时间间隔
+RateLimiter limiter = RateLimiter.create(5, 1000, TimeUnit.MILLISECONDS);
+```
+
+```
+RateLimiter limiter = RateLimiter.create(5, 1000, TimeUnit.MILLISECONDS);
+for(int i = 0; i < 5;i++) {
+    System.out.println(limiter.acquire());
+}
+Thread.sleep(1000L);
+for(int i = 0; i < 5;i++) {
+    System.out.println(limiter.acquire());
+}
+//输出结果:
+0.0
+0.5156
+0.353969
+0.219001
+0.200086
+0.0
+0.3806
+0.229003
+0.199237
+0.200266
+```
+速率是梯形上升速率的，也就是说冷启动时会以一个比较大的速率慢慢到平均速率；然后趋于平均速率（梯形下降到平均速率）。可以通过调节warmupPeriod参数实现一开始就是平滑固定速率。
+
 ## 参考
 - https://blog.csdn.net/John8169/article/details/81125706
 - https://my.oschina.net/hanchao/blog/1833612?appinstall=0
