@@ -26,6 +26,7 @@ categories: []
 date: 2020-07-18 10:14:00
 ---
 这是我的第一篇博客，你好，Hexoxxxxddewrwerwerwer。
+<!--more-->
 =============================================================
 
 
@@ -34,6 +35,14 @@ https://www.dazhuanlan.com/2019/12/18/5df99e24d6d27/
 
 md语法详解
 https://www.jianshu.com/p/399e5a3c7cc5
+<font face="微软雅黑" >微软雅黑字体</font>
+<font face="黑体" >黑体</font>
+<font size=3 >3号字</font>
+<font size=4 >4号字</font>
+<font color=#FF0000 >红色</font>
+<font color=#008000 >绿色</font>
+<font color=#0000FF >蓝色</font>
+
 
 
 安装代码高亮插件
