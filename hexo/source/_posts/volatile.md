@@ -43,14 +43,20 @@ Java内存模型规定所有的变量都是存在主存当中（类似于前面�
 - 原子性，对基本数据类型的变量的读取和赋值操作是原子性操作，即这些操作是不可被中断的，要么执行，要么不执行
 - 可见性，保证修改的值会立即被更新到主存，当有其他线程需要读取时，它会去内存中读取新值
 - 有序性，在Java内存模型中，允许编译器和处理器对指令进行重排序，但是重排序过程不会影响到单线程程序的执行
+
 ### volatile作用
 一旦一个共享变量（类的成员变量、类的静态成员变量）被volatile修饰之后，那么就具备了两层语义：
 - 保证了不同线程对volatile修饰的变量进行改动时，其他线程能马上可见
 - 禁止执行重排序
-#### volatile如何保证可见性
-待续 -- volatile的编译器原理
-#### volatile 有序性
-待续 --
+
+### volatile如何保证可见性
+加入volatile关键字时所生成的汇编代码发现，加入volatile关键字时，会多出一个**lock前缀指令**。
+lock前缀指令实际上相当于一个内存屏障（也成内存栅栏），内存屏障会提供3个功能：
+- 它确保指令重排序时不会把其后面的指令排到内存屏障之前的位置，也不会把前面的指令排到内存屏障的后面；即在执行到内存屏障这句指令时，在它前面的操作已经全部完成
+- 它会强制将对缓存的修改操作立即写入主存
+- 如果是写操作，它会导致其他CPU中对应的缓存行无效
+
+### volatile支持有序性
 虚拟机在执行程序时，如果两个操作的执行次序无法从happens-before原则推导出来，那么它们就不能保证它们的有序性，虚拟机可以随意地对它们进行重排序，举个例子。
 ```
 x = 1; //1
@@ -68,11 +74,51 @@ y = -1;       //语句5
 ```
 由于flag变量为volatile变量，那么在进行指令重排序的过程的时候，不会将语句3放到语句1、语句2前面，也不会讲语句3放到语句4、语句5后面。但是要注意语句1和语句2的顺序、语句4和语句5的顺序是不作任何保证的
 
-#### volatile 不支持原子性
-待续 --
+### volatile不支持原子性
+首先先理解原子性的概念，它指的是在**一个操作过程**中是不可分的，要嘛成功要嘛失败,主体是一个操作过程，一个操作过程是可以包含多条操作语句的，但是volatile只能保证一个变量的可见性和有序性。
+```
+volatile int i = 5;
+temp = i + 1;
+i = temp;
+```
+假设上面一个操作过程，i使用了volatile修饰，首先AB两个线程同时读取到i = 5，然后A执行了 temp = i + 1; 此时temp变成了6，此时 i 还是5。这时B也执行到了temp = i + 1; temp = 6,然后AB接下去执行i = temp时，就有一个线程少+1了。
 
 ## java中使用volatile
-待续。。。
+### 单例模式的双检查锁
+```
+public class SingletonFour {
+    private static volatile SingletonFour singletonFour;
+    private SingletonFour(){}
+    private static SingletonFour getSingleton(){
+        if(singletonFour == null){  //第一次检查
+            synchronized (SingletonFour.class){
+                if(singletonFour == null) //第二次检查
+                    singletonFour = new SingletonFour(); // 标注1
+            }
+        }
+        return singletonFour;
+    }
+}
+```
+这里单例使用了volatile修饰，原因是标注1会发生重排序另一个并发执行的线程B就有可能在判断instance不为null时，线程B接下来将访问instance所引用的对象，但此时这个对象可能还没有被A线程初始化。
+这里说一下 new Object()背后的指令 例如 Cache cache=new Cache()
+```
+	// 创建 Cache 对象实例，分配内存
+       0: new           #5                  // class com/query/Cache
+       // 复制栈顶地址，并再将其压入栈顶
+       3: dup
+	// 调用构造器方法，初始化 Cache 对象
+       4: invokespecial #6                  // Method "<init>":()V
+	// 存入局部方法变量表
+       7: astore_1
+```
+从字节码可以看到创建一个对象实例，可以分为三步
+1. 分配对象内存
+2. 调用构造器方法，执行初始化
+3. 将对象引用赋值给变量
 
+虚拟机实际运行时，以上指令可能发生重排序。以上代码 2,3 可能发生重排序，但是并不会重排序 1 的顺序。也就是说 1 这个指令都需要先执行，因为 2,3 指令需要依托 1 指令执行结果。所以用volatile修饰可以保证有序性
 ## 总结
 - volatile保证了线程的可见性，当一个线程对其修饰volatile的变量进行改动时会立即被更新到主存
+- volatile保证了线程的有序性
+- volatile不能保证原子性
