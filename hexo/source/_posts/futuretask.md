@@ -23,6 +23,36 @@ future在字面上表示未来的意思，在Java中一般通过继承Thread类�
     }
 ```
 
+### 线程池使用FutureTask获取结果
+
+```java
+@Test
+public void test2(){
+    ExecutorService es = Executors.newCachedThreadPool();
+    List<Future<String>> futureList = Lists.newArrayList();
+    for(int i = 0 ; i < 10 ; i++){
+        Future<String> future = es.submit(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return UUID.randomUUID().toString();
+            }
+        });
+        futureList.add(future);
+    }
+    futureList.forEach(stringFuture -> {
+        try {
+            System.out.println(stringFuture.get());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    });
+}
+```
+
+
+
 ### FutureTask的继承关系和常用方法
 
 FutureTask继承关系,从继承关系上看，futureTask实现了Future接口和Runnable接口。所以FutureTask实现了表格上方法。
@@ -139,7 +169,9 @@ public void run() {
             // state must be re-read after nulling runner to prevent
             // leaked interrupts
             int s = state;
+            //判断当前线程是不是中断中
             if (s >= INTERRUPTING)
+                //如果是中断中就执行中断
                 handlePossibleCancellationInterrupt(s);
         }
     }
@@ -163,5 +195,124 @@ FutureTask#set()设置执行结果函数
     }
 ```
 
+### FutureTask#get方法
 
+一定不要以为get方法就只有一个线程在获取，可能会有多个。所以有了WaitNodes这个变量。
+
+```java
+static final class WaitNode {
+    volatile Thread thread;
+    volatile WaitNode next;
+    WaitNode() { thread = Thread.currentThread(); }
+}
+```
+
+```java
+
+
+public V get() throws InterruptedException, ExecutionException {
+    //获取当前任务状态
+    int s = state;
+    //如果小于COMPLETING代表是未执行，正在执行，正完成等情况，则会调用awaitDone进行阻塞
+    if (s <= COMPLETING)
+        s = awaitDone(false, 0L);
+    return report(s);
+}
+//最核心方法，get是如何阻塞的 -- 解析不带超时的情况
+private int awaitDone(boolean timed, long nanos)
+    throws InterruptedException {
+    final long deadline = timed ? System.nanoTime() + nanos : 0L;
+    //引用当前线程封装成WaitNode对象
+    WaitNode q = null;
+    //表示当前线程WaitNode对象有没有入队
+    boolean queued = false;
+    //自旋
+    for (;;) {
+        //假设被唤醒了，就再次自旋
+        //这里如果为ture，说明当前线程唤醒 是被其他线程使用中断这种方式唤醒的
+        if (Thread.interrupted()) {
+            //当前线程node出队
+            removeWaiter(q);
+            //抛出中断异常
+            throw new InterruptedException();
+        }
+        int s = state;
+        //被正常unpark唤醒的情况下，判断当前任务状态，如果大于COMPLETING
+        //说明当前任务已经有结果了
+        if (s > COMPLETING) {
+            if (q != null)
+                q.thread = null;
+            //返回状态
+            return s;
+        }
+        else if (s == COMPLETING) // cannot time out yet
+            Thread.yield();
+        else if (q == null) //第一次自旋应该是先到这里来初始化创建WaitNode对象
+            q = new WaitNode();
+        else if (!queued){ //第二次自旋，当前WaitNode已经创建，但node对象还没有入队
+            //下面代码可以拆成两行
+            //q.next = waiters #将当前线程的next指向头节点
+            //queued = UNSAFE.compareAndSwapObject(this, waitersOffset, waiters, q);
+            //# CAS方式设置waiters指向当前线程node,如果失败表示其他线程先行入队了，如果失败就再次自旋	
+            queued = UNSAFE.compareAndSwapObject(this, waitersOffset,
+                                                 q.next = waiters, q);
+        }else if (timed) {
+            nanos = deadline - System.nanoTime();
+            if (nanos <= 0L) {
+                removeWaiter(q);
+                return state;
+            }
+            LockSupport.parkNanos(this, nanos);
+        }
+        else
+            //第三次自旋就是阻塞了
+            LockSupport.park(this);
+           //这里需要注意的是，被唤醒后会继续自旋
+    }
+}
+
+//这个方法就是返回结果或者抛出异常了
+private V report(int s) throws ExecutionException {
+    Object x = outcome;
+    //如果是正常完成，则返回结果
+    if (s == NORMAL)
+        return (V)x;
+    //如果是异常就抛出异常
+    if (s >= CANCELLED)
+        throw new CancellationException();
+    throw new ExecutionException((Throwable)x);
+}
+```
+
+总结一下，get方法就是做了两步操作，第一步就是将当前get线程封装成WaitNode入队，然后并调用LockSupport.park(this)进行阻塞。(这里为啥要用WaitNode呢？因为后面唤醒时需要run线程遍历队列进行唤醒)。
+
+### FutureTask#finishCompletion方法
+
+从上面代码分析，我们知道调用get方法的线程被LockSupport.park阻塞了，并将线程存到了WaitNode。所以当run执行成功后需要唤醒。
+
+```java
+private void finishCompletion() {
+    // assert state > COMPLETING;
+    for (WaitNode q; (q = waiters) != null;) {
+        if (UNSAFE.compareAndSwapObject(this, waitersOffset, q, null)) {
+            for (;;) {
+                Thread t = q.thread;
+                if (t != null) {
+                    q.thread = null;
+                    //唤醒线程
+                    LockSupport.unpark(t);
+                }
+                WaitNode next = q.next;
+                if (next == null)
+                    break;
+                q.next = null; // unlink to help gc
+                q = next;
+            }
+            break;
+        }
+    }
+    done();
+    callable = null;        // to reduce footprint
+}
+```
 
