@@ -219,13 +219,13 @@ meta:
   tags:
     icon: fas fa-hashtag
   # 分享
-  share:
-    - id: qq
-      img: https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/128/qq.png
-    - id: qzone
-      img: https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/128/qzone.png
-    - id: weibo
-      img: https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/128/weibo.png
+  #share:
+  #  - id: qq
+  #    img: https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/128/qq.png
+  #  - id: qzone
+  #    img: https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/128/qzone.png
+  #  - id: weibo
+  #    img: https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/128/weibo.png
     # - id: qrcode # 当id为qrcode时需要安装插件  npm i -S hexo-helper-qrcode
     #   img: https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/128/wechat.png
     # - id: telegram
