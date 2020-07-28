@@ -2,7 +2,6 @@
 title: 限流原理与guava单机限流
 tags:
   - 项目实践
-  - java
 categories:  java
 description : 介绍两种限流算法(漏桶算法/令牌桶算法)与guava单机限流使用
 date: 2019-02-18 17:14:00

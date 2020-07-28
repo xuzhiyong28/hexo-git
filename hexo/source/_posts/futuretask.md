@@ -293,6 +293,7 @@ private V report(int s) throws ExecutionException {
 ```java
 private void finishCompletion() {
     // assert state > COMPLETING;
+    //遍历waitNode队列并执行LockSupport.unpark唤醒阻塞的线程
     for (WaitNode q; (q = waiters) != null;) {
         if (UNSAFE.compareAndSwapObject(this, waitersOffset, q, null)) {
             for (;;) {
@@ -311,7 +312,7 @@ private void finishCompletion() {
             break;
         }
     }
-    done();
+    done(); //预留给用户自己实现
     callable = null;        // to reduce footprint
 }
 ```

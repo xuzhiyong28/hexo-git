@@ -2,7 +2,6 @@
 title: GC日志详解
 tags:
   - jvm
-  - java
 categories: 
   - java
 description : 详解GC日志的结构，性能测试，排查定位问题，JVM调优过程中，都会遇到要分析GC日志，那你看得懂GC日志吗？

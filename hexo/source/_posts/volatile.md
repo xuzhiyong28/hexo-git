@@ -1,7 +1,6 @@
 ---
 title: java并发之volatile
 tags:
-  - java
   - java并发
 categories:  java
 description : 详解volatile用法和原理

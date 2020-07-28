@@ -11,7 +11,8 @@ date: 2020-07-20 10:14:00
 sharding-jdbc官方文档:https://shardingsphere.apache.org/document/current/cn/overview/
 **本文采用当当的shardingjdbc实现按年分库，按月分表**
 
-####最终数据库结果如下
+**最终数据库结果如下**
+
 ![](sharding-student/1.png)
 例如有如下sql语句
 ```

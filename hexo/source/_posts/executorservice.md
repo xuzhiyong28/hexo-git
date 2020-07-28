@@ -1,7 +1,6 @@
 ---
 title: JAVA线程池详解
 tags:
-  - java
   - java并发
 categories:  java
 description : 详解线程池用法和原理
