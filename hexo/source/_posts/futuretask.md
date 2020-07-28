@@ -1,7 +1,6 @@
 ---
 title: Future、FutureTask实现原理浅析
 tags:
-  - java
   - java并发
 categories:  java
 description : Future、FutureTask实现原理浅析
