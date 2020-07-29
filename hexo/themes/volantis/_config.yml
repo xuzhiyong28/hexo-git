@@ -339,7 +339,7 @@ widget:
     fancybox: true
     images:
       - https://cdn.jsdelivr.net/gh/xuzhiyong28/tuchuang/img/http_blob.png
-      - https://cdn.jsdelivr.net/gh/xuzhiyong28/tuchuang/img/http_blob.png
+      - https://cdn.jsdelivr.net/gh/xuzhiyong28/tuchuang/img/http_jianshu.png
   # ---------------------------------------
   repos:
     class: text
