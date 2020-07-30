@@ -1,7 +1,7 @@
 ---
 title: ShardingJdbc学习之按年月分库分表
 tags:
-  - mysql
+  - 分库分表
   - shardingjdbc
 categories: 
   - shardingjdbc
