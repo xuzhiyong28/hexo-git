@@ -1,7 +1,6 @@
 ---
 title: ShardingJdbc编排治理详解
 tags:
-  - 分库分表
   - shardingjdbc
 categories: 
   - shardingjdbc
@@ -607,4 +606,3 @@ ShardingEventBusInstance.getInstance().post(shardingEvent);
 ```
 
 ![](shardingjdbc-reg/2.png)
-
