@@ -606,3 +606,7 @@ ShardingEventBusInstance.getInstance().post(shardingEvent);
 ```
 
 ![](shardingjdbc-reg/2.png)
+
+## 总结
+
+通过将复杂繁多的配置使用zookeeper进行管理，并且通过Watch机制自动重新加载配置。笔者工作中负责一个自动化入库任务，通过定时拉取数据再经过shardingjdbc存入数据库。期间如果需要新增分库分表规则需要重启服务，势必会导致定时任务的失败，所以采用了编排治理的方式实现不用重启重新加载配置。安全高效。
