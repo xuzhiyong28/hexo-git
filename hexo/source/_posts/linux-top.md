@@ -279,6 +279,15 @@ Total DISK READ:       6.01 M/s | Total DISK WRITE:       3.85 K/s
 
 那到底什么情况下，GC会对程序产生影响呢？ 一般来说需要判断<font color=red>FGC过于频繁、YGC耗时过长、FGC耗时过长、YGC过于频繁</font>
 
+## JVM调优命令 - jmap
+jmap主要用来帮助我们查看堆内存情况，并支持导出成dump文件以便后续分析。
+<font color=red>导出dump文件会挂起JVM，所以一般再线上必须先切换机器后再执行</font>
+```
+jmap -heap PID # 打印堆的使用情况
+jmap -histo:live PID | head -50 #打印每个class的实例数目,内存占用,类全名信息. 如果live子参数加上后,只统计活的对象数量. 一般可以通过这个命令查看哪个对象占用的内存不合理
+jmap -dump:live,format=b,file=/tmp/xxxx.hprof PID #导出存活对象的dump文件以便后面分析。live可以不加，加了表示存活对象
+```
+
 ## 参考
 - https://www.cnblogs.com/Diyo/p/11411157.html
 - https://mp.weixin.qq.com/s/Vw63MUA0Zt80cU8_mvu7QQ
