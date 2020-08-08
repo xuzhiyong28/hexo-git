@@ -22,7 +22,7 @@ HashMap采用了散列表结构，结合了数组和链表的优点。
 
 ![HashMap结构](hashmap/1.png)
 
-### Hash哈希
+### 什么是哈希？
 
 Hash也称之为散列。基本原理是把<font color=red>任意长度</font>的输入，通过Hash算法变成<font color=red>固定长度</font>的输出。这个映射的规则就是对应的<font color=red>Hash算法</font>，而原始数据映射后的<font color=red>二进制串</font>就是哈希值。
 
@@ -173,34 +173,56 @@ static final int hash(Object key) {
 ```
 
 ```java
+
 final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
                    boolean evict) {
+    	//tab -- 当前hashMap的散列表
+    	//p -- 当前散列表的元素
+    	//n -- 表示散列表数组的长度， i -- 表示路由寻址结果
         Node<K,V>[] tab; Node<K,V> p; int n, i;
+    	//当散列表==null时调用resize方法进行初始化
+    	//这里hashMap是延迟初始化
         if ((tab = table) == null || (n = tab.length) == 0)
             n = (tab = resize()).length;
+    
+    	// (n - 1) & hash 是路由算法
+    	// 最简单的一种情况，寻址找到的桶位刚好是null,这个时候直接newNode
         if ((p = tab[i = (n - 1) & hash]) == null)
             tab[i] = newNode(hash, key, value, null);
         else {
+            //e -- node临时元素，k -- 表示临时的一个key
             Node<K,V> e; K k;
-            if (p.hash == hash &&
-                ((k = p.key) == key || (key != null && key.equals(k))))
+            //p表示桶上第一个元素
+            //表示桶位中的该元素与你当前插入的元素的key完全一致，就用e = p,后续做替换操作
+            //这里需要注意的是判断你是否一致使用equal方法,所以hashMap判断会用到equal方法，那么我们重写时要注意
+            if (p.hash == hash && ((k = p.key) == key || (key != null && key.equals(k))))
                 e = p;
+            
+            //如果这个p已经是红黑树了，那用红黑树的方法
             else if (p instanceof TreeNode)
                 e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+            
             else {
+                //到这一步，表示现在桶上是一个链表，那么接下去要for链表看看上面有没有跟你一致的key，如果有做替换。
+                //当前链表的情况是链表的头元素与我们插入的key不一致，要接下去判断链表上其他元素的key是否一致
                 for (int binCount = 0; ; ++binCount) {
+                    //到这一步表示到了链表的末尾了还是没有一致的
                     if ((e = p.next) == null) {
+                        //把key-value加到最后一个元素上
                         p.next = newNode(hash, key, value, null);
+                        //这里判断是否进行树化，链表的长度>=8就转成红黑树
                         if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
                             treeifyBin(tab, hash);
                         break;
                     }
-                    if (e.hash == hash &&
-                        ((k = e.key) == key || (key != null && key.equals(k))))
+                    //找到了链表上一个元素与要出入的元素的key一致
+                    if (e.hash == hash && ((k = e.key) == key || (key != null && key.equals(k))))
                         break;
                     p = e;
                 }
             }
+            
+            //进行value的替换
             if (e != null) { // existing mapping for key
                 V oldValue = e.value;
                 if (!onlyIfAbsent || oldValue == null)
@@ -209,7 +231,8 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
                 return oldValue;
             }
         }
-        ++modCount;
+        ++modCount; //记录操作次次数
+    	//如果全部元素 > 扩容阈值 的话 就进行扩容
         if (++size > threshold)
             resize();
         afterNodeInsertion(evict);
@@ -217,9 +240,132 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
 }
 ```
 
+### 扩容方法分析
 
+![长度16扩容成32](hashmap/5.png)
+
+从图可以看出，<font color=red>同一个桶上的元素扩容后要嘛在原来15的位置，要嘛在31的位置</font>。
+
+这里根据路由寻址函数【hash & (table.length - 1)】，可以分析出<font color=red>扩容后元素的去向有两种，一种还是原来的下标，另外一种是原来下标+扩容之前数组的长度</font>
+
+例如上面这个例子，原来数组长度是16， 对于下标为15的元素，他扩容后的去向要嘛是15，要嘛是31（15 + 16）。
+
+```java
+//扩容方法，为了解决哈希冲突导致链化影响查询效率，扩容解决该方法
+final Node<K,V>[] resize() {
+    //oldTab -- 扩容之前的哈希表
+    Node<K,V>[] oldTab = table;
+    //oldCap -- 扩容之前哈希表的长度
+    int oldCap = (oldTab == null) ? 0 : oldTab.length;
+    //oldThr -- 表示扩容之前的阈值，触发本次扩容的阈值
+    int oldThr = threshold;
+    //newCap -- 扩容之后哈希表的长度
+    //newThr -- 扩容之后下次触发扩容的条件
+    int newCap, newThr = 0;
+    
+    //===================这一段就是用来算newCap，newThr=============================
+    //条件如果成立，表示散列表已经初始化过了，这次是一次正常扩容
+    if (oldCap > 0) {
+        //如果当前的哈希表数组长度已经到最大长度了，那就不能在扩容了,且设置扩容条件为int最大值
+        if (oldCap >= MAXIMUM_CAPACITY) {
+            threshold = Integer.MAX_VALUE;
+            return oldTab;
+        }
+        //newCap = oldCap << 1 表示我要把数组扩大一倍
+        //新的数组的长度小于最大值限制 且 扩容之前哈希表的长度 >= 16 就设置新的扩容阈值，否则不设置
+        else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY && oldCap >= DEFAULT_INITIAL_CAPACITY)
+            newThr = oldThr << 1;
+    }
+    //oldCap = 0 , 说明hashmap的散列表还没初始化
+    //这里oldThr是旧的扩容阈值，这里别以为扩容阈值我们在new hashmap的时候就设置值了，其实如果是不带参数的new HashMap时候，这个扩容阈值是等于0，如果扩容值已经有了，那就设定要初始化的数组的大小为旧的扩容阈值
+    else if (oldThr > 0) 
+        newCap = oldThr;
+    else {
+        //oldThr = 0 的时候，默认要初始化的数组的大小为16，然后下一次的扩容阈值是 16 * 0.75
+        newCap = DEFAULT_INITIAL_CAPACITY;
+        newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
+    }
+    //newThr == 0,通过newCap 和 loadFactor计算出一个newThr
+    if (newThr == 0) {
+        float ft = (float)newCap * loadFactor;
+        newThr = (newCap < MAXIMUM_CAPACITY && ft < (float)MAXIMUM_CAPACITY ?
+                  (int)ft : Integer.MAX_VALUE);
+    }
+    //==========================================================================
+   
+    threshold = newThr; //赋值新的扩容阈值
+    // 初始化哈希表
+    Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap]; 
+    table = newTab;
+    //oldTab =! null 说明hashmap本次扩容之前，table不是null,说明是扩容而不是初始化
+    if (oldTab != null) {
+        //遍历扩容前的哈希数组
+        for (int j = 0; j < oldCap; ++j) {
+            //e -- 当前Node节点
+            Node<K,V> e;
+            // 这个条件满足，说明当前桶位上有数据，但是不清楚是单个数据、链表还是红黑树
+            if ((e = oldTab[j]) != null) {
+                oldTab[j] = null;
+                //这个条件满足的话，表示桶位上只有一个元素
+                if (e.next == null){
+                    //根据路由寻址算法计算出新桶位并迁移元素
+                    newTab[e.hash & (newCap - 1)] = e;
+                }
+                else if (e instanceof TreeNode){
+                    //如果是红黑树，则按照红黑树的方式
+                    ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
+                }else {
+                    //这个条件就是 桶位上是链表的情况
+                    //低位链表:存放在扩容之后的数组的下标位置，与当前数组的下标位置一致
+                    Node<K,V> loHead = null, loTail = null;
+                    //高位链表:存放在扩容之后的数组的下标位置，为当前数组的下标位置 + 扩容之前数组的长度
+                    Node<K,V> hiHead = null, hiTail = null;
+                    Node<K,V> next;
+                    
+                    do {
+                        next = e.next;
+                        if ((e.hash & oldCap) == 0) {
+                            if (loTail == null)
+                                loHead = e;
+                            else
+                                loTail.next = e;
+                            loTail = e;
+                        }
+                        else {
+                            if (hiTail == null)
+                                hiHead = e;
+                            else
+                                hiTail.next = e;
+                            hiTail = e;
+                        }
+                    } while ((e = next) != null);
+                    
+                    if (loTail != null) {
+                        loTail.next = null;
+                        newTab[j] = loHead;
+                    }
+                    if (hiTail != null) {
+                        hiTail.next = null;
+                        newTab[j + oldCap] = hiHead;
+                    }
+                }
+            }
+        }
+    }
+    return newTab;
+}
+```
 
 ## 总结
 
 - 当单链表长度达到8，且数组的长度大于64时链表会转成红黑树
 - HashMap的初始化是在第一次插入数据时初始化的，所以Hash是<font color=red>懒加载初始化</font>
+- 如果是HashMap没带参数的初始化，那默认刚开始初始化的数组大小位16，且下次的扩容阈值是 16  * 0.75 = 12
+- 每次扩容都是将数组的大小增加一倍，扩容的阈值也是增加一倍
+- HashMap决定元素在哪个数组下标的路由寻址算法 : hash[<font color=red>扰动函数处理过的hash值</font>] & (table.length[<font color=red>一定是2的次方</font>] - 1) 
+- 扩容后元素的去向有两种，一种还是原来的下标，另外一种是原来下标+扩容之前数组的长度
+
+## 参考
+
+- 小刘思源码
+- HashMap源码
