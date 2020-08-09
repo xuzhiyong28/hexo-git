@@ -82,7 +82,7 @@ static class Node<K,V> implements Map.Entry<K,V> {
 
 由于hash碰撞的原因，可能导致同一个数组下标下的单链表长度很长时，查询效率变低。这时候将链表转成红黑树来保证查询的效率。
 
-## Hash源码分析
+## Hash重要源码分析
 
 ### HashMap核心属性分析
 
@@ -324,6 +324,7 @@ final Node<K,V>[] resize() {
                     
                     do {
                         next = e.next;
+                        //下面这个(e.hash & oldCap) == 0 用来判断该元素扩容后是在高位链表还是低位链表
                         if ((e.hash & oldCap) == 0) {
                             if (loTail == null)
                                 loHead = e;
@@ -340,10 +341,12 @@ final Node<K,V>[] resize() {
                         }
                     } while ((e = next) != null);
                     
+                    //通过上面的赋值，如果低位有量就进行转移
                     if (loTail != null) {
                         loTail.next = null;
                         newTab[j] = loHead;
                     }
+                     //通过上面的赋值，如果高位有量就进行转移
                     if (hiTail != null) {
                         hiTail.next = null;
                         newTab[j + oldCap] = hiHead;
@@ -355,6 +358,100 @@ final Node<K,V>[] resize() {
     return newTab;
 }
 ```
+
+### get方法分析
+
+```java
+public V get(Object key) {
+    Node<K,V> e;
+    return (e = getNode(hash(key), key)) == null ? null : e.value;
+}
+
+final Node<K,V> getNode(int hash, Object key) {
+    // tab : 引用当前hashMap的散列表
+    //first : 桶位中的头元素
+    //n : 数组的长度
+    //e : 临时node元素
+    Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
+    
+    if ((tab = table) != null && (n = tab.length) > 0 && (first = tab[(n - 1) & hash]) != null) {
+        //第一种情况:定位出来的第一个桶位元素是我们要的元素，就直接返回
+        if (first.hash == hash && ((k = first.key) == key || (key != null && key.equals(k))))
+            return first;
+        //第二种情况:如果是链表或者红黑树的情况
+        if ((e = first.next) != null) {
+            if (first instanceof TreeNode)
+                return ((TreeNode<K,V>)first).getTreeNode(hash, key);
+            //下面for循环就是遍历链表获取要取的数据
+            do {
+                if (e.hash == hash && ((k = e.key) == key || (key != null && key.equals(k))) )
+                    return e;
+            } while ((e = e.next) != null);
+        }
+    }
+    return null;
+}
+```
+
+### remove方法分析
+
+```java
+public V remove(Object key) {
+    Node<K,V> e;
+    return (e = removeNode(hash(key), key, null, false, true)) == null ?
+        null : e.value;
+}
+
+final Node<K,V> removeNode(int hash, Object key, Object value,
+                           boolean matchValue, boolean movable) {
+    //tab : 引用当前hashmap的散列表
+    //p : 当前node元素
+    //n : 散列表长度
+    //index ：寻址的数组下标
+    Node<K,V>[] tab; Node<K,V> p; int n, index;
+    //下面就是判断并赋值各种情况，例如散列表已经初始化，桶位有值等
+    if ((tab = table) != null && (n = tab.length) > 0 && (p = tab[index = (n - 1) & hash]) != null ) {
+        //node : 用来记录查找到的的元素
+        //e : 当前Node的下一个元素
+        Node<K,V> node = null, e; K k; V v;
+        //这种情况就是第一个元素就是要找的元素
+        if (p.hash == hash && ((k = p.key) == key || (key != null && key.equals(k)))){
+            node = p;
+        }else if ((e = p.next) != null) {
+            if (p instanceof TreeNode){
+                //红黑的情况
+                node = ((TreeNode<K,V>)p).getTreeNode(hash, key);
+            }else {
+                //链表的情况，就是遍历查找了
+                do {
+                    if (e.hash == hash && ((k = e.key) == key || (key != null && key.equals(k)))) {
+                        node = e;
+                        break;
+                    }
+                    p = e;
+                } while ((e = e.next) != null);
+            }
+        }
+        //下面就是对应的删除逻辑了
+        if (node != null && (!matchValue || (v = node.value) == value ||
+                             (value != null && value.equals(v)))) {
+            if (node instanceof TreeNode)
+                ((TreeNode<K,V>)node).removeTreeNode(this, tab, movable);
+            else if (node == p)
+                tab[index] = node.next;
+            else
+                p.next = node.next;
+            ++modCount;
+            --size;
+            afterNodeRemoval(node);
+            return node;
+        }
+    }
+    return null;
+}
+```
+
+
 
 ## 总结
 

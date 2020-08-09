@@ -233,7 +233,16 @@ Total DISK READ:       6.01 M/s | Total DISK WRITE:       3.85 K/s
     1 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.00 % init
     2 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.00 % [kthreadd]
 ```
+## netstat - 网络命令
+
+查看服务器的请求数可以用下面命令
+
+```shell
+netstat -na |wc -l
+```
+
 ## JVM调优命令 - jps
+
 可以列出本机所有java进程的pid.
 一般使用 jps -v 就行了。 -v 表示展示出详细的参数信息
 
