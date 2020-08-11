@@ -276,12 +276,13 @@ final Node<K,V>[] resize() {
         else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY && oldCap >= DEFAULT_INITIAL_CAPACITY)
             newThr = oldThr << 1;
     }
-    //oldCap = 0 , 说明hashmap的散列表还没初始化
+    //oldCap = 0 , 说明hashmap的散列表还没初始化，走到下面这一步一般是通过new HashMap(15)这样初始化的。这种初始化只有设置了扩容阈值
     //这里oldThr是旧的扩容阈值，这里别以为扩容阈值我们在new hashmap的时候就设置值了，其实如果是不带参数的new HashMap时候，这个扩容阈值是等于0，如果扩容值已经有了，那就设定要初始化的数组的大小为旧的扩容阈值
-    else if (oldThr > 0) 
+    else if (oldThr > 0)
         newCap = oldThr;
     else {
         //oldThr = 0 的时候，默认要初始化的数组的大小为16，然后下一次的扩容阈值是 16 * 0.75
+        //进来这里，一般是通过new HashMap()，没带任何参数创建的时候
         newCap = DEFAULT_INITIAL_CAPACITY;
         newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
     }
@@ -461,6 +462,39 @@ final Node<K,V> removeNode(int hash, Object key, Object value,
 - 每次扩容都是将数组的大小增加一倍，扩容的阈值也是增加一倍
 - HashMap决定元素在哪个数组下标的路由寻址算法 : hash[<font color=red>扰动函数处理过的hash值</font>] & (table.length[<font color=red>一定是2的次方</font>] - 1) 
 - 扩容后元素的去向有两种，一种还是原来的下标，另外一种是原来下标+扩容之前数组的长度
+
+## HashMap灵魂拷问
+
+### 如果两个对象hashCode相等，或者equals()方法相等会怎么样？
+
+首先先来了解下hashCode和equals方法的关系，前提是没有重写的情况下。
+
+- 如果两个对象equals相等，那么他们的hashCode一定相等。
+- 如果两个对象equals不相等，那么hashCode有可能相等也有可能不相等。
+- 如果两个对象hashCode不相等，那么equals一定相等。
+
+在HashMap中，如果两个对象的hashCode相等的话，那么他们在同一个槽内(发生碰撞)，这时候需要继续判断equals方法是否相等，如果相等做替换操作，如果不相等就插入链表尾部操作。
+
+### HashMap中定位元素在哪个槽下(路由寻址)的操作是什么，为什么？
+
+```java
+(h = key.hashCode()) ^ (h >>> 16)
+```
+
+在JDK1.8中是通过hashCode()的高16位异或低16位实现的。目的是让高16位参与运算，从而使hash更散列，减少碰撞。
+
+**为什么要用异或操作？**保证了对象的 hashCode 的 32 位值只要有一位发生改变，整个 hash() 返回值就会改变。尽可能的减少碰撞。
+
+### HashMap什么时候扩容，每次扩容多少？
+
+当元素个数大于扩容阈值的时候发生扩容。每次扩容是原始数组的两倍，扩容阈值每次增加两倍。
+
+举个例子，假如我们是通过new HashMap()创建的，不带参数。这时候数组长度是16，扩容阈值是16 * 0.75 = 12，那么扩容以后数组变成32，扩容阈值变成24。
+
+### 为什么要用红黑树，而不是不用或者用二叉查找树？
+
+- 用红黑树是为了防止链化过深导致查询效率低。
+- 不用二叉树查找树是因为在特殊情况下二叉查找树会变成一条线性，那就是跟链化一样了。但是红黑树会通过左旋右旋来平衡树。
 
 ## 参考
 
