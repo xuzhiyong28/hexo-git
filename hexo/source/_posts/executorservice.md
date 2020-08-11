@@ -509,6 +509,13 @@ final void runWorker(Worker w) {
 }
 ```
 
+总结runWorker方法执行过程：
+
+1. while循环中，不断地通过getTask()方法从workerQueue中获取任务
+2. 如果线程池正在停止，则中断线程。否则调用3.
+3. 调用task.run()执行任务
+4. 如果task为null则跳出循环，执行processWorkerExit()方法，销毁线程`workers.remove(w)`
+
 #### getTask()方法
 
 getTask方法表示从队列中获取任务。正常情况下如果是核心线程数内的Worker获取时，如果有则返回，如果队列中没有任务会阻塞。
