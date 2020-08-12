@@ -469,10 +469,14 @@ final void runWorker(Worker w) {
         while (task != null || (task = getTask()) != null) {
             w.lock();
             //判断各种不合适的状态然后中断
-            if ((runStateAtLeast(ctl.get(), STOP) ||
-                 (Thread.interrupted() &&
-                  runStateAtLeast(ctl.get(), STOP))) &&
-                !wt.isInterrupted())
+            //(线程状态>=STOP 或者 (线程中断且线程状态>=STOP)) 且 当时线程没有中断
+            //其实主要保证2点 : 1.线程池没有停止 2.保证线程没有中断
+            if (
+                ( runStateAtLeast(ctl.get(), STOP) ||
+                  (Thread.interrupted() && runStateAtLeast(ctl.get(), STOP))
+                ) &&
+                !wt.isInterrupted()
+               )
                 wt.interrupt();
             try {
                 //钩子
