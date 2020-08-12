@@ -101,3 +101,129 @@ static class Entry extends WeakReference<ThreadLocal<?>> {
 - 如果线程生命周期很长，在使用完Value时要先调用<font color=red>remove方法</font>清理，防止线程生命过期过长导致Value一直占用内存。
 
 ## ThreadLocal源码分析
+
+### set方法
+
+```java
+public void set(T value) {
+    //获取当前调用set的线程
+    Thread t = Thread.currentThread();
+    //获取当前线程的threadLocals变量
+    ThreadLocalMap map = getMap(t);
+    if (map != null)
+        //如果threadLocals已经初始化则直接赋值，this是当前的ThreadLocal
+        map.set(this, value);
+    else
+        //初始化t.threadLocals
+        createMap(t, value);
+}
+
+ThreadLocalMap getMap(Thread t) {
+    return t.threadLocals;
+}
+
+void createMap(Thread t, T firstValue) {
+    //初始化ThreadLocalMap并设值。 这个ThreadLocalMap是整个ThreadLocal的重点，后面分析
+    t.threadLocals = new ThreadLocalMap(this, firstValue);
+}
+```
+
+### get方法
+
+```java
+public T get() {
+    Thread t = Thread.currentThread();
+    ThreadLocalMap map = getMap(t);
+    if (map != null) {
+        //从ThreadLocalMap中获取当前线程ThreadLocalMap下，key = 当前ThreadLocal的值
+        ThreadLocalMap.Entry e = map.getEntry(this);
+        if (e != null) {
+            @SuppressWarnings("unchecked")
+            T result = (T)e.value;
+            return result;
+        }
+    }
+    //初始化t.threadLocals并设值
+    return setInitialValue();
+}
+
+//初始化
+private T setInitialValue() {
+    //initialValue这个方法是子类需要重写的方法，用来设定初始的value
+    T value = initialValue();
+    Thread t = Thread.currentThread();
+    ThreadLocalMap map = getMap(t);
+    if (map != null)
+        map.set(this, value);
+    else
+        createMap(t, value);
+    return value;
+}
+```
+
+### remove方法
+
+```java
+public void remove() {
+    //调用ThreadLocalMap的remove方法删除值
+    ThreadLocalMap m = getMap(Thread.currentThread());
+    if (m != null)
+        m.remove(this);
+}
+```
+
+
+
+## ThreadLocalMap源码分析(重点)
+
+ThreadLocal方法都是调用ThreadLocalMap方法实现的。ThreadLocalMap才是ThreadLocal的重点。
+
+ThreadLocalMap结构上有点类似HashMap，但也有不同的地方。
+
+### 数据结构和成员变量
+
+```java
+//Entry是TheadLocalMap的节点结构，类似与HashMap中的Node
+//key是ThreadLocal且是弱引用
+static class Entry extends WeakReference<ThreadLocal<?>> {
+    Object value;
+    Entry(ThreadLocal<?> k, Object v) {
+        super(k);
+        value = v;
+    }
+}
+//初始容量，必须为2的幂
+private static final int INITIAL_CAPACITY = 16;
+//Entry表，大小必须为2的幂 在ThreadLocalMap中，table其实是一个环形数组
+private Entry[] table;	
+//表里entry的个数
+private int size = 0;
+//重新分配表大小的阈值，默认为0
+private int threshold;
+```
+
+<font color=red>**由于ThreadLocalMap使用线性探测法来解决散列冲突，所以实际上Entry[]数组在程序逻辑上是作为一个环形存在的。**</font>
+
+![Entry[]数组](threadlocal/6.png)
+
+ThreadLocalMap维护了Entry环形数组，数组中元素Entry的逻辑上的key为某个ThreadLocal对象（实际上是指向该ThreadLocal对象的弱引用），value为代码中该线程往该ThreadLoacl变量实际塞入的值。
+
+### 构造方法
+
+```java
+ThreadLocalMap(ThreadLocal<?> firstKey, Object firstValue) {
+    //初始化table,容量是16
+    table = new Entry[INITIAL_CAPACITY];
+    //到对应的数组下标
+    int i = firstKey.threadLocalHashCode & (INITIAL_CAPACITY - 1);
+    //赋值
+    table[i] = new Entry(firstKey, firstValue);
+    size = 1;
+    //设置重新分配表大小的阈值
+    setThreshold(INITIAL_CAPACITY);
+}
+private void setThreshold(int len) {
+   threshold = len * 2 / 3;
+}
+```
+
