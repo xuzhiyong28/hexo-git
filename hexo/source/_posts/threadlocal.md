@@ -227,3 +227,57 @@ private void setThreshold(int len) {
 }
 ```
 
+**ThreadLocal.threadLocalHashCode取值**
+
+```java
+private static AtomicInteger nextHashCode = new AtomicInteger();
+
+private final int threadLocalHashCode = nextHashCode();
+//定义魔数
+private static final int HASH_INCREMENT = 0x61c88647;
+//每次创建一个ThreadLocal时，都在nextHashCode基础上加一个HASH_INCREMENT
+private static int nextHashCode() {
+    return nextHashCode.getAndAdd(HASH_INCREMENT);
+}
+```
+
+可以看到，每当创建 `ThreadLocal` 实例时这个值都会`getAndAdd(0x61c88647)`作为ThreadLocal的哈希值。<font color=red>通过理论与实践，当我们用0x61c88647作为魔数累加为每个ThreadLocal分配各自的ID也就是threadLocalHashCode再与2的幂取模，得到的结果分布很均匀</font>。
+
+### set()方法
+
+```java
+private void set(ThreadLocal<?> key, Object value) {
+    Entry[] tab = table;
+    int len = tab.length;
+    //通过hash * (table.length - 1) 路由寻址到下标
+    int i = key.threadLocalHashCode & (len-1);
+    //nextIndex采用线性探测的方式
+    //因为ThreadLocal在hash冲突的时候是采用线性探测的方式，例如这个下标被占了，就找往后的一个位置看看有没有被占
+    for (Entry e = tab[i]; e != null ; e = tab[i = nextIndex(i, len)]) {
+        ThreadLocal<?> k = e.get();
+        //如果下标i对应的ThreadLocal跟我传进来的ThraedLocal一致，那就做赋值操作。
+        if (k == key) {
+            e.value = value;
+            return;
+        }
+        //k == null表示原来的ThreadLocal已经被清理了，这里重新设置新的ThreadLocal到这个数组下标并会尽可能清理无效slot
+        if (k == null) {
+            replaceStaleEntry(key, value, i);
+            return;
+        }
+        //继续循环表示哈希与冲突，获取下一个的数组下标继续查询
+    }
+    tab[i] = new Entry(key, value);
+    int sz = ++size;
+    if (!cleanSomeSlots(i, sz) && sz >= threshold)
+        rehash();
+}
+
+private static int nextIndex(int i, int len) {
+   return ((i + 1 < len) ? i + 1 : 0);
+}
+```
+
+## 参考
+
+- https://www.cnblogs.com/micrari/p/6790229.html
