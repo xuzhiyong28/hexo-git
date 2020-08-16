@@ -73,6 +73,12 @@ sentinel状态数据结构中保存了主服务的所有从服务信息，leande
 
 更新主从状态。通过slaveof no one命令，让选出来的从节点成为主节点。并通过slaveof命令让其他节点成为其从节点。
 
+### 哨兵的定时监控
+
+- 每个哨兵节点每10秒会向主节点和从节点发送info命令获取最拓扑结构图，哨兵配置时只要配置对主节点的监控即可，通过向主节点发送info，获取从节点的信息，并当有新的从节点加入时可以马上感知到
+- 每个哨兵节点每隔2秒会向redis数据节点的指定频道上发送该哨兵节点对于主节点的判断以及当前哨兵节点的信息，同时每个哨兵节点也会订阅该频道，来了解其它哨兵节点的信息及对主节点的判断
+- 每隔1秒每个哨兵会向主节点、从节点及其余哨兵节点发送一次ping命令做一次心跳检测
+
 ### 工作原理总结
 
 - 每个Sentinel以每秒钟一次的频率向它所知的Master，Slave以及其他 Sentinel 实例发送一个 PING 命令。
@@ -82,6 +88,23 @@ sentinel状态数据结构中保存了主服务的所有从服务信息，leande
 - 在一般情况下， 每个 Sentinel 会以每 10 秒一次的频率向它已知的所有Master，Slave发送 INFO 命令 。
 - 当Master被 Sentinel 标记为客观下线时，Sentinel 向下线的 Master 的所有 Slave 发送 INFO 命令的频率会从 10 秒一次改为每秒一次 。
 - 若没有足够数量的 Sentinel 同意 Master 已经下线， Master 的客观下线状态就会被移除。 
+
+## Redis集群脑裂
+
+redis的集群脑裂是指因为网络问题，导致redis master节点跟redis slave节点和sentinel集群处于不同的网络分区，此时因为sentinel集群无法感知到master的存在，所以将slave节点提升为master节点。集群的脑裂会导致<font color=red>数据丢失</font>。
+
+![redis脑裂](redis-sentinel/2.png)
+
+**解决方案** ： 在redis配置文件中添加如下配置
+
+```properties
+#连接到master的最少slave数量,如果少于这个数，master会拒绝写请求
+min-replicas-to-write 3
+#slave连接到master的最大延迟时间
+min-replicas-max-lag 10
+```
+
+
 
 ## Jedis不支持实现哨兵的读写分离
 
@@ -243,4 +266,56 @@ protected class MasterListener extends Thread {
 ```
 
 #### 解决无法读写分离方案
+
+JedisSentinelPool底层使用的是commons.pool2对象池。分析对应的initPool方法，通过传入Master节点到Jedis工厂(JedisFactory)然后链接主节点对象池。
+
+```java
+//通过主节点初始化Jedis对象池  
+private void initPool(HostAndPort master) {
+    if (!master.equals(currentHostMaster)) {
+      currentHostMaster = master;
+      if (factory == null) {
+        //传入Master节点
+        factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
+            soTimeout, password, database, clientName);
+        initPool(poolConfig, factory);
+      } else {
+        factory.setHostAndPort(currentHostMaster);
+        internalPool.clear();
+      }
+      log.info("Created JedisPool to master at " + master);
+    }
+  }
+```
+
+```java
+//redis/clients/jedis/JedisFactory/class  
+@Override
+  public PooledObject<Jedis> makeObject() throws Exception {
+    final HostAndPort hostAndPort = this.hostAndPort.get();
+    //根据主节点来建立资源池
+    final Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), connectionTimeout,
+        soTimeout);
+
+    jedis.connect();
+    if (null != this.password) {
+      jedis.auth(this.password);
+    }
+    if (database != 0) {
+      jedis.select(database);
+    }
+    if (clientName != null) {
+      jedis.clientSetname(clientName);
+    }
+    return new DefaultPooledObject<Jedis>(jedis);
+  }
+```
+
+所以我们的改造方案：
+
+- 新建一个JedisSlaveSentinelPool类，方法全部照抄JedisSentinelPool类的，其中initPool方法使用JedisFactory替换成JedisSlaveFactory(第二步新建的类)。并去掉MasterListener监听器，因为原来JedisSentinelPool类的MasterListener监听器的功能是当主节点挂时重新选一个从节点，我们这里并不适用。
+- 新建JedisSlaveFactory类，方法全部照抄JedisFactory类，重写makeObject类，通过获取从节点来建立资源池。
+- 新建一个JedisUtils工具类，写操作用主节点对应的资源池，读节点用从节点对应的资源池。
+
+
 
