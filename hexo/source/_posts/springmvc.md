@@ -1,11 +1,11 @@
 ---
-title: SpringMVC流程详细解析
+title: SpringMVC详细解析之初始化（一）
 tags:
   - spring
 categories: 
   - spring
-description : 解析SpringMVC流程详细
-date: 2017-08-14 16:02:20
+description : SpringMVC详细解析之初始化
+date: 2020-01-01 16:02:20
 ---
 ## SpringMVC初始化
 
@@ -170,6 +170,3 @@ RequestMappingHandlerMapping实现了InitializingBean接口，所以在对象实
 ![](springmvc/8.png)
 
 ![](springmvc/9.png)
-
-## SpringMVC完成流程图
-
