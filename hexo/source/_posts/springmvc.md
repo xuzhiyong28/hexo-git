@@ -166,7 +166,13 @@ RequestMappingHandlerMapping实现了InitializingBean接口，所以在对象实
 
 1. RequestMappingHandlerMapping#afterPropertiesSet()
 2. AbstractHandlerMethodMapping#initHandlerMethods() 
+3. AbstractHandlerMethodMapping#processCandidateBean(beanName)
+4. AbstractHandlerMethodMapping#detectHandlerMethods(beanName)
+5. AbstractHandlerMethodMapping#registerMapping()
+6. AbstractHandlerMethodMapping#register(T mapping, Object handler, Method method)
 
 ![](springmvc/8.png)
 
 ![](springmvc/9.png)
+
+![](springmvc/10.png)
