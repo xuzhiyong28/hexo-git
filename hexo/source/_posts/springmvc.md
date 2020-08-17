@@ -124,7 +124,35 @@ DispatcherServlet集成HttpServlet类，所以在容器启动后会执行init()�
 
   流程如下：\<mvc:annotation-driven\/> -----》 MvcNamespaceHandler#init() -----》 AnnotationDrivenBeanDefinitionParser#parse()
 
+- 执行initStrategies初始化方法
+
 ![](springmvc/6.png)
+
+```java
+//执行initStrategies初始化方法
+protected void initStrategies(ApplicationContext context) {
+	//初始化文件上传
+	initMultipartResolver(context);
+	//初始化国家化
+	initLocaleResolver(context);
+	//初始化主题
+	initThemeResolver(context);
+	//初始化处理映射器
+	initHandlerMappings(context);
+	//初始化处理适配器
+	initHandlerAdapters(context);
+	//初始化请求异常
+	initHandlerExceptionResolvers(context);
+	//初始化请求视图名
+	initRequestToViewNameTranslator(context);
+	//初始化视图解析器
+	initViewResolvers(context);
+	//
+	initFlashMapManager(context);
+}
+```
+
+
 
 ### 映射处理HandlerMapping
 
