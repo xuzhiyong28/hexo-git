@@ -154,7 +154,7 @@ protected void initStrategies(ApplicationContext context) {
 
 
 
-### 映射处理HandlerMapping
+### 映射处理器HandlerMapping
 
 SpringMVC 内部是根据 `HandlerMapping` 将 `Request` 和 `Controller` 里面的方法对应起来的。在初始化后就会将这个映射注册到mappingRegistry.java类中。后面请求过来的时才可以通过url找到对应的Controller方法进行处理。映射处理器在Web启动后，自动加载了RequestMappingHandlerMapping.java 和 BeanNameUrlHandlerMapping.java。他们分别对应不同的处理方式。
 
@@ -176,3 +176,40 @@ RequestMappingHandlerMapping实现了InitializingBean接口，所以在对象实
 ![](springmvc/9.png)
 
 ![](springmvc/10.png)
+
+所以说HandlerMapping主要是将请求和对应的处理类(Handler)对应起来。例如我们Controller可以是如下两种定义方式：
+
+```java
+//采用注解方式@Controller 和 @RequestMapping
+@Controller
+@RequestMapping(value = "/demo")
+public class DemoController {
+    @RequestMapping(value = "/demo1.action")
+    @ResponseBody
+    public Map demo1() {
+        //..省略很多代码
+    }
+}
+
+//通过实现Controller方法的方式
+public class OtherController implements Controller {
+    public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        ModelAndView mv = new ModelAndView();
+        mv.addObject("hello","world");
+        mv.setViewName("result");
+        return mv;
+    }
+}
+<bean id="/other.action" class="com.xzy.controller.OtherController"></bean>
+```
+
+HandlerMapping通过不同的实现类来将url和handler映射起来。后面执行getHandler()方法时，就可以通过url找到对应的handler。并将handler+多个HandlerInterceptor拦截器封装成HandlerExecutionChain对象。
+
+### 处理适配器(HandlerAdapter)
+
+HandlerAdapter将会根据适配的结果调用真正的处理器的功能处理方法，完成功能处理；并返回一个ModelAndView对象（包含模型数据、逻辑视图名）。由于handler是有不同的实现方式，例如是实现Controller还是使用@Controller注解，所以需要使用适配器的方式找到不通方式的处理器。系统默认提供了处理适配器来对应不同方式的handler。
+
+- RequestMappingHandlerAdapter.java
+- HttpRequestHandlerAdapter.java
+- SimpleControllerHandlerAdapter.java
+
