@@ -138,4 +138,24 @@ cat mysql_bin_231_4.log | grep 'INSERT' | grep 'dir_visit_report' | wc -l
 
 ## 如何避免
 
-待续。。。
+- 升级MySQL版本到5.7，使用并行复制
+- 升级Slave硬件配置
+- 优化网络
+- 业务上防止统一时间点大量更新操作
+- 修改binlog配置sync_binlog，innodb_flush_log_at_trx_commit (redo日志)
+
+### sync_binlog
+
+- sync_binlog = 0 ，表示MySQL不控制binlog的刷新，由文件系统自己控制它的缓存的刷新
+
+- sync_binlog > 0 ，指定了两次刷新到磁盘的动作之间间隔多少次二进制日志写操作
+
+- sync_binlog = 1 ，表示每次事务提交，MySQL都会把binlog刷下去，是最安全但是性能损耗最大的设置
+
+### innodb_flush_log_at_trx_commit
+
+0 ： 提交事务的时候，不立即把 redo log buffer 里的数据刷入磁盘文件的，而是依靠 InnoDB 的主线程每秒执行一次刷新到磁盘
+
+1 ： 提交事务的时候，就必须把 redo log 从内存刷入到磁盘文件里去，只要事务提交成功，那么 redo log 就必然在磁盘里了
+
+2 ：提交事务的时候，把 redo 日志写入磁盘文件对应的 os cache 缓存里去，而不是直接进入磁盘文件，可能 1 秒后才会把 os cache 里的数据写入到磁盘文件里去
