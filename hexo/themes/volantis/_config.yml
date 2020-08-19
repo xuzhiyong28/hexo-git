@@ -95,7 +95,7 @@ style:
 
 ############################### Layout ###############################
 cover:
-  scheme: docs # docs, blog
+  scheme: blog # docs, blog
   display:
     home: true
     archive: true
