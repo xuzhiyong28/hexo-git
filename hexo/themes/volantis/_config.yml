@@ -102,7 +102,7 @@ cover:
     others: false # can be written in front-matter 'cover: true'
   logo: # https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/256/google_logo.png
   title: Xuzy s'Blog
-  subtitle: '每天进步一点点。。。'
+  subtitle: '<br/><font size=5>每天努力再多一点，就会发现很多事情并没有那么困难！</font></font>'
   search: # search bar placeholder
   features:
     - name: 文档
