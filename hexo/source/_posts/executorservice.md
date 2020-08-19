@@ -159,7 +159,7 @@ Executors为创建线程池的工具类，提供了多种方式的线程池创�
 
 ### executre和submit方法
 
-首先先来看下两个方法如何使用。线程池支持无返回值的execute方法，和有返回值的submit方法。有返回值的其实是将task封装成一个FutureTask。关于FutureTask可以看另外篇博客《[Fork/join框架你会用吗？](https://xuzhiyong28.github.io/2020/07/30/fork-join/)》。
+首先先来看下两个方法如何使用。线程池支持无返回值的execute方法，和有返回值的submit方法。有返回值的其实是将task封装成一个FutureTask。关于FutureTask可以看另外篇博客《[Fork/join框架你会用吗？](http://xuzyblog.top/2020/07/30/fork-join/)》。
 
 ```java
 @Test

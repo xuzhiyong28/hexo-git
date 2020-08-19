@@ -101,7 +101,7 @@ cover:
     archive: true
     others: false # can be written in front-matter 'cover: true'
   logo: # https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/256/google_logo.png
-  title: 咕噜咕噜
+  title: Xuzy s'Blog
   subtitle: '每天进步一点点。。。'
   search: # search bar placeholder
   features:
