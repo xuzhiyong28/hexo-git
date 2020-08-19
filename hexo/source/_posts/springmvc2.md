@@ -170,3 +170,69 @@ boolean applyPreHandle(HttpServletRequest request, HttpServletResponse response)
 ```java
 mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
 ```
+
+分析RequestMappingHandlerAdapter的执行逻辑如下：
+
+![执行handler](springmvc2/15.png)
+
+![hanlder结果封装成ModelAndView](springmvc2/16.png)
+
+<font size=4 color=red>第六步：执行拦截器后置拦截</font>
+
+```
+//如果没有视图，设置默认视图
+applyDefaultViewName(processedRequest, mv)
+//执行后置拦截
+mappedHandler.applyPostHandle(processedRequest, response, mv)
+```
+
+<font size=4 color=red>第七步：前端控制器请求视图解析器（ViewResolver）去进行视图解析</font>
+
+```java
+//获取视图并进行渲染
+protected void render(ModelAndView mv, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		Locale locale = (this.localeResolver != null ? this.localeResolver.resolveLocale(request) : request.getLocale());
+		response.setLocale(locale);
+		View view;
+		String viewName = mv.getViewName();
+		if (viewName != null) {
+			//遍历视图解析器解析当前view对应的视图
+			view = resolveViewName(viewName, mv.getModelInternal(), locale, request);
+			if (view == null) {
+				throw new ServletException("Could not resolve view with name '" + mv.getViewName() +
+						"' in servlet with name '" + getServletName() + "'");
+			}
+		}
+		else {
+			view = mv.getView();
+		}
+		try {
+			if (mv.getStatus() != null) {
+				response.setStatus(mv.getStatus().value());
+			}
+			//渲染视图
+			view.render(mv.getModelInternal(), request, response);
+		}
+		catch (Exception ex) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Error rendering view [" + view + "]", ex);
+			}
+			throw ex;
+		}
+}
+
+protected View resolveViewName(String viewName, @Nullable Map<String, Object> model,
+		Locale locale, HttpServletRequest request) throws Exception {
+	if (this.viewResolvers != null) {
+		//遍历所有的视图列表并选择一个合适的视图
+		for (ViewResolver viewResolver : this.viewResolvers) {
+			View view = viewResolver.resolveViewName(viewName, locale);
+			if (view != null) {
+				return view;
+			}
+		}
+	}
+	return null;
+}
+```
+
