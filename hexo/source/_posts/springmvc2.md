@@ -120,3 +120,53 @@ protected void doDispatch(HttpServletRequest request, HttpServletResponse respon
 	}
 }
 ```
+
+<font size=4 color=red>第二步：DispatcherServlet 根据请求信息调用 HandlerMapping，解析请求对应的 Handler并封装成HandlerExecutionChain对象(一个Handler + 多个HandlerInterceptor拦截器)</font>
+
+通过遍历handlerMappings找到请求对应的Handler，并将Handler + 拦截器 封装成HandlerExecutionChain对象。
+
+![](springmvc2/13.png)
+
+<font size=4 color=red>第三步：通过Handler找到对应的处理器适配器（HandlerAdapter）</font>
+
+HandlerAdapter采用了适配器模式提供了两个方法 ：
+
+- boolean supports(Object handler)  -- 判断参数的handler是不是我这个适配器可以处理的处理器。
+- ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler)  -- 处理并返回ModelAndView
+
+![](springmvc2/14.png)
+
+例如RequestMappingHandlerAdapter适配器，他判断如果这个handler是HandlerMethod则这个handler使用他来进行处理。
+
+<font size=4 color=red>第四步：执行handler前先执行拦截器的前置拦截</font>
+
+拦截器提供的3个方法：
+
+- **preHandle** - 该方法将在请求处理之前进行调用
+- **postHandle** - Controller 处理之后的ModelAndView 对象进行，此时视图还没做渲染
+- **afterCompletion** - 渲染了视图后执行，主要是清理资源等
+
+```java
+//mappedHandler.applyPreHandle(processedRequest, response);
+boolean applyPreHandle(HttpServletRequest request, HttpServletResponse response) throws Exception {
+	HandlerInterceptor[] interceptors = getInterceptors(); //获取定义的拦截器
+	if (!ObjectUtils.isEmpty(interceptors)) {
+		for (int i = 0; i < interceptors.length; i++) {
+			HandlerInterceptor interceptor = interceptors[i];
+             //执行前置拦截
+			if (!interceptor.preHandle(request, response, this.handler)) {
+				triggerAfterCompletion(request, response, null);
+				return false;
+			}
+			this.interceptorIndex = i;
+		}
+	}
+	return true;
+}
+```
+
+<font size=4 color=red>第五步：调用HandlerAdapter(处理器适配器)执行handler并返回ModelAndView</font>
+
+```java
+mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
+```
