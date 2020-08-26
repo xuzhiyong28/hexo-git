@@ -34,3 +34,7 @@ count(*)、count(主键 id) 、 count(1) 都表示返回满足条件的结果集
 ### MyISAM下的count
 
 MyISAM 引擎把一个表的总行数存在了磁盘上，因此执行 count(*) 的时候会直接返回这个数，效率很高。
+
+## 参考
+
+- 《MYSQL实战45讲》
