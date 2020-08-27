@@ -300,7 +300,7 @@ jmap -histo:live PID | head -50 #打印每个class的实例数目,内存占用,�
 jmap -dump:live,format=b,file=/tmp/xxxx.hprof PID #导出存活对象的dump文件以便后面分析。live可以不加，加了表示存活对象
 ```
 
-## JVM调优命令-jstack
+## JVM调优命令 - jstack
 
 jstack主要用来分析线程执行情况。可以生成某个时刻java进程中线程的快照帮助分析，比如，发现服务器的CPU的负载突然增高了、出现了死锁、死循环等。
 
