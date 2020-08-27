@@ -81,10 +81,28 @@ appendfsync everysec #每秒钟同步一次，该策略为AOF的缺省策略。
 
 ![](redis-rdb-aop/2.png)
 
-1. 执行bgrewritedaof进行重写
-2. 子进程对当前内存中的数据进行遍历，转换成一系列的redis操作指令，并序列化到一个新的AOF日志中
-3. 对于所有新执行的写入命令，父进程一边将它们累积到一个内存缓存中，一边将这些改动追加到现有 AOF 文件的末尾： 这样即使在重写的中途发生停机，现有的 AOF 文件也还是安全的
-4. 当子进程完成重写工作时，它给父进程发送一个信号，父进程在接收到信号之后，将内存缓存中的所有数据追加到新 AOF 文件的末尾
+1. 开始bgrewriteaof，判断当前有没有bgsave命令(RDB持久化)/bgrewriteaof在执行，倘若有，则这些命令执行完成以后再执行。
+2. 主进程fork出子进程，在这一个短暂的时间内，redis是阻塞的。
+3. 主进程fork完子进程继续接受客户端请求，所有写命令依然写入AOF文件缓冲区并根据appendfsync策略同步到磁盘，保证原有AOF文件完整和正确。由于fork的子进程仅仅只共享主进程fork时的内存，因此Redis使用采用重写缓冲区(aof_rewrite_buf)机制保存fork之后的客户端的写请求，防止新AOF文件生成期间丢失这部分数据。此时，客户端的写请求不仅仅写入原来aof_buf缓冲，还写入重写缓冲区(aof_rewrite_buf)。
+4. 子进程通过内存快照，按照命令重写策略写入到新的AOF文件。
+   - 子进程写完新的AOF文件后，向主进程发信号，父进程更新统计信息。
+   - 主进程把aof_rewrite_buf中的数据写入到新的AOF文件。
+5. 使用新的AOF文件覆盖旧的AOF文件，标志AOF重写完成。
+
+可以看出整个重写过程是安全的。因为 Redis 重写是创建新 AOF 文件，重写的过程中会继续将命令追加到现有旧的 AOF 文件里面，即使重写过程中发生停机，现有旧的 AOF 文件也不会丢失。 而一旦新 AOF 文件创建完毕，Redis 就会从旧 AOF 文件切换到新 AOF 文件，并开始对新 AOF 文件进行追加操作。
+
+**AOF重写机制的触发条件**：
+
+- 手动触发：客户端执行bgrewriteaof命令。
+- 自动触发：自动触发通过以下两个配置协作生效，auto-aof-rewrite-min-size 和 auto-aof-rewrite-percentage
+
+```properties
+#AOF文件最小重写大小，只有当AOF文件大小大于该值时候才可能重写，4.0默认配置64mb
+auto-aof-rewrite-min-size 64mb
+#当前AOF文件大小和最后一次重写后的大小之间的比率等于或者等于指定的增长百分比，
+#如100代表当前AOF文件是上次重写的两倍时候才重写
+auto-aof-rewrite-percentage 100
+```
 
 ### 优缺点
 
@@ -92,7 +110,33 @@ appendfsync everysec #每秒钟同步一次，该策略为AOF的缺省策略。
 - AOF 文件的体积通常要大于 RDB 文件的体积。
 - 恢复速速慢。
 
+### 启动时优先使用AOF恢复
+
+![](redis-rdb-aop/3.png)
+
 ## 混合持久化
 
-xxx
+混合持久化是Redis 4.0才有的功能。混合持久化同样也是通过bgrewriteaof完成的。
 
+**混合持久化过程**：
+
+1. fork出的子进程先将共享的内存副本以RDB方式写入AOF文件。
+2. 然后在将重写缓冲区的增量命令以AOF方式写入到文件。
+3. 写入完成后通知主进程更新统计信息，并将新的AOF文件替换旧的的AOF文件。
+
+使用混合持久化后，Redis<font color=red>依然优先加载AOF文件</font>。可能有两种情况：
+
+- AOF文件开头是RDB的格式，先加载RDB部分的内容，再加载剩余的AOF
+- AOF文件开头不是RDB的格式，直接加载整个AOF文件
+
+混合持久化需要配置上确认是否开启
+
+```properties
+#yes表示开启混合持久化
+aof-use-rdb-preamble yes
+```
+
+## 参考
+
+- https://mp.weixin.qq.com/s?__biz=MzA3MTUzOTcxOQ==&mid=2452965797&idx=1&sn=dc1cc6dad0d589148d5d6147705cfc38&chksm=88ede4cdbf9a6ddb775e3861ce6fc9a50eefe2d00eed69877e5ecf9cef94a6342fecaa3979c2&scene=21#wechat_redirect
+- https://mp.weixin.qq.com/s?__biz=MzA3MTUzOTcxOQ==&mid=2452965876&idx=1&sn=8e652ab31b628af89b275cf8f25544ef&chksm=88ede49cbf9a6d8a10231e1dde14976a6cfdfd08778783bfede076c935158895fa99159ec754&scene=21#wechat_redirect
