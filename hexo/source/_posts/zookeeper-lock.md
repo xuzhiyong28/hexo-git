@@ -101,7 +101,7 @@ public class ZkOnlyLock {
     public void lock() {
         this.lock(0, null);
     }
-
+	
     public void lock(long millisToWait, TimeUnit unit) {
         boolean doDeleteOurPath = false;
         for (;doDeleteOurPath == false;) {
@@ -230,11 +230,13 @@ public class ZkOnlyLock {
 
 ## 独占式公平分布式锁
 
+### 概述
+
 ![](zookeeper-lock/2.png)
 
 ![](zookeeper-lock/3.png)
 
-1. 所有客户端创建自己的锁节点
+1. 所有客户端创建自己的锁节点(临时顺序节点)
 2. 从 Zookeeper 端获取 /share_lock下所有的子节点
 3. 判断自己创建的锁节点是否可以获取锁(如果是第一个就是可以获取到锁)，如果可以，持有锁。否则对自己上一个节点设置watcher
 4. 持有锁的客户端删除自己的锁节点，某个客户端收到该节点被删除的通知，并获取锁
@@ -242,7 +244,335 @@ public class ZkOnlyLock {
 
 ### 代码实例
 
-待续
+```java
+package lock;
+
+import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.curator.RetryPolicy;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.recipes.cache.ChildData;
+import org.apache.curator.framework.recipes.cache.NodeCache;
+import org.apache.curator.framework.recipes.cache.NodeCacheListener;
+import org.apache.curator.framework.state.ConnectionState;
+import org.apache.curator.framework.state.ConnectionStateListener;
+import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.utils.CloseableUtils;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.data.Stat;
+
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+/***
+ * 分布式共享锁
+ */
+public class ZkOnlyFairLock {
+    private static String lockNameSpace = "/mylock02";
+    public static String CONNECT_ADDR = "localhost:2181";
+    private CuratorFramework cf;
+    private String locakPath;
+    private String currentLockPath;
+
+    /***
+     *
+     * @param lockPath 锁路径
+     */
+    public ZkOnlyFairLock(String lockPath) {
+        this.locakPath = lockNameSpace + "/" + lockPath;
+        RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000000, 3);
+        cf = CuratorFrameworkFactory.builder()
+                .connectString(CONNECT_ADDR)
+                .sessionTimeoutMs(5000)
+                .connectionTimeoutMs(5000)
+                .retryPolicy(retryPolicy)
+                .build();
+        cf.getConnectionStateListenable().addListener(new ConnectionStateListener() {
+            @Override
+            public void stateChanged(CuratorFramework curatorFramework, ConnectionState connectionState) {
+                if (connectionState == ConnectionState.LOST) {
+                    System.out.println("连接丢失");//连接丢失
+                } else if (connectionState == ConnectionState.CONNECTED) {
+                    System.out.println("成功连接");
+                } else if (connectionState == ConnectionState.RECONNECTED) {
+                    System.out.println("重连成功");
+                }
+            }
+        });
+        cf.start();
+    }
+
+    /***
+     * 设置watch+等待锁
+     * @param millisToWait
+     * @param unit
+     * @param path
+     * @return
+     * @throws Exception
+     */
+    public boolean waiteLock(long millisToWait, TimeUnit unit, String path) {
+        boolean haveTheLock = false;
+        boolean doDeleteOurPath = false;
+        try {
+
+            while (!haveTheLock) {
+                List<String> childNodeList = getChildrenPath();//获取到所有的节点 [lock0000000005, lock0000000006, lock0000000007]
+                String pathName = path.substring(lockNameSpace.length() + 1);
+                int nodeIndex = childNodeList.indexOf(pathName);
+                if (nodeIndex < 0) {
+                    //节点不存在，抛出异常
+                    throw new RuntimeException("顺序节点不存在");
+                }
+
+                if (nodeIndex == 0) {
+                    haveTheLock = true; //获得锁
+                    System.out.println("path = " + path + " 获得锁");
+                } else {
+                    //如果不是第一个节点则对上一个节点做监听
+                    String preNodePath = lockNameSpace.concat("/").concat(childNodeList.get(nodeIndex - 1));
+                    CountDownLatch countDownLatch = new CountDownLatch(1);
+                    //可能对上一个节点做监听时，这个节点已经被删除了
+                    NodeCache cache = new NodeCache(cf, preNodePath);
+                    //对上一个节点做监听
+                    cache.getListenable().addListener(new NodeCacheListener() {
+                        @Override
+                        public void nodeChanged() throws Exception {
+                            ChildData childData = cache.getCurrentData();
+                            if (childData == null) {
+                                countDownLatch.countDown();
+                            }
+                        }
+                    });
+                    cache.start();
+                    //再次判断下上个节点存不存在，如何存在才阻塞，防止出现节点删除后才建立监控导致一直阻塞
+                    if (isExistNode(preNodePath)) {
+                        System.out.println("====对path=" + preNodePath + " 设置watch监听，并开始阻塞 -" + path);
+                        countDownLatch.await();
+                    } else {
+                        CloseableUtils.closeQuietly(cache);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            //异常了要删除原来的节点
+            doDeleteOurPath = true;
+        } finally {
+            if (doDeleteOurPath) {
+                deleteNode(path);
+            }
+        }
+        return haveTheLock;
+    }
+
+    public void lock() throws Exception {
+        this.lock(0, null);
+    }
+
+    /***
+     * 加锁
+     */
+    public void lock(long millisToWait, TimeUnit unit) throws Exception {
+        boolean isDone = false;
+        //加锁重试次数
+        while (!isDone) {
+            String path = createNode(); //创建顺序临时节点 path = /mylock02/lock0000000005
+            this.currentLockPath = path; //记录当前的锁节点，后面解锁要用的
+            if (StringUtils.isBlank(path)) {
+                throw new RuntimeException("创建顺序节点失败");
+            }
+            if (waiteLock(millisToWait, unit, path)) {
+                isDone = true;
+            }
+        }
+    }
+
+    /***
+     * 解锁
+     */
+    public void unlock() {
+        deleteNode(this.currentLockPath);
+        CloseableUtils.closeQuietly(cf);
+    }
+
+    /***
+     * 创建顺序临时节点
+     * @return
+     * @throws Exception
+     */
+    public String createNode() {
+        String s = null;
+        try {
+            s = cf.create()
+                    .creatingParentsIfNeeded() //自动创建父节点
+                    .withMode(CreateMode.EPHEMERAL_SEQUENTIAL)
+                    .forPath(locakPath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return s;
+    }
+
+    /***
+     * 删除节点
+     * @param path
+     */
+    public void deleteNode(String path) {
+        try {
+            if (isExistNode(path)) {
+                cf.delete().forPath(path);
+                System.out.println("====" + path + " 删除成功");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /***
+     * 判断节点是否存在
+     * @param path
+     * @return
+     */
+    public boolean isExistNode(String path) {
+        try {
+            Stat stat = cf.checkExists().forPath(path);
+            return stat == null ? false : true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /***
+     * 获取子节点并排序
+     * @return
+     */
+    public List<String> getChildrenPath() {
+        try {
+            List<String> strings = cf.getChildren().forPath(lockNameSpace);
+            return strings.stream().sorted().collect(Collectors.toList());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Lists.newArrayList();
+        }
+    }
+
+}
+
+```
+
+**测试代码**
+
+```java
+@Test
+    public void zkOnlyFairLock01() throws InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(100);
+        for(int i = 0 ; i < 100; i++){
+            executorService.submit(() -> {
+                ZkOnlyFairLock zkLock = new ZkOnlyFairLock("lock");
+                try {
+                    zkLock.lock();
+                    System.out.println("做事ing");
+                    TimeUnit.SECONDS.sleep(2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }finally {
+                    zkLock.unlock();
+                }
+            });
+        }
+        executorService.awaitTermination(10,TimeUnit.MINUTES);
+    }
+```
+
+## Curator提供的分布式锁
+
+Curator是Zookeeper的一个工具类，他为我们提供了简便好用的分布式锁工具。
+
+- InterProcessMutex：分布式可重入排它锁
+- InterProcessSemaphoreMutex：分布式排它锁
+- InterProcessReadWriteLock：分布式读写锁
+- InterProcessMultiLock：将多个锁作为单个实体管理的容器
+
+### 不可重入锁---  InterProcessSemaphoreMutex 
+
+InterProcessSemaphoreMutex是一种不可重入的互斥锁，也就意味着即使是同一个线程也无法在持有锁的情况下再次获得锁，所以需要注意，不可重入的锁很容易在一些情况导致死锁。
+
+```java
+@Test
+public void curtorLock001() throws InterruptedException {
+    ExecutorService executorService = Executors.newFixedThreadPool(100);
+    for(int i = 0 ; i < 10; i++){
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                CuratorFramework cf = CuratorFrameworkFactory.newClient("localhost:2181",new ExponentialBackoffRetry(2000,3));
+                InterProcessLock lock = new InterProcessSemaphoreMutex(cf, "/curator/lock");
+                try{
+                    cf.start();
+                    lock.acquire(); //只能调用一次，不可重入
+                    System.out.println("做事ing");
+                    TimeUnit.SECONDS.sleep(5);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }finally {
+                    try {
+                        lock.release();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+    executorService.awaitTermination(10,TimeUnit.MINUTES);
+}
+```
+
+### 可重入锁---  InterProcessMutex
+
+此锁可以重入，但是重入几次需要释放几次。
+
+InterProcessMutex通过在zookeeper的某路径节点下创建临时序列节点来实现分布式锁，即每个线程（跨进程的线程）获取同一把锁前，都需要在同样的路径下创建一个节点，节点名字由uuid + 递增序列组成。而通过对比自身的序列数是否在所有子节点的第一位，来判断是否成功获取到了锁。当获取锁失败时，它会添加watcher来监听前一个节点的变动情况，然后进行等待状态。直到watcher的事件生效将自己唤醒，或者超时时间异常返回。
+
+```java
+@Test
+public void curtorLock002() throws InterruptedException {
+    ExecutorService executorService = Executors.newFixedThreadPool(100);
+    for(int i = 0 ; i < 10; i++){
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                CuratorFramework cf = CuratorFrameworkFactory.newClient("localhost:2181",new ExponentialBackoffRetry(2000,3));
+                InterProcessLock lock = new InterProcessMutex(cf, "/curator/lock");
+                try{
+                    cf.start();
+                    lock.acquire();
+                    lock.acquire();
+                    System.out.println("做事ing");
+                    TimeUnit.SECONDS.sleep(5);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }finally {
+                    try {
+                        lock.release();
+                        lock.release();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+    executorService.awaitTermination(10,TimeUnit.MINUTES);
+}
+```
+
+### 可重入读写锁 --- InterProcessReadWriteLock
+
+待续。。。
 
 ## 参考
 
