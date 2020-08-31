@@ -572,7 +572,7 @@ public void curtorLock002() throws InterruptedException {
 
 ### 可重入读写锁 --- InterProcessReadWriteLock
 
-待续。。。
+### 多个锁--- InterProcessMultiLock
 
 ## 参考
 
