@@ -120,8 +120,26 @@ redis-cli --cluster create 10.8.198.152:9851 10.8.198.152:9852 10.8.198.152:9853
 
 ![](redis-cluster-build/6.png)
 
+**模拟存入一个key，看是否存入且主从节气上都有对应的值**
 
+```java
+redisTemplate.opsForValue().set("name","myLive");
+```
 
-## 参考
+![](redis-cluster-build/8.png)
 
-- https://blog.csdn.net/qq_34002221/article/details/85011041
+可以发现，值已经存入了主从机器上。
+
+**模拟9852机器宕机后是否能实现故障转移**
+
+通过命令杀掉9852机器
+
+```
+[root@Slave3 redis]# kill -9 PID(9852对应的PID)
+```
+
+![9855成为新的master](redis-cluster-build/9.png)
+
+重新启动9852机器。
+
+![9852重新启动后成为9855的从服务器](redis-cluster-build/10.png)
