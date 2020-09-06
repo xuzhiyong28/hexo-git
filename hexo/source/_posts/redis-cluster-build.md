@@ -92,7 +92,7 @@ redis-server /etc/redis/9856/redis.conf
 
 Redis启动后，我们就可以开始配置集群，Redis高版本提供了--cluster命令可以很快速的的进行搭建和分槽
 
-```
+```shell
 redis-cli --cluster create 10.8.198.152:9851 10.8.198.152:9852 10.8.198.152:9853 10.8.198.152:9854 10.8.198.152:9855 10.8.198.152:9856 --cluster-replicas 1
 ```
 
@@ -134,7 +134,7 @@ redisTemplate.opsForValue().set("name","myLive");
 
 通过命令杀掉9852机器
 
-```
+```shell
 [root@Slave3 redis]# kill -9 PID(9852对应的PID)
 ```
 

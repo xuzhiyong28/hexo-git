@@ -25,7 +25,7 @@ date: 2020-09-02 11:13:00
 
 新增两个目录并修改其配置文件，如何修改参照上一篇文章。此时启动9857、9858后还没有加入到集群中。
 
-```
+```shell
 [root@Slave3 redis]# mkdir 9857
 [root@Slave3 redis]# mkdir 9858
 [root@Slave3 redis]# cp /etc/redis/9851/redis.conf /etc/redis/9857/
@@ -37,7 +37,7 @@ date: 2020-09-02 11:13:00
 
 ### **配置9857为集群主节点**
 
-```
+```shell
 redis-cli --cluster add-node 10.8.198.152:9857 10.8.198.152:9851
 ```
 
@@ -51,7 +51,7 @@ redis-cli --cluster add-node 10.8.198.152:9857 10.8.198.152:9851
 
 **重新分配集群上的槽给9857**
 
-```
+```shell
 redis-cli --cluster reshard 10.8.198.152:9851
 ```
 
@@ -69,7 +69,7 @@ all是随机的，比如说我们要分出1000个，则3个主节点分别拿出
 
 <font color=red>这种方案相对与上一种方案有缺陷，他只能迁移一个槽</font>
 
-```
+```shell
 redis-cli --cluster add-node 10.8.198.152:9857 10.8.198.152:9851
 ```
 
@@ -77,7 +77,7 @@ redis-cli --cluster add-node 10.8.198.152:9857 10.8.198.152:9851
 
 （1）先登录9851查看下要迁移的槽上有没有存了KEY，没有才能迁移
 
-```
+```shell
 #cluster getkeysinslot 槽道号 查找范围
 10.8.198.152:9851>cluster getkeysinslot 1000 2000
 (empty list or set)
@@ -93,7 +93,7 @@ redis-cli --cluster add-node 10.8.198.152:9857 10.8.198.152:9851
 
 （3）登录需要导出的节点9851，执行命令cluster setslot 槽道号 migrating 目标节点id，将9851节点上的460槽道的状态变更为migrating。
 
-```
+```shell
 10.8.198.152:9851>cluster setslot 1000 migrating 5e2af503c816eeff7ed2cfb2249f0ceb1f5306da
 ```
 
@@ -101,7 +101,7 @@ redis-cli --cluster add-node 10.8.198.152:9857 10.8.198.152:9851
 
 （4）通知进行迁移的两个节点槽道迁移了，使用命令**cluster setslot 槽道号 node 迁入节点id**，需要在两个节点上均进行操作。槽号1000就被迁移了。
 
-```
+```shell
 # 迁出节点9851上执行命令，后面跟的id为迁入节点的id
 [root@Slave3 redis]# redis-cli -p 9851 -h 10.8.198.152
 10.8.198.152:9851> cluster setslot 1000 node 5e2af503c816eeff7ed2cfb2249f0ceb1f5306da
@@ -142,13 +142,13 @@ af6115f83a145c63a75916608084712f96d44c34 10.8.198.152:9855@19855 slave f08cdba85
 
 首先先保证9857加入到集群了
 
-```
+```shell
  redis-cli --cluster add-node 10.8.198.152：9857 10.8.198.152：9851
 ```
 
 当前cluster nodes信息
 
-```
+```shell
 10.8.198.152:9851> cluster nodes
 5bc658cd4d8cc35097e0a79e140069262161b827 10.8.198.152:9855@19855 slave bb3900b30983e0b41ed48ffe4be0e2d52b4d89b4 0 1599040212180 5 connected
 a26317d89a7b09c0c9d77139cd8be94588c9b127 10.8.198.152:9853@19853 master - 0 1599040210000 3 connected 10923-16383
@@ -161,7 +161,7 @@ bb3900b30983e0b41ed48ffe4be0e2d52b4d89b4 10.8.198.152:9852@19852 master - 0 1599
 
 （1）检查654槽是否有数据
 
-```
+```shell
 #cluster getkeysinslot 槽道号 查找范围
 [root@Slave3 redis]# redis-cli -p 9851 -h 10.8.198.152
 10.8.198.152:9851> cluster getkeysinslot 654 2000
@@ -170,7 +170,7 @@ bb3900b30983e0b41ed48ffe4be0e2d52b4d89b4 10.8.198.152:9852@19852 master - 0 1599
 
 （2）登录需要导入的节点9857，执行命令cluster setslot 槽道号 importing 源节点id，将8000节点上654槽道的状态变更为importing。
 
-```
+```shell
 [root@Slave3 redis]# redis-cli -p 9857 -h 10.8.198.152
 10.8.198.152:9857> cluster setslot 654 importing 5015fbe7c523681a59e13f86f0ddc27b1ac542f8
 OK
@@ -178,7 +178,7 @@ OK
 
 （3）登录需要导出的节点9851，执行命令cluster setslot 槽道号 migrating 目标节点id，将9851节点上的654槽道的状态变更为migrating。
 
-```
+```shell
 [root@Slave3 redis]# redis-cli -p 9851 -h 10.8.198.152
 10.8.198.152:9851> cluster setslot 654 migrating 0a286334e831f426de9e30c7990cffb40a1e4102
 OK
@@ -195,14 +195,14 @@ OK
 - replace：如果添加此选项`migrate`不管目标Redis是否存在该键都会正常迁移进行数据覆盖
 - keys：如果要删除多个建，填写`keys key1 key2 key3`
 
-```
+```shell
 10.8.198.152:9851> migrate 10.8.198.152 9857 "" 0 1000 keys "\xac\xed\x00\x05t\x00\tkey_45618"
 OK
 ```
 
 （5）通知进行迁移的两个节点槽道迁移了，到了这一步这个和上面空槽道的迁移操作一样。
 
-```
+```shell
 10.8.198.152:9851> cluster setslot 654 node 0a286334e831f426de9e30c7990cffb40a1e4102
 OK
 10.8.198.152:9857> cluster setslot 654 node 0a286334e831f426de9e30c7990cffb40a1e4102
@@ -229,19 +229,19 @@ a26317d89a7b09c0c9d77139cd8be94588c9b127 10.8.198.152:9853@19853 master - 0 1599
 
 将9858也加入到集群中。
 
-```
+```shell
 redis-cli --cluster add-node 10.8.198.152:9858 10.8.198.152:9851
 ```
 
 登录9858客户端
 
-```
+```shell
 redis-cli -p 9858 -h 10.8.198.152
 ```
 
 指定9858为9857的从节点
 
-```
+```shell
 10.8.198.152:9858> cluster replicate 9857的ID
 ```
 
@@ -253,6 +253,6 @@ redis-cli -p 9858 -h 10.8.198.152
 
 ### 查看KEY在哪个槽上
 
-```
+```shell
 10.8.198.152:9851> cluster keyslot keyname
 ```
