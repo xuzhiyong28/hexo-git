@@ -326,6 +326,16 @@ private final boolean parkAndCheckInterrupt() {
 }
 ```
 
+**waitStatus状态**
+
+| 静态变量       | 值   | 描述                                           |
+| -------------- | ---- | ---------------------------------------------- |
+| Node.CANCELLED | 1    | 节点对应的线程已被取消                         |
+| Node.SIGNAL    | -1   | 表示后边的节点对应的线程处于等待状态           |
+| Node.CONDITION | -2   | 表示节点在等待队列中                           |
+| Node.PROPAGATE | -3   | 表示下一次共享式同步状态获取将被无条件传播下去 |
+| 无             | 0    | 初始状态                                       |
+
 这里解释一下整个acquireQueued过程，假设当前节点是节点1，在一开始，所有的`Node`节点的`waitStatus`都是`0`，所以在第一次调用`shouldParkAfterFailedAcquire`方法时，当前节点的前一个节点，也就是`0号节点`的`waitStatus`会被设置成`Node.SIGNAL`立即返回`false`，这个状态的意思就是说`0号节点`后边的节点都处于等待状态，现在的队列已经变成了这个样子。
 
 ![](java-aqs/2.jpg)
@@ -366,6 +376,52 @@ private void unparkSuccessor(Node node) {
         }
         if (s != null)
             LockSupport.unpark(s.thread);   //唤醒该节点对应的线程
+}
+```
+
+## ReentrantLock实现
+
+ReentrantLock内部使用了AQS实现加锁。看下非公平可重入方式是如何实现的。
+
+```java
+ 
+ static final class NonfairSync extends Sync {
+     private static final long serialVersionUID = 7316153563782823691L;
+     final void lock() {
+         //先CAS更新同步状态，如果获取成功就设置当前线程加锁
+         if (compareAndSetState(0, 1))
+             setExclusiveOwnerThread(Thread.currentThread());
+         else
+             //使用AQS
+             acquire(1);
+     }
+
+     protected final boolean tryAcquire(int acquires) {
+         return nonfairTryAcquire(acquires);
+     }
+ }
+
+
+final boolean nonfairTryAcquire(int acquires) {
+    final Thread current = Thread.currentThread();
+    int c = getState();
+    if (c == 0) {
+        //调用tryAcquire时判断下同步状态是不是为0，如果为0就CAS操作同步状态
+        //这里就是为什么是不公平锁的体现。
+        if (compareAndSetState(0, acquires)) {
+            setExclusiveOwnerThread(current);
+            return true;
+        }
+    }
+    //可重入的关键，如果是当前线程的话就操作同步状态+1
+    else if (current == getExclusiveOwnerThread()) {
+        int nextc = c + acquires;
+        if (nextc < 0) // overflow
+            throw new Error("Maximum lock count exceeded");
+        setState(nextc);
+        return true;
+    }
+    return false;
 }
 ```
 
