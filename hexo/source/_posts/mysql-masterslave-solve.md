@@ -143,6 +143,7 @@ cat mysql_bin_231_4.log | grep 'INSERT' | grep 'dir_visit_report' | wc -l
 - 优化网络
 - 业务上防止统一时间点大量更新操作
 - 修改binlog配置sync_binlog，innodb_flush_log_at_trx_commit (redo日志)
+- 使用混合模式复制的方式，通过binlog-format配置。项目上作者使用的是行模式，行模式的有点是能保证主从完全一致，但速度会比较慢。具体可以参考《[MYSQL中BINLOG_FORMAT的三种模式](https://www.cnblogs.com/xingyunfashi/p/8431780.html)》
 
 ### sync_binlog
 
