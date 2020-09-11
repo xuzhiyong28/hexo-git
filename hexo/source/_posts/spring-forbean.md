@@ -5,7 +5,7 @@ tags:
 categories: 
   - spring
 description : Spring循环依赖详解
-date: 2020-09-10 13:42:51
+date: 2020-05-10 13:42:51
 ---
 
 ### 什么是循环依赖
@@ -206,7 +206,43 @@ protected Object getEarlyBeanReference(String beanName, RootBeanDefinition mbd, 
 
 #### **为什么需要用到三级缓存？**
 
-待续
+如果按照上面的逻辑，完全可以将缓存放到二级缓存就好，为啥还要三级缓存呢。我们注意到三级缓存放的是bean工厂。具体方法如下。
+
+```java
+//将bean创建存入三级缓存
+addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+
+protected Object getEarlyBeanReference(String beanName, RootBeanDefinition mbd, Object bean) {
+	Object exposedObject = bean;
+	if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
+		for (BeanPostProcessor bp : getBeanPostProcessors()) {
+			if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
+                 // 这么一大段就这句话是核心，也就是当bean要进行提前曝光时，
+                 // 给一个机会，通过重写后置处理器的getEarlyBeanReference方法，来自定义操作bean
+                 // 值得注意的是，如果提前曝光了，但是没有被提前引用，则该后置处理器并不生效!!!
+                 // 这也正式三级缓存存在的意义，否则二级缓存就可以解决循环依赖的问题
+				SmartInstantiationAwareBeanPostProcessor ibp = (SmartInstantiationAwareBeanPostProcessor) bp;
+				exposedObject = ibp.getEarlyBeanReference(exposedObject, beanName);
+			}
+		}
+	}
+	return exposedObject;
+}
+```
+
+这个方法就是 Spring 为什么使用三级缓存，而不是二级缓存的原因，它的目的是为了后置处理，如果没有 AOP 后置处理，就不会走进 if 语句，直接返回了 exposedObject。
+
+然后我们看下**SmartInstantiationAwareBeanPostProcessor**这个后处理器，其实是用来做SpringAOP，事务使用代理对象的。我们都知道 **Spring AOP、事务**等都是通过代理对象来实现的，而**事务**的代理对象是由自动代理创建器来自动完成的。
+
+![](spring-forbean/5.png)
+
+所以为啥要用到三级缓存，假设beanA是用AOP代理的，当beanB属性赋值时要获取A时应该获取的是A的代理对象，此时就通过`singletonFactory.getObject()`获取到代理对象然后在存到二级缓存中。
+
+**为什么这么设计呢，即使有代理，在二级缓存代理也可以吧 | 为什么要使用三级缓存呢？**
+
+假设我们现在是二级缓存架构，创建A的时候，我们不知道有没有循环依赖，所以放入二级缓存提前暴露，接着创建B，也是放入二级缓存，这时候发现又循环依赖了A，就去二级缓存找，是有，但是如果此时还有AOP代理呢，我们要的是代理对象可不是原始对象，这怎么办，只能改逻辑，在第一步的时候，不管3721，所有Bean统统去完成AOP代理，如果是这样的话，就不需要三级缓存了，但是这样不仅没有必要，而且违背了Spring在结合AOP跟Bean的生命周期的设计。
+
+所以Spring“多此一举”的将实例先封装到ObjectFactory中（三级缓存），主要关键点在getObject()方法并非直接返回实例，而是对实例又使用SmartInstantiationAwareBeanPostProcessor的getEarlyBeanReference方法对bean进行处理，也就是说，当Spring中存在该后置处理器，所有的单例bean在实例化后都会被进行提前曝光到三级缓存中，但是并不是所有的bean都存在循环依赖，也就是三级缓存到二级缓存的步骤不一定都会被执行，有可能曝光后直接创建完成，没被提前引用过，就直接被加入到一级缓存中。因此可以确保只有提前曝光且被引用的bean才会进行该后置处理。
 
 ### 参考
 
