@@ -144,3 +144,58 @@ Set<BeanDefinitionHolder> processorDefinitions =
 - CommonAnnotationBeanPostProcessor，解析@Resource、@WebServiceRef、@EJB三个注解
 - EventListenerMethodProcessor
 - DefaultEventListenerFactory
+
+### ApplicationContextAwareProcessor
+
+ApplicationContextAwareProcessor是Spring启动后自动加载进去的后处理器。该类本身并没有扩展点，但是该类内部却有6个扩展点可供实现 ，这些类触发的时机在bean实例化之后，初始化之前。例如我们常用的ApplicationContextAware（我们经常实现ApplicationContextAware类来编写SpringUtils工具类，用来getBean）。
+
+```java
+//ApplicationContextAwareProcessor类中postProcessBeforeInitialization方法中的执行逻辑
+private void invokeAwareInterfaces(Object bean) {
+	if (bean instanceof EnvironmentAware) {
+		((EnvironmentAware) bean).setEnvironment(this.applicationContext.getEnvironment());
+	}
+	if (bean instanceof EmbeddedValueResolverAware) {
+		((EmbeddedValueResolverAware) bean).setEmbeddedValueResolver(this.embeddedValueResolver);
+	}
+	if (bean instanceof ResourceLoaderAware) {
+		((ResourceLoaderAware) bean).setResourceLoader(this.applicationContext);
+	}
+	if (bean instanceof ApplicationEventPublisherAware) {
+		((ApplicationEventPublisherAware) bean).setApplicationEventPublisher(this.applicationContext);
+	}
+	if (bean instanceof MessageSourceAware) {
+		((MessageSourceAware) bean).setMessageSource(this.applicationContext);
+	}
+    //判断Bean中是否有实现ApplicationContextAware接口的类，如果有就将applicationContext赋值进去。
+	if (bean instanceof ApplicationContextAware) {
+		((ApplicationContextAware) bean).setApplicationContext(this.applicationContext);
+	}
+}
+```
+
+```java
+@Component
+public class AppUtil implements ApplicationContextAware {
+    private static ApplicationContext applicationContext;
+    @Override
+    public void setApplicationContext(ApplicationContext arg0) throws BeansException {
+        //将ApplicationContext保存在静态变量中，后面就可以直接获取到spring上下文了。
+        applicationContext = arg0;
+    }
+
+    public static Object getBean(String id) {
+        Object object = null;
+        object = applicationContext.getBean(id);
+        return object;
+    }
+}
+```
+
+- EnvironmentAware，用于获取EnviromentAware的一个扩展类，这个变量非常有用， 可以获得系统内的所有参数。
+- EmbeddedValueResolverAware，用于获取StringValueResolver的一个扩展类， StringValueResolver用于获取基于String类型的properties的变量，一般我们都用@Value的方式去获取。
+- ResourceLoaderAware，用于获取ResourceLoader的一个扩展类，ResourceLoader可以用于获取classpath内所有的资源对象，可以扩展此类来拿到ResourceLoader对象。
+- ApplicationEventPublisherAware，用于获取ApplicationEventPublisher的一个扩展类。
+- MessageSourceAware，用于获取MessageSource的一个扩展类，MessageSource主要用来做国际化。
+- ApplicationContextAware，用来获取ApplicationContext上下文的一个扩展类。
+
