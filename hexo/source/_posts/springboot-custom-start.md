@@ -86,6 +86,7 @@ public @interface EnableAutoConfiguration {
 - @ConditionalOnNotWebApplication，不是web应用时才会实例化这个Bean。
 - @AutoConfigureAfter，在某个bean完成自动配置后实例化这个bean。
 - @AutoConfigureBefore，在某个bean完成自动配置前实例化这个bean。
+- @ConditionalOnProperty，当存在某个配置的时候才加载
 - @EnableConfigurationProperties(xxxProperties.class)，使@ConfigurationProperties注解生效，将yml或properties配置文件转换成bean。
 
 **具体分析下Redis配置类**
@@ -98,7 +99,7 @@ public @interface EnableAutoConfiguration {
 //将yml或properties文件的配置映射到RedisProperties.class类上
 @EnableConfigurationProperties(RedisProperties.class)
 //@Import作用就跟<import />标签作用一样，这里是表示在加载RedisAutoConfiguration这个配置类的时候
-//导入LettuceConnectionConfiguration这个配置类。
+//导入LettuceConnectionConfiguration这个配置类，最新的springboot使用lettuce作为redis的客户端
 @Import({ LettuceConnectionConfiguration.class, JedisConnectionConfiguration.class })
 public class RedisAutoConfiguration {
     //这里就是帮我们自动配置了RedisTemplate类，代码上就可以直接通过RedisTemplate进行代码编写
@@ -233,4 +234,18 @@ public class MybatisAutoConfiguration {
 
 ## 自定义一个起步依赖
 
-待续。。。
+在项目上Redis使用频繁，要求将Redis操作的工具类做成一个starter，让其他项目能够复用。
+
+1. 创建一个新项目 **xuzy-spring-redis-starter**
+2. 导入**spring-boot-starter-data-redis**依赖
+3. 创建**META-INF/spring.factories**文件并设置启动配置类。
+4. 创建启动配置类**RedisAutoConfig**
+
+![](springboot-custom-start/7.png)
+
+如果所示，我们参考Mybatis自动配置的方式。我们在配置类上使用了@AutoConfigureAfter(RedisTemplate.class)来保证当RedisTemplate被实例化后才加载工具类。最后我们通过@Bean注入了RedisUtil工具类。
+
+在实际项目上，我们可以根据自动配置条件依赖来更好的定义starter。上面的例子只是大概写一个过程。我们可以根据实际需要做配置。
+
+
+
