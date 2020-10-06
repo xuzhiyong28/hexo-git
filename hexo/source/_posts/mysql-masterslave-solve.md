@@ -20,7 +20,15 @@ date: 2020-08-19 15:25:29
 3. 从库的I/O Thread去请求主库的binlog，并将得到的binlog日志写到relay log文件中；
 4. 从库的SQL Thread会读取relay log文件中的日志解析成具体操作，将主库的DDL和DML操作事件重放。
 
+**详细过程**
+
+1. Slave上的IO进程连接到Master，并请求从指定日志文件的指定位置（或者从最开始的日志）之后的日志内容。
+2. Master接收到Slave的IO请求后，负责复制的进程会根据请求信息读取日志指定位置之后的日志信息，返回给Slave的IO进程。返回信息包括：**日志信息**，**Master的binlog文件名**，**本次返回的binlog的位置**
+3. Slave的IO进程接收到信息后，将接收到的日志内容依次添加到Slave端的relay-log文件的最末端。并且**将读取到的Master端的 bin-log的文件名和位置记录到master-info文件中**。
+4. Slave的SQL进程检测到relay-log中新增加了内容后，会马上解析relay-log的内容成为在Master端真实执行时候的那些可执行的内容，并在自身执行。
+
 SQL语言共分为四大类：查询语言DQL，控制语言DCL，操纵语言DML，定义语言DD
+
 - DQL：可以简单理解为SELECT语句；
 - DCL：GRANT、ROLLBACK和COMMIT一类语句；
 - DML：可以理解为CREATE一类的语句；
@@ -60,10 +68,11 @@ show slave status\G;
                   Master_Host: 主库IP
                   Master_User: repl_user
                   Master_Port: 主库端口
+                #重试时间，单位秒 默认60秒
                 Connect_Retry: 60
               #当前I/O线程正在读取的主服务器二进制日志文件的名称
               Master_Log_File: mysql-bin.000231
-          #当前I/O线程正在读取的二进制日志的位置
+          #同步读取二进制日志的位置，大于等于Exec_Master_Log_Pos
           Read_Master_Log_Pos: 211281725
           	   #当前slave SQL线程正在读取并执行的relay log的文件名
                Relay_Log_File: mysql-relay-bin.000230
@@ -97,7 +106,8 @@ show slave status\G;
         Seconds_Behind_Master: 0
 Master_SSL_Verify_Server_Cert: No
                 Last_IO_Errno: 0
-                Last_IO_Error: 
+                Last_IO_Error:
+                #代表最后一个执行的sql出错的原因
                Last_SQL_Errno: 0
                Last_SQL_Error: 
   Replicate_Ignore_Server_Ids: 
