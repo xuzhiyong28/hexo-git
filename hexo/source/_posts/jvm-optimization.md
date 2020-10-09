@@ -4,7 +4,7 @@ tags:
   - java并发
 categories:  java
 description : JVM参数详解和调优
-date: 2020-10-07 15:25:44
+date: 2020-05-07 15:25:44
 ---
 ## JVM常用参数
 ### 推大小设置
@@ -30,7 +30,28 @@ java -Xmx3550m -Xms3550m -Xss128k -XX:NewRatio=4 -XX:SurvivorRatio=4 -XX:MaxTenu
 
 ### 回收器
 
-xxx
+JVM垃圾回收器按照分类可以分成：串行收集器，并行收集器，并发收集器。
+
+- 串行收集器：一个GC线程进行回收，会暂停所有用户线程，不符合服务器环境。
+- 并行收集器：多个GC线程进行回收，会暂停所有用户线程，适用于大数据，科学计算处理场景。
+- 并发收集器(CMS)：用户线程和GC线程同事执行，不会暂停用户线程，适用于对响应时间要求高的场景。
+
+如何选择垃圾收集器，可以通过如下几点。
+
+1、单CPU小内存 : -XX:+UseSerialGC
+
+2、多CPU，需要大量运算：-XX:+UseParallelGC  -XX:+UseParallelOldGC
+
+3、多CPU，要求快速响应：-XX:+UseParNewGC  -XX:+UseConcMarkSweepGC
+
+在C/S架构中往往我们关注的是**响应时间**。并发收集器主要是保证系统的响应时间，减少垃圾收集时的停顿时间。所以我们一般使用的是并发收集器，也就是CMS。配置参考如下
+
+```shell
+-Xmx3550m -Xms3550m -Xmn2g -Xss128k -XX:ParallelGCThreads=20 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+UseCMSCompactAtFullCollection
+#-XX:+UseConcMarkSweepGC： 设置年老代为并发收集
+#-XX:+UseParNewGC: 设置年轻代为并行收集。
+#-XX:+UseCMSCompactAtFullCollection 打开对年老代的压缩。可能会影响性能，但是可以消除碎片
+```
 
 ### 日志和辅助设置
 
@@ -64,3 +85,9 @@ xxx
 - 设置老年代的大小（老年代：新生代=2：1）
 - 选择合适的GC收集器
 - 设置合适线程堆栈大小
+
+例如线上排查Full GC次数频繁。这就要知道什么时候对象会放到老年代。
+
+- YGC时，To Survivor区不足以存放存活的对象，对象会直接进入到老年代。这种情况可以适当加大Survivor区的大小。
+- 经过多次YGC后，如果存活对象的年龄达到了设定阈值，则会晋升到老年代中。这种情况属于对象存活太久，如果大对象在业务上不需要使用那么久最好能够用完即删。
+- 动态年龄判定规则，To Survivor区中相同年龄的对象，如果其大小之和占到了 To Survivor区一半以上的空间，那么大于此年龄的对象会直接进入老年代，而不需要达到默认的分代年龄。这种情况也是可以适当更改Survivor大小。
