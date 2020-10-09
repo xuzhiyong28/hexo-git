@@ -242,6 +242,41 @@ netstat -na |wc -l
 netstat -anp | grep 3306 | wc -l # 统计3306端口的连接数
 ```
 
+## Arthas使用
+
+Arthas是阿里巴巴出品的一款Java应用诊断利器。支持多种维度去诊断问题。具体使用可以直接看官网，写得很详细。
+
+官方文档 ： https://arthas.aliyun.com/zh-cn/
+
+### 线上服务平均响应时间太长，怎么排查？
+
+一般来说一个方法内部执行哪个方法耗时太长我们一般都是再代码上写
+
+```java
+long start = System.currentTimeMillis();
+doSome();
+System.out.println("doSome程序耗时 :" + (System.currentTimeMillis() - start) );
+```
+
+然而Arthas提供了trace命令帮助我们定位。假设我要定位一个Controller类中一个方法的耗时
+
+```shell
+trace --skipJDKMethod false com.xzy.springboot.springbootproject.controller.CommonController echo
+# com.xzy.springboot.springbootproject.controller.CommonController 类路径
+# echo 方法名
+```
+
+最终输出每个方法耗时
+
+```shell
+[arthas@16028]$ trace --skipJDKMethod false com.xzy.springboot.springbootproject.controller.CommonController echo
+Press Q or Ctrl+C to abort.
+Affect(class count: 1 , method count: 1) cost in 303 ms, listenerId: 1
+`---ts=2020-10-09 09:24:41;thread_name=http-nio-8080-exec-1;id=92;is_daemon=true;priority=5;TCCL=org.springframework.boot.web.embedded.tomcat.TomcatEmbeddedWebappClassLoader@4e93dcb9
+    `---[1.736869ms] com.xzy.springboot.springbootproject.controller.CommonController:echo()
+        `---[1.110086ms] org.slf4j.Logger:info() #14 
+```
+
 ## JVM调优命令 - jps
 
 可以列出本机所有java进程的pid.
