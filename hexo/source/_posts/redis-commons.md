@@ -4,7 +4,7 @@ tags:
   - redis
 categories: redis
 description : 主要用来记录Redis常用命令的记录，方便查询
-date: 2020-10-03 08:32:58
+date: 2019-10-03 08:32:58
 ---
 
 ### key常用操作
