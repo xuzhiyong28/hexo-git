@@ -178,3 +178,41 @@ cat mysql_bin_231_4.log | grep 'INSERT' | grep 'dir_visit_report' | wc -l
 1 ： 提交事务的时候，就必须把 redo log 从内存刷入到磁盘文件里去，只要事务提交成功，那么 redo log 就必然在磁盘里了
 
 2 ：提交事务的时候，把 redo 日志写入磁盘文件对应的 os cache 缓存里去，而不是直接进入磁盘文件，可能 1 秒后才会把 os cache 里的数据写入到磁盘文件里去
+
+## Mysql主从同步宕机恢复流程
+
+主从同步宕机是很常见的一种错误。下面分析几种情况的解决方法。
+
+### 从机宕机恢复
+
+丛机宕机后不在主节点获取数据入库，造成数据不一致。如果要让从机重新同步需要分两种情况：
+
+**从节点宕机时间短，主节点的binlog日志没变**
+
+这种情况下，假设从节点没宕机前是从主节点的mysqlmaster-bin.0010的binlog文件上同步数据，在我们发现从节点宕机后准备重新同步时，可以观察下当前时刻主节点是否还是使用mysqlmaster-bin.0010文件记录日志。如果是则可以直接重启从机的同步命令。
+
+这种情况下Mysql的从节点是可以知道从哪个Position开始同步出错的，所以主要重启就可以重新同步。
+
+```shell
+start slave;
+```
+
+如何确定是否是同一个binlog。可以通过查看主节点和从节点当前使用的binlog信息。
+
+```
+mysql> show slave status\G; #登陆从节点查看主从同步信息
+mysql> show master status;  #登陆主节点查看binlog信息
+```
+
+**从节点宕机时间长，主节点的binlog日志已变化**
+
+这种情况下从节点无法知道是从哪个binlog日志的哪个position上开始不执行同步的。这种情况下最好是**重新做同步**。步骤如下
+
+1. 对主库锁表 flush tables with read lock;
+2. 主库把数据备份到mysql.bak.sql文件（备份的时候可以指定重新刷新binlog文件,所以binlog文件就是最新的position很小）
+3. 从库导入mysql.bak.sql
+4. 从库重新设定同步
+
+```sql
+change master to master_host = 'IP', master_user = 'root', master_port=3306, master_password='', master_log_file = 'mysqld-bin.000001', master_log_pos=3260;
+```

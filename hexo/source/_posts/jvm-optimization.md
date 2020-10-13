@@ -7,14 +7,15 @@ description : JVM参数详解和调优
 date: 2020-05-07 15:25:44
 ---
 ## JVM常用参数
-### 推大小设置
+### 推和栈大小设置
 
 ```shell
--Xms: 初始堆大小
--Xmx: 最大堆大小
+-Xms1024M: 初始堆大小
+-Xmx1024M: 最大堆大小
 -XX:NewSize=n: 设置年轻代大小
 -XX:NewRatio=n: 设置年轻代和年老代的比值。如:为3，表示年轻代与年老代比值为1：3，年轻代占整个年轻代年老代和的1/4
 -XX:SurvivorRatio=n: 年轻代中Eden区与两个Survivor区的比值。注意Survivor区有两个。如：3，表示Eden：Survivor=3：2，一个Survivor区占整个年轻代的1/5
+-Xss256K: 栈大小设置
 -XX:MetaspaceSize=n 元空间初始大小
 -XX:MaxMetaspaceSize=n 元空间最大大小
 ```
@@ -56,6 +57,17 @@ JVM垃圾回收器按照分类可以分成：串行收集器，并行收集器�
 ### 日志和辅助设置
 
 日志相关参考另外一篇博客：[GC日志详解](https://xuzyblog.top/2019/02/18/gc-log/)
+
+另外一些辅助类的配置，笔者项目中配置的一些优化。
+
+这里顺便说下 : **-XX:+ 这种表示开启什么配置，-XX:- 表示关闭什么配置**
+
+```shell
+-XX:+DisableExplicitGC #加了这个配置后，再代码上使用System.gc()将不会生效，System.gc()会出发FullGC
+-XX:+UseCompressedOops #开启压缩指针，例如压缩指针对象头。开启后可以节省一定的内存空间
+-XX:+CMSParallelRemarkEnabled #降低标记停顿
+-XX:CMSInitiatingOccupancyFraction=70 #使用cms作为垃圾回收,使用70％后开始CMS收集
+```
 
 ## JVM调优
 
