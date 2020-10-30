@@ -140,3 +140,106 @@ private E dequeue() {
 
 总结：ArrayBlockingQueue使用有界数组作为队列容器，采用ReentrantLock重入锁对入队和出队操作加锁保证线程安全，由于入队和出队操作采用的是同一把锁，所以再效率上相对较差。采用Condition实现队列满和空时的消息通知。
 
+## LinkedBlockingQueue
+
+#### 定义
+
+特点 ：一个由 <font color=red>单链表</font> 实现的<font color=red>似无界</font>，<font color=red>阻塞</font>，<font color=red>线程安全</font>，<font color=red>FIFO（先进先出）</font>队列。这里解释下似无界的意思，LinkedBlockingQueue阻塞队列允许传入一个容量，如果不传容量则默认容量是`Integer.MAX_VALUE`。所以他其实也算是一个无界队列了。
+
+**属性字段**，往往了解属性字段可以大概猜测出他的实现逻辑
+
+```java
+// 容量
+private final int capacity;
+// 实际元素数量,这里为啥要用原子类，后面说
+private final AtomicInteger count = new AtomicInteger();
+// 链表头
+transient Node<E> head;
+// 链表尾
+private transient Node<E> last;
+// 出队的锁
+private final ReentrantLock takeLock = new ReentrantLock();
+// notEmpty条件
+// 出列条件，如果队列为空，会执行notEmpty.await()阻塞消费者队列
+private final Condition notEmpty = takeLock.newCondition();
+// 入队的锁
+private final ReentrantLock putLock = new ReentrantLock();
+// notFull条件
+// 入列条件，如果队列满，会执行notFull.await()阻塞生产者队列
+private final Condition notFull = putLock.newCondition();
+
+static class Node<E> {
+    E item;
+    Node<E> next;
+    Node(E x) { item = x; }
+}
+```
+
+#### 图解
+
+先看下入队出队的代码。
+
+```java
+//=============================入队代码=====================================
+public void put(E e) throws InterruptedException {
+    if (e == null) throw new NullPointerException();
+    int c = -1;
+    Node<E> node = new Node<E>(e);
+    final ReentrantLock putLock = this.putLock;
+    final AtomicInteger count = this.count;
+    putLock.lockInterruptibly();
+    try {
+        while (count.get() == capacity) {
+            notFull.await();
+        }
+        enqueue(node);
+        //入队时通过CAS操作来++count
+        c = count.getAndIncrement();
+        //这里其实是做了一个优化，当实际的元素个数小于容量时，这时候是允许入队的，所以这里唤醒一下看看
+        if (c + 1 < capacity)
+            notFull.signal();
+    } finally {
+        putLock.unlock();
+    }
+    if (c == 0)
+        signalNotEmpty(); //唤醒消费者 notEmpty.signal()
+}
+
+private void enqueue(Node<E> node) {
+    last = last.next = node;
+}
+
+//==========================出队代码============================
+public E take() throws InterruptedException {
+    E x;
+    int c = -1;
+    final AtomicInteger count = this.count;
+    final ReentrantLock takeLock = this.takeLock;
+    takeLock.lockInterruptibly();
+    try {
+        while (count.get() == 0) {
+            notEmpty.await();
+        }
+        x = dequeue();
+        c = count.getAndDecrement();
+        if (c > 1)
+            notEmpty.signal();
+    } finally {
+        takeLock.unlock();
+    }
+    if (c == capacity)
+        signalNotFull();
+    return x;
+}
+
+private E dequeue() {
+    Node<E> h = head;
+    Node<E> first = h.next;
+    h.next = h; // help GC
+    head = first;
+    E x = first.item;
+    first.item = null;
+    return x;
+}
+```
+
