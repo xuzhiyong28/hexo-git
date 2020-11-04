@@ -34,8 +34,6 @@ JDK中阻塞队列（BlockingQueue）的实现类如下 ：ArrayBlockingQueue，
 
 ## ArrayBlockingQueue
 
-#### 定义
-
 特点 ：一个由 <font color=red>数组</font> 实现的<font color=red>有界</font>，<font color=red>阻塞</font>，<font color=red>线程安全</font>，<font color=red>FIFO（先进先出）</font>队列。
 
 ```java
@@ -71,8 +69,6 @@ public ArrayBlockingQueue(int capacity, boolean fair) {
     notFull =  lock.newCondition();
 }
 ```
-
-#### 图解入队出队过程
 
 我们首先先看下出队和入队的代码实现。
 
@@ -140,10 +136,8 @@ private E dequeue() {
 
 总结：ArrayBlockingQueue使用有界数组作为队列容器，采用ReentrantLock重入锁对入队和出队操作加锁保证线程安全，由于入队和出队操作采用的是同一把锁，所以再效率上相对较差。采用Condition实现队列满和空时的消息通知。
 
+
 ## LinkedBlockingQueue
-
-#### 定义
-
 特点 ：一个由 <font color=red>单链表</font> 实现的<font color=red>似无界</font>，<font color=red>阻塞</font>，<font color=red>线程安全</font>，<font color=red>FIFO（先进先出）</font>队列。这里解释下似无界的意思，LinkedBlockingQueue阻塞队列允许传入一个容量，如果不传容量则默认容量是`Integer.MAX_VALUE`。所以他其实也算是一个无界队列了。
 
 **属性字段**，往往了解属性字段可以大概猜测出他的实现逻辑
@@ -174,8 +168,6 @@ static class Node<E> {
     Node(E x) { item = x; }
 }
 ```
-
-#### 图解
 
 先看下入队出队的代码。
 
@@ -242,4 +234,63 @@ private E dequeue() {
     return x;
 }
 ```
+
+从代码层面，我们大概知道如下几点：
+
+- 入队和出队使用的不同的锁，分别是putLock,takeLock。也就是说入队和出队操作互不阻塞，多个线程的入队或者多个线程的出队相互阻塞。
+- 记录队列元素个数的值用原子类(AtomicInteger)记录，由于入队和出队操作互不阻塞，所以count++会有线程安全问题，所以采用CAS方式，保证线程安全的同时又性能高。
+
+![LinkedBlockingQueue出入队图解](blockingqueue/5.png)
+
+**ArrayBlockingQueue和LinkedBlockingQueue区别**
+
+- 结构上
+  - 一个是有界数组结构。一个是单链表结构，至于有不有界看开发者怎么用。
+- 性能上
+  - ArrayBlockingQueue使用的是一个锁控制入队和出队，同一时刻入队出队阻塞。LinkedBlockingQueue使用两个锁分别控制入队和出队，同一时刻入队出队不阻塞，性能更高。
+  - ArrayBlockingQueue使用的是数组结构，LinkedBlockingQueue使用的单链表结构，占用内存的话ArrayBlockingQueue占用更小。
+
+## PriorityBlockingQueue
+
+特点 ：一个由 <font color=red>数组</font> 实现的<font color=red>无界</font>，<font color=red>可扩容</font>，<font color=red>优先级</font>，<font color=red>阻塞</font>，<font color=red>线程安全</font>，<font color=red>FIFO（先进先出）</font>队列。
+
+PriorityBlockingQueue优先级队列属性字段
+
+```java
+// 默认容量为11
+private static final int DEFAULT_INITIAL_CAPACITY = 11;
+// 最大数组大小
+private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+// 存储元素的地方
+private transient Object[] queue;
+// 元素个数
+private transient int size;
+// 比较器
+private transient Comparator<? super E> comparator;
+// 重入锁
+private final ReentrantLock lock;
+// 非空条件
+private final Condition notEmpty;
+// 扩容的时候使用的控制变量，CAS更新这个值，谁更新成功了谁扩容，其它线程让出CPU
+private transient volatile int allocationSpinLock;
+// 不阻塞的优先级队列，非存储元素的地方，仅用于序列化/反序列化时
+private PriorityQueue<E> q;
+
+public PriorityBlockingQueue(int initialCapacity,
+                             Comparator<? super E> comparator) {
+    if (initialCapacity < 1)
+        throw new IllegalArgumentException();
+    this.lock = new ReentrantLock();
+    this.notEmpty = lock.newCondition();
+    this.comparator = comparator;
+    this.queue = new Object[initialCapacity];
+}
+```
+
+从字段上可以看出。
+
+- PriorityBlockingQueue底层使用的是数组结构存储元素。
+- 使用一个锁加一个notEmpty条件来保证并发安全。为啥只有一个notEmtry，是因为它是可扩容的，不存在队列满的情况。
+- 使用一个变量allocationSpinLock的CAS操作来控制扩容。
+- PriorityBlockingQueue的构造函数需要Comparator，所以它支持对元素进行排序。
 
