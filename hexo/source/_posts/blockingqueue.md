@@ -267,7 +267,7 @@ private transient Object[] queue;
 private transient int size;
 // 比较器
 private transient Comparator<? super E> comparator;
-// 重入锁
+// 重入锁 跟ArrayBlockingQueue一样也是只用一把锁
 private final ReentrantLock lock;
 // 非空条件
 private final Condition notEmpty;
@@ -287,10 +287,82 @@ public PriorityBlockingQueue(int initialCapacity,
 }
 ```
 
-从字段上可以看出。
+**入库出库代码**
+
+```java
+//======================插入元素============================
+public void put(E e) {
+    offer(e);
+}
+
+public boolean offer(E e) {
+    if (e == null)
+        throw new NullPointerException();
+    final ReentrantLock lock = this.lock;
+    lock.lock();
+    int n, cap;
+    Object[] array;
+    while ((n = size) >= (cap = (array = queue).length))
+    	//扩容
+        tryGrow(array, cap);
+    try {
+        Comparator<? super E> cmp = comparator;
+        //自下而上的堆化
+        if (cmp == null)
+            siftUpComparable(n, e, array); //按照默认的排序方式堆化
+        else
+            siftUpUsingComparator(n, e, array, cmp); //按照自定义的排序方式堆化
+        size = n + 1;
+        notEmpty.signal();
+    } finally {
+        lock.unlock();
+    }
+    return true;
+}
+
+//======================删除元素============================
+public E take() throws InterruptedException {
+    final ReentrantLock lock = this.lock;
+    lock.lockInterruptibly();
+    E result;
+    try {
+        while ( (result = dequeue()) == null)
+            notEmpty.await();
+    } finally {
+        lock.unlock();
+    }
+    return result;
+}
+
+private E dequeue() {
+    int n = size - 1;
+    if (n < 0)
+        return null;
+    else {
+        Object[] array = queue;
+        E result = (E) array[0]; //出队取堆顶元素
+        E x = (E) array[n]; // 把堆尾元素拿到堆顶
+        array[n] = null;
+        Comparator<? super E> cmp = comparator;
+        // 并做自上而下的堆化
+        if (cmp == null)
+            siftDownComparable(0, x, array, n);
+        else
+            siftDownUsingComparator(0, x, array, n, cmp);
+        size = n;
+        return result;
+    }
+}
+```
 
 - PriorityBlockingQueue底层使用的是数组结构存储元素。
 - 使用一个锁加一个notEmpty条件来保证并发安全。为啥只有一个notEmtry，是因为它是可扩容的，不存在队列满的情况。
 - 使用一个变量allocationSpinLock的CAS操作来控制扩容。
-- PriorityBlockingQueue的构造函数需要Comparator，所以它支持对元素进行排序。
+- PriorityBlockingQueue的构造函数需要Comparator，所以它支持对元素进行排序（堆排序）。
+- 堆的知识点：[堆（排序）](https://mp.weixin.qq.com/s?__biz=MzkxNDEyOTI0OQ==&mid=2247484450&amp;idx=1&amp;sn=2be695dbf92e1e209a405422e8da5616&source=41#wechat_redirect)。
+- 每次入队操作和出队操作都需要做堆化，入队采用自下而上堆化，出队采用自上而下堆化。
+- 每次出队都是取堆顶元素，因为每次堆化后堆顶元素都是最大(最小)的值。
 
+![PriorityBlockingQueue入队](blockingqueue/6.png)
+
+![PriorityBlockingQueue出队](blockingqueue/7.png)
