@@ -248,7 +248,7 @@ private E dequeue() {
   - 一个是有界数组结构。一个是单链表结构，至于有不有界看开发者怎么用。
 - 性能上
   - ArrayBlockingQueue使用的是一个锁控制入队和出队，同一时刻入队出队阻塞。LinkedBlockingQueue使用两个锁分别控制入队和出队，同一时刻入队出队不阻塞，性能更高。
-  - ArrayBlockingQueue使用的是数组结构，LinkedBlockingQueue使用的单链表结构，占用内存的话ArrayBlockingQueue占用更小。
+  - ArrayBlockingQueue使用的是数组结构，LinkedBlockingQueue使用的单链表结构，在入队和出队需要创建/回收节点，从而需要GC的操作。
 
 ## PriorityBlockingQueue
 
@@ -366,3 +366,17 @@ private E dequeue() {
 ![PriorityBlockingQueue入队](blockingqueue/6.png)
 
 ![PriorityBlockingQueue出队](blockingqueue/7.png)
+
+## ConcurrentLinkedQueue
+
+特点 ：一个由 <font color=red>单链表</font> 实现的<font color=red>无界</font>，<font color=red>非阻塞（采用CAS）</font>，<font color=red>线程安全</font>，<font color=red>FIFO（先进先出）</font>队列，适合高并发场景。
+
+ArrayBlockingQueue或者LinkedBlockingQueue在多个线程入队或出队时都需要阻塞线程，就涉及到了多了线程挂起和上下文切换的开销，所以相对于CAS性能差，而ConcurrentLinkedQueue采用CAS的方式，提高了吞吐量。但是我们知道CAS有缺点，其中一个就是CAS自旋CAS如果长时间不成功，会给CPU带来非常大的执行开销。所以我们在选择队列时应考虑到实际场景做出选择。
+
+(ConcurrentLinkedQueue源码比较难懂，具体源码分析可以看其他大神的分析：[J.U.C之Java并发容器：ConcurrentLinkedQueue](http://cmsblogs.com/?p=2353))
+
+| queue                 | 阻塞与否 | 是否有界 | 线程安全保障  | 适用场景                       | 注意事项                      |
+| --------------------- | -------- | -------- | ------------- | ------------------------------ | ----------------------------- |
+| ArrayBlockingQueue    | 阻塞     | 有界     | 一把全局锁    | 生产消费模型，平衡两边处理速度 | --                            |
+| LinkedBlockingQueue   | 阻塞     | 可配置   | 存取采用2把锁 | 生产消费模型，平衡两边处理速度 | 无界的时候注意内存溢出问题    |
+| ConcurrentLinkedQueue | 非阻塞   | 无界     | CAS           | 需要高并发队列的场景           | size() 是要遍历一遍集合，慎用 |
