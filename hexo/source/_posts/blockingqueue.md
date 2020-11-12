@@ -20,7 +20,7 @@ Java中的`BlockingQueue`接口是一个线程安全的存取队列。继承Queu
 | 移除方法 | remove(o) | poll()     | take(o)  | poll(o, timeout, timeunit)  |
 | 检查方法 | element() | peek()     | —        | —                           |
 
-
+<!--more-->
 
 - 抛出异常。当阻塞队列满时候，再往队列里插入元素，会抛出IllegalStateException("Queue full")异常。当队列为空时，从队列里获取元素时会抛出NoSuchElementException异常。
 - 返回特殊值。
