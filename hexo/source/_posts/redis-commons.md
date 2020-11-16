@@ -34,7 +34,7 @@ $ localhost:6379> TTL t1
 $ localhost:6379> type t1
 string
 ```
-
+<!--more-->
 ### kv结构
 
 ```properties

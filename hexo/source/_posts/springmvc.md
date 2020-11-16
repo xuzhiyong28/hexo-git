@@ -31,7 +31,7 @@ date: 2020-01-01 16:02:20
 </bean>
 </beans>
 ```
-
+<!--more-->
 2.新建springmvc.xml配置文件
 
 ```java

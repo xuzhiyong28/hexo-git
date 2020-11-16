@@ -17,7 +17,7 @@ redis集群是一个由多个主从节点群组成的分布式服务器群，它
 - Redis集群槽的范围是0 -16383（2^4 * 2^10）。
 
 ![RedisCluster架构图](redis-cluster-build/1.png)
-
+<!--more-->
 redis集群搭建如上图所示，通过多个master节点实现高性能，每个master下设置salve来实现高可用。
 - 当集群性能不够时，可通过增加新的master来实现更高的性能。
 - 当master宕机时，redis集群能实现自动的故障转移来保证高可用。

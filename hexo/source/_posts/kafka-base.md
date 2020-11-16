@@ -1,5 +1,5 @@
 ---
-title: Kafka概念与架构知识点汇总
+title: Kafka概念与架构知识点汇总（一）
 tags:
   - kafka
 categories:  kafka
@@ -26,7 +26,8 @@ Kafka是一个**分布式**，**分区**，**多副本**，**发布-订阅模式
 - LogSegemnt（数据段），消息的持久化方式。
 - AR（Assigned Repllicas），分区中的所有副本统称为AR。
 - ISR（in-sync Replica），所有与leader副本保持一定程度同步的副本（包括Leader）称之为ISR。
-
+- Controller（控制者），负责管理整个集群中分区和副本的状态。
+<!--more-->
 ### 关系解析
 
 **Topic（主题）和 Partition（分区）**
@@ -42,6 +43,10 @@ Kafka是一个**分布式**，**分区**，**多副本**，**发布-订阅模式
 一个消费者组里有一个或多个消费者。一个分区只能被同一个消费者组的其中一个消费者消费，不能被同一个消费者组的多个消费者同时消费。假设一个主题有3个分区，一个消费者组有4个消费者，那么将有一个消费者无法消费。
 
 ![kafka关系图解](kafka-base/1.png)
+
+**Controller（控制者）和 Broker（服务器）**
+
+Kafka集群中多个broker，有一个会被选举为Controller leader，Controller负责管理整个集群中分区和副本的状态，比如partition的leader 副本故障，由controller 负责为该partition重新选举新的leader 副本；当检测到ISR列表发生变化，有controller通知集群中所有broker更新其MetadataCache信息；或者增加某个topic分区的时候也会由controller管理分区的重新分配工作。
 
 ## 架构
 
@@ -68,6 +73,20 @@ Kafka的消息组织方式实际上是三级结构：主题-分区-消息。主�
 ### 副本机制
 
 Kafka中一个分区上有多个副本。提供数据冗余实现高可用性和高持久性。在Kafka中，副本分成两类：领导者副本（Leader Replica）和追随者副本（Follower Replica）。每个分区在创建时都要选举一个副本，称为领导者副本，其余的副本自动称为追随者副本（<font color=red>追随者副本是不对外提供服务</font>）。
+
+**如何将所有Replica均匀分布到整个集群？**
+
+为了更好的做负载均衡，Kafka尽量将所有的Partition均匀分配到整个集群上。假设一个集群由3台Broker，3个分区，6个副本，那么一个分区对应2个副本。如果一个分区的副本同时在一台Broker将达不到高可用。所以需要按照一定的算法将不同的副本分配到不同的Broker上，Kafka分配Replica的算法如下 ：
+
+1. 将所有Broker（假设共n个Broker）和待分配的Partition排序。
+2. 将第i个Partition分配到第（i mod n）个Broker上。
+3. 将第i个Partition的第j个Replica分配到第（(i + j) mode n）个Broker上。
+
+### 消息传递策略
+
+Producer在发布消息到某个Partition时，先通过ZooKeeper找到该Partition的Leader，然后无论该Topic的Replication Factor为多少，Producer只将该消息发送到该Partition的Leader。Leader会将该消息写入其本地Log。每个Follower都从Leader pull数据。这种方式上，Follower存储的数据顺序与Leader保持一致。Follower在收到该消息并写入其Log后，向Leader发送ACK。一旦Leader收到了ISR中的所有Replica的ACK，该消息就被认为已经commit了，Leader将增加HW并且向Producer发送ACK。
+
+为了提高性能，每个Follower在接收到数据后就立马向Leader发送ACK，而非等到数据写入Log中。因此，对于已经commit的消息，Kafka只能保证它被存于多个Replica的内存中，而不能保证它们被持久化到磁盘中，也就不能完全保证异常发生后该条消息一定能被Consumer消费。
 
 ## 附录
 

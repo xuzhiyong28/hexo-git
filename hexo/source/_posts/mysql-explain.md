@@ -29,7 +29,7 @@ date: 2020-07-31 17:34:03
 | Extra         | 额外的一些信息                                         |
 
 为了事情的发展，我们新建几张表方便后面讲解...
-
+<!--more-->
 ```sql
 CREATE TABLE `s1` (
   `id` int(11) NOT NULL AUTO_INCREMENT,

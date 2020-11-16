@@ -17,7 +17,7 @@ date: 2019-02-18 17:14:00
 | -XX:+PrintHeapAtGC     | 在进行GC的前后打印出堆的信息                                 |
 | -Xloggc:D:/gc.log      | 日志文件的输出路径                                           |
 | -XX:+PrintGC           | 输出GC日志                                                   |
-
+<!--more-->
 ## YGC日志详解
 
 ### 参数配置

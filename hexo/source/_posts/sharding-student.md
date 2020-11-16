@@ -22,6 +22,7 @@ select * from ips where flowtime = '20181202';
 ```
 select * from `sharding_2018`.ips_12 where flowtime = '20181202';
 ```
+<!--more-->
 #### 具体实现
 ##### maven导出具体sharding需要的包
 ```

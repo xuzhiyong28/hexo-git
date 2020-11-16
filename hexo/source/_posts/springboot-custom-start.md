@@ -18,7 +18,7 @@ SpringBoot采用了“习惯优于配置”的理念，没有了繁琐的配置�
     <artifactId>spring-boot-starter-data-redis</artifactId>
 </dependency>
 ```
-
+<!--more-->
 类似的这种起步依赖大大降低了我们的配置成本。在SpringBoot中大概分成两类起步依赖：**SpringBoot自带起步依赖** 和 **开发者自带起步依赖**。
 
 - spring-boot-starter-xxx是官方提供的starter。

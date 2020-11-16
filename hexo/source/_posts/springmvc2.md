@@ -19,7 +19,7 @@ date: 2020-01-04 00:00:20
 - ViewResolver 会根据逻辑 View 查找实际的 View
 - DispaterServlet 把返回的 Model 传给 View（视图渲染）
 - 把 View 返回给请求者（浏览器）
-
+<!--more-->
 ### 流程分析
 
 <font size=4 color=red>第一步：客户端（浏览器）发送请求，直接请求到DispatcherServlet</font>

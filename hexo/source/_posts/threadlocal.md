@@ -8,7 +8,7 @@ date: 2020-08-12 13:57:14
 ---
 ## ThreadLocal是什么
 ThreadLocal是JAVA线程安全提供的一个工具类，用来存放线程的局部变量，使用他可以为每个线程创建一个副本，线程间可以独立改变自己线程的这个这个变量而不影响其他线程，相对于使用加锁会会导致线程阻塞从而影响性能，ThreadLocal采用了一种"以空间换时间"的方式来达到线程的安全。
-
+<!--more-->
 ```java
 import org.junit.Test;
 import java.util.concurrent.TimeUnit;

@@ -16,7 +16,6 @@ Mysql锁主要是为了解决多事务并发带来的问题。多事务并发分
 - 读写，Innodb中读操作利用多版本控制并发（MVCC），写操作使用锁来控制。
 
 InnoDB锁官方文档地址 ：[InnoDB Locking Doc](https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html#innodb-shared-exclusive-locks)。锁作为MySQL一个很重要的知识点，虽然有隐式加锁解锁的存在开发人员很少涉及到，但了解锁对开发尤为重要，不然遇到死锁问题都不知道哪里出现问题了。
-
 ### 锁类型与上锁方式
 
 在MySQL中，锁按照类型划分可以分成 ：表锁，行锁（本文重点），页锁。

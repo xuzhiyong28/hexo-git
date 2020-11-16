@@ -18,7 +18,7 @@ date: 2020-09-13 11:24:54
 
 - postProcessBeanDefinitionRegistry(BeanDefinitionRegistry beanDefinitionRegistry)，该方法用来注册更多的bean到spring容器中。
 - postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)，主要用来对已注册BeanDefinition做一些改变。
-
+<!--more-->
 具体源码
 
 ```java

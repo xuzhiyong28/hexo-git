@@ -21,7 +21,7 @@ date: 2020-07-28
 HashMap采用了散列表结构，结合了数组和链表的优点。
 
 ![HashMap结构](hashmap/1.png)
-
+<!--more-->
 ### 什么是哈希？
 
 Hash也称之为散列。基本原理是把<font color=red>任意长度</font>的输入，通过Hash算法变成<font color=red>固定长度</font>的输出。这个映射的规则就是对应的<font color=red>Hash算法</font>，而原始数据映射后的<font color=red>二进制串</font>就是哈希值。

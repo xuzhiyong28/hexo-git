@@ -31,7 +31,7 @@ public static void main(String[] args){
     SingletonOne singletonOne = SingletonOne.getInstance();
 }
 ```
-
+<!--more-->
 缺陷 ：
 
 - 不支持多线程，在并发环境下会导致创建多个实例

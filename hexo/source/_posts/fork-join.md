@@ -17,7 +17,7 @@ Fork/Join框架是Java 7提供的一个用于并行执行任务的框架，是�
 ### 使用场景
 
 ForkJoinPool 不是为了替代 ExecutorService，而是它的补充，在某些应用场景下性能比 ExecutorService 更好。FokJoinPool主要适用于<font color=red>计算密集型的任务</font>。例如对一个大数组求和，排序等场景。
-
+<!--more-->
 ## 如何使用Fork/Join框架？
 
 使用Fork/Join框架，首先需要创建一个ForkJoin任务。该类提供了在任务中执行fork和join的机制。通常情况下我们不需要直接集成ForkJoinTask类，只需要继承它的子类，Fork/Join框架提供了两个子类:

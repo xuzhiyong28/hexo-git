@@ -19,7 +19,7 @@ date: 2020-08-19 15:25:29
 2. 主库生成一个 log dump 线程，用来给从库I/O线程读取binlog；
 3. 从库的I/O Thread去请求主库的binlog，并将得到的binlog日志写到relay log文件中；
 4. 从库的SQL Thread会读取relay log文件中的日志解析成具体操作，将主库的DDL和DML操作事件重放。
-
+<!--more-->
 **详细过程**
 
 1. Slave上的IO进程连接到Master，并请求从指定日志文件的指定位置（或者从最开始的日志）之后的日志内容。

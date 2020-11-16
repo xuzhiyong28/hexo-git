@@ -21,7 +21,7 @@ Redis Sentinel功能包括 ：
 ![redis哨兵架构图](redis-sentinel/1.png)
 
 所以说，本身redis哨兵也是一个<font color=red>分布式集群系统</font>。
-
+<!--more-->
 ## Redis哨兵配置
 
 ```properties

@@ -18,7 +18,7 @@ top - 14:46:47 up 909 days,  3:15,  1 user,  load average: 1.80, 1.50, 1.37
 - 1 user 表示当前登录的用户数量
 - load average: 1.80, 1.50, 1.37 表示当前系统5分钟;10分钟;15分钟的负载
 <font color=red>load average数据是每隔5秒钟检查一次活跃的进程数，然后按特定算法计算出的数值。如果这个数除以逻辑CPU的数量，结果高于5的时候就表明系统在超负荷运转了。</font>
-
+<!--more-->
 #### 第二行：任务信息
 ```shell
 Tasks: 652 total,   1 running, 651 sleeping,   0 stopped,   0 zombie
@@ -288,7 +288,7 @@ Affect(class count: 1 , method count: 1) cost in 303 ms, listenerId: 1
 监控堆内存的用量和GC情况。
 使用格式如下 : jstat -gc PID 1000 20 # 表示使用-gc的方式打印PID的情况，间隔1000ms，打印20次
 
-![ jstat -gc命令](linux-top/4.png)
+![ jstat -gc命令](linux-top/5.png)
 
 -gc 对应输出结果详解
 

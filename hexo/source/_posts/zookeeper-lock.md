@@ -23,7 +23,7 @@ date: 2020-08-27 17:06:06
 当节点(锁)释放后会触发watch的节点删除事件，从而重新抢占创建节点。
 
 ![](zookeeper-lock/1.png)
-
+<!--more-->
 1. 多个客户端竞争创建 lock 临时节点
 2. 其中某个客户端成功创建 lock 节点，其他客户端对 lock 节点设置 watcher
 3. 持有锁的客户端删除 lock 节点或该客户端崩溃，由 Zookeeper 删除 lock 节点

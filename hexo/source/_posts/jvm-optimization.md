@@ -19,7 +19,7 @@ date: 2020-05-07 15:25:44
 -XX:MetaspaceSize=n 元空间初始大小
 -XX:MaxMetaspaceSize=n 元空间最大大小
 ```
-
+<!--more-->
 典型设置
 
 ```shell
