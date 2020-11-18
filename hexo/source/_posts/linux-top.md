@@ -324,16 +324,20 @@ Affect(class count: 1 , method count: 1) cost in 303 ms, listenerId: 1
 
 那到底什么情况下，GC会对程序产生影响呢？ 一般来说需要判断<font color=red>FGC过于频繁、YGC耗时过长、FGC耗时过长、YGC过于频繁</font>
 
-
+命令详细可以参考：[jdk工具之jstat命令(Java Virtual Machine Statistics Monitoring Tool)](https://www.cnblogs.com/duanxz/archive/2012/11/03/2752166.html)
 
 ## JVM调优命令 - jmap
 jmap主要用来帮助我们查看堆内存情况，并支持导出成dump文件以便后续分析。
 <font color=red>导出dump文件会挂起JVM，所以一般再线上必须先切换机器后再执行</font>
-```
+```shell
 jmap -heap PID # 打印堆的使用情况
 jmap -histo:live PID | head -50 #打印每个class的实例数目,内存占用,类全名信息. 如果live子参数加上后,只统计活的对象数量. 一般可以通过这个命令查看哪个对象占用的内存不合理
 jmap -dump:live,format=b,file=/tmp/xxxx.hprof PID #导出存活对象的dump文件以便后面分析。live可以不加，加了表示存活对象
 ```
+
+减少内存使用时一个重要目标，在堆分析上最简单的方法是利用堆直方图。通过堆直方图我们可以快速看到应用内的对象数目，同时不需要进行完整的堆转储（因为堆转储需要一段时间来分析，而且会消耗大量磁盘空间）。
+
+![存活对象的堆直方图](linux-top/6.png)
 
 ## JVM调优命令 - jstack
 
