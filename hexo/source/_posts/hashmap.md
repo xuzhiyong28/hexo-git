@@ -471,9 +471,21 @@ final Node<K,V> removeNode(int hash, Object key, Object value,
 
 - 如果两个对象equals相等，那么他们的hashCode一定相等。
 - 如果两个对象equals不相等，那么hashCode有可能相等也有可能不相等。
-- 如果两个对象hashCode不相等，那么equals一定相等。
+- 如果两个对象hashCode不相等，那么equals一定不相等。
 
 在HashMap中，如果两个对象的hashCode相等的话，那么他们在同一个槽内(发生碰撞)，这时候需要继续判断equals方法是否相等，如果相等做替换操作，如果不相等就插入链表尾部操作。
+
+**扩展点 ：hashCode和 equals()的理解**
+
+每个对象都有hashcode，对象的hashcode是怎么得到的呢？
+
+首先一个对象肯定有物理地址，在别的博文中会hashcode说成是代表对象的地址，这里肯定会让读者形成误区，对象的物理地址跟这个hashcode地址不一样，**hashcode代表对象的地址说的是对象在hash表中的位置，物理地址说的对象存放在内存中的地址**，那么对象如何得到hashcode呢？
+
+通过对象的内部地址(也就是物理地址)转换成一个整数，然后该整数通过hash函数的算法就得到了hashcode。**所以，hashcode是什么呢？就是在hash表中对应的位置。这里如果还不是很清楚的话，举个例子，hash表中有 hashcode为1、hashcode为2、(…)3、4、5、6、7、8这样八个位置，有一个对象A，A的物理地址转换为一个整数17(这是假如)，就通过直接取余算法，17%8=1，那么A的hashcode就为1，且A就在hash表中1的位置。**
+
+**为什么要有hashcode呢？** 主要是为了查找更快，例如我们需要比较对象是否相等，假设我们有1000个对象，那我要比较是否相等的话需要通过物理地址跟999个对象的物理地址进行比较。那如果有hashCode，假设对象A的物理地址转成整数再通过hash函数落到了hashcode1这个槽上，对象B，E，G也是，那我只要将A跟B，E，G比较就行了。
+
+所以我们就不难理解上面hashCode和equals的关系了。先通过hashCode比较，在通过equals（物理地址）比较。
 
 ### HashMap中定位元素在哪个槽下(路由寻址)的操作是什么，为什么？
 
