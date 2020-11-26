@@ -108,7 +108,24 @@ workQueue = ArrayBlockingQueue(长度为3)
 | DiscardOldestPolicy | 丢弃队列队首的元素，并执行新任务              |
 | CallerRunsPolicy    | 由调用线程执行新任务                          |
 
+```java
+//使用拒绝策略
+ThreadPoolExecutor executor = new ThreadPoolExecutor(1 , 1 , 1L , TimeUnit.MINUTES,new ArrayBlockingQueue<>(1),
+new ThreadPoolExecutor.AbortPolicy());
+//自定义拒绝策略
+ThreadPoolExecutor executor2 = new ThreadPoolExecutor(1 , 1 , 1L , TimeUnit.MINUTES , new ArrayBlockingQueue<>(1),
+        new RejectedExecutionHandler(){
+            @Override
+            public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+ 				//doSomeing   
+            }
+ });
+```
+
+
+
 ## 几种线程池
+
 Executors为创建线程池的工具类，提供了多种方式的线程池创建方法。
 ### newFixedThreadPool
 构建包含固定线程数的线程池，默认情况下，空闲线程不会被回收。
@@ -258,6 +275,8 @@ private volatile int corePoolSize;
 //最大线程数
 private volatile int maximumPoolSize;
 ```
+
+![线程池状态转换](executorservice/4.png)
 
 ### Worker内部类
 
@@ -514,7 +533,8 @@ final void runWorker(Worker w) {
         }
         completedAbruptly = false;
     } finally {
-        //如果执行到这一步说明线程池状态不对了。getTask()是会阻塞的，所以即使队列中为空，除非是超过核心线程数
+        //如果执行到这一步说明线程池状态不对了。
+        //getTask()是会阻塞的，所以即使队列中为空，除非是超过核心线程数
         //的worker才会执行到这一步，不然会阻塞住
         processWorkerExit(w, completedAbruptly);
     }
@@ -527,6 +547,56 @@ final void runWorker(Worker w) {
 2. 如果线程池正在停止，则中断线程。否则调用3.
 3. 调用task.run()执行任务
 4. 如果task为null则跳出循环，执行processWorkerExit()方法，销毁线程`workers.remove(w)`
+
+**keepAliveTime作用详解**
+
+我们知道当任务大于核心线程数+队列大小后，会额外new Worker来执行任务。随着队列中任务的消化，创建出来额外的Worker是需要被回收的。这个实现的过程是通过如下代码。
+
+```java
+final void runWorker(Worker w) {
+   Thread wt = Thread.currentThread();
+   Runnable task = w.firstTask;
+   w.firstTask = null;
+   w.unlock(); // allow interrupts
+   boolean completedAbruptly = true;
+   try {
+       while (task != null || (task = getTask()) != null) {
+           //省略很多代码
+       }
+       completedAbruptly = false;
+   } finally {
+       //getTask()从队列中获取任务超时了，就关闭额外的Worker
+       processWorkerExit(w, completedAbruptly);
+   }
+
+
+private Runnable getTask() {
+    boolean timedOut = false; 
+    for (;;) {
+        
+        //省略很多代码...
+        boolean timed = allowCoreThreadTimeOut || wc > corePoolSize;
+
+        //省略很多代码...
+
+        try {
+        	//如果从队列中获取任务超时，也就是说队列中任务已经被消化完了，
+        	//那么就会抛出InterruptedException异常
+        	//所以runWorker会处理异常，执行processWorkerExit将额外的Worker关闭
+            Runnable r = timed ?
+                workQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS) :
+                workQueue.take();
+            if (r != null)
+                return r;
+            timedOut = true;
+        } catch (InterruptedException retry) {
+            timedOut = false;
+        }
+    }
+}
+```
+
+
 
 #### getTask()方法
 
