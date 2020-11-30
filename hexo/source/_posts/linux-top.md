@@ -242,6 +242,22 @@ netstat -na |wc -l
 netstat -anp | grep 3306 | wc -l # 统计3306端口的连接数
 ```
 
+Netstat是控制台命令,是一个监控TCP/IP网络的非常有用的工具。
+
+```
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address(当前地址)      Foreign Address(远程地址)    State      
+tcp        0      0 127.0.0.1:2111              0.0.0.0:*                   LISTEN              
+tcp        0      0 127.0.0.1:20122             0.0.0.0:*                   LISTEN      
+tcp        0      0 0.0.0.0:2012                0.0.0.0:*                   LISTEN      
+tcp        0      0 127.0.0.1:50355             127.0.0.1:62016             TIME_WAIT      
+tcp        0      0 180.101.26.19:39669         180.101.26.26:63751         TIME_WAIT   
+tcp        0      0 180.101.26.19:39663         180.101.26.26:63751         TIME_WAIT   
+tcp        0      0 157.0.125.19:25119          218.98.49.27:65381          ESTABLISHED 
+```
+
+
+
 ## Arthas使用
 
 Arthas是阿里巴巴出品的一款Java应用诊断利器。支持多种维度去诊断问题。具体使用可以直接看官网，写得很详细。
