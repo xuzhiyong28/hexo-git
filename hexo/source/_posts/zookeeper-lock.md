@@ -496,7 +496,7 @@ Curator是Zookeeper的一个工具类，他为我们提供了简便好用的分�
 - InterProcessReadWriteLock：分布式读写锁
 - InterProcessMultiLock：将多个锁作为单个实体管理的容器
 
-### 不可重入锁---  InterProcessSemaphoreMutex 
+### 不可重入锁
 
 InterProcessSemaphoreMutex是一种不可重入的互斥锁，也就意味着即使是同一个线程也无法在持有锁的情况下再次获得锁，所以需要注意，不可重入的锁很容易在一些情况导致死锁。
 
@@ -531,7 +531,7 @@ public void curtorLock001() throws InterruptedException {
 }
 ```
 
-### 可重入锁---  InterProcessMutex
+### 可重入锁
 
 此锁可以重入，但是重入几次需要释放几次。
 
@@ -570,9 +570,13 @@ public void curtorLock002() throws InterruptedException {
 }
 ```
 
-### 可重入读写锁 --- InterProcessReadWriteLock
+### 可重入读写锁 
 
-### 多个锁--- InterProcessMultiLock
+InterProcessReadWriteLock
+
+### 多个锁
+
+InterProcessMultiLock
 
 ## 参考
 
