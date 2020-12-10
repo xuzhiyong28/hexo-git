@@ -469,9 +469,9 @@ final Node<K,V> removeNode(int hash, Object key, Object value,
 
 首先先来了解下hashCode和equals方法的关系，前提是没有重写的情况下。
 
-- 如果两个对象equals相等，那么他们的hashCode一定相等。
+- 如果两个对象equals相等，那么他们的hashCode一定相等。（**equals比较的是内存地址，内存地址一样的话，通过内存地址做哈希函数后得到的hashCode就一定是一样的**）
 - 如果两个对象equals不相等，那么hashCode有可能相等也有可能不相等。
-- 如果两个对象hashCode不相等，那么equals一定相等。
+- 如果两个对象hashCode不相等，那么equals一定不相等。
 
 在HashMap中，如果两个对象的hashCode相等的话，那么他们在同一个槽内(发生碰撞)，这时候需要继续判断equals方法是否相等，如果相等做替换操作，如果不相等就插入链表尾部操作。
 

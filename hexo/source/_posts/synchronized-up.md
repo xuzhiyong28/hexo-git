@@ -15,6 +15,27 @@ date: 2020-08-09 19:57:48
 | 修饰代码块1  | 方法对应的new对象 | public void doSome(){<br/>	&nbsp;&nbsp;&nbsp;synchronized(this){<br/>	 &nbsp;&nbsp;&nbsp; ...<br/>	&nbsp;}<br/>} |
 | 修饰代码块2  | 括号内的类        | public void doSome(){<br/>	&nbsp;synchronized(Dog.class){<br/>	 &nbsp;&nbsp; ...<br/>	&nbsp;}<br/>} |
 
+## synchronized原理
+
+如下代码，使用`javap -v OtherTest.class` 解析。
+
+```java
+public class OtherTest {
+    public static void main(String[] args) {
+        Object o = new Object();
+        synchronized (o){
+            System.out.println(o);
+        }
+    }
+}
+```
+
+<!--more-->
+
+![](synchronized-up/6.png)
+
+如下图所示，synchronized的再JVM里的实现原理是<font color=red>JVM基于进入和退出Monitor对象来实现方法同步和代码块同步</font>，主要是使用`monitorenter`和`monnitorexit`指令实现。[java并发系列-monitor机制实现](https://www.cnblogs.com/qingshan-tang/p/12698705.html)。
+
 ## 什么是锁升级？
 
 JDK6以前synchronized锁实现都是重量级锁的形式，效率低下，为了提升效率进行了优化，所以出现了锁升级的过程。在JDK6之前每次调用synchronized加锁时都需要进行系统调用，系统调用会涉及到用户态和系统态的切换，此过程比较复杂且时间长导致了synchronized效率底下。所以在JDK6以后提出了锁升级的概念。
@@ -30,7 +51,7 @@ synchronized锁升级包括如下几个状态，级别从低到高分别是：<f
 我们可以看到对象头中有一个MarkWord。<font color=red>锁升级就是markWord里面标志位的变化</font>。这里我们主要看后面的锁标志位，不同的标志位代表不同的锁状态。大家发现一共有五种状态，用两位是不够的，所以01的时候在向前借一位。
 
 ![不同锁状态对应的锁标志位](synchronized-up/2.png)
-<!--more-->
+
 ### 偏向锁状态
 
 ***偏向锁产生的原因？*** 大多数情况下，锁不仅不存在多线程竞争，而且总是由同一线程多次获得，为了让线程获得锁的代价更低而引入了偏向锁。

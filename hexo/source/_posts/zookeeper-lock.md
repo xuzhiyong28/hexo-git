@@ -578,6 +578,15 @@ InterProcessReadWriteLock
 
 InterProcessMultiLock
 
+## zk分布式锁优缺点
+
+缺点：由于ZK是强一致性系统，对于写请求需要发送给leader同一协调，如果有较多的客户端频繁的申请加锁、释放锁，对于 ZK 集群的压力会比较大。
+
+优点：
+
+- 相对于Redis的实现方式，zk使用设置watch的方式，不会出现key过期导致业务还没执行完锁就自动失效的问题。
+- 由于Redis不是强一致性系统，在极端情况下会出现（clientA获取锁后，主redis复制数据到从redis过程中崩溃了，导致没有复制到从redis中，然后从redis选举出一个升级为主redis,造成新的主redis没有clientA 设置的锁，这是clientB尝试获取锁，并且能够成功获取锁，导致互斥失效）的问题。zk是强一致性系统，每次写操作都需要先发给leader，leader处理写请求，一半以上的从节点也写成功，才返回给客户端成功。
+
 ## 参考
 
 - https://www.jianshu.com/p/6e20e65f301a

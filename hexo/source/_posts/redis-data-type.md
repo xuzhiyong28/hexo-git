@@ -113,11 +113,11 @@ typedef struct intset{
 
 #### 跳跃表
 
-待续。。。
+ 跳跃表是一种有序的数据结构，它通过在每个节点中维持多个指向其他节点的指针，从而达到快速访问节点的目的。
 
 #### 压缩列表
 
-压缩列表是Redis为了`节约内存`而开发的数据结构，由一系列特殊编码的`连续内存`块组成的顺序型数据结构。压缩列表节点可以保存`字节数组`或`整数值`。
+压缩列表是Redis为了`节约内存`而开发的数据结构，由一系列特殊编码的`连续内存`块组成的顺序型数据结构。压缩列表节点可以保存`字节数组`或`整数值`。**压缩列表有点类似数组，也是通过一篇连续的内存空间来存储数据，不过他跟数组不同的是：允许存储的数据大小不同。**
 
 ![压缩列表](redis-data-type/3.png)
 
@@ -131,6 +131,8 @@ typedef struct intset{
 | previous_entry_length | 记录前一个节点的长度                      |
 | encoding              | 记录节点content属性所保存数据的类型和长度 |
 | content               | 保存节点值，可以是字节数组或者整数值      |
+
+
 
 #### 链表
 
@@ -196,6 +198,29 @@ typedef struct redisObject{
 
 - 有序集合保存的元素数量小于128个。
 - 有序集合保存的所有元素的长度小于64字节。
+
+### 查看redis数据类型
+
+```
+127.0.0.1:6379> lpush list1 1
+(integer) 1
+127.0.0.1:6379> object encoding list1
+"quicklist"
+127.0.0.1:6379> sadd set1 one two three
+(integer) 3
+127.0.0.1:6379> object encoding set1
+"hashtable"
+127.0.0.1:6379> hset hash1 field1 1
+(integer) 1
+127.0.0.1:6379> object encoding hash1
+"ziplist"
+127.0.0.1:6379> set name xuzy
+OK
+127.0.0.1:6379> object encoding name
+"embstr"
+```
+
+
 
 ### 总结
 
