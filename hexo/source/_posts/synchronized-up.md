@@ -58,7 +58,7 @@ synchronized锁升级包括如下几个状态，级别从低到高分别是：<f
 
 ![无锁->偏向锁](synchronized-up/3.png)
 
-- 当一个线程A访问同步块时，如果发现MarkWord没有存储线程ID，那判定是无锁状态，此时通过CAS方式视图将自己的线程ID存储到MarkWord中
+- 当一个线程A访问同步块时，如果发现MarkWord没有存储线程ID，那判定是无锁状态，此时通过CAS方式试图将自己的线程ID存储到MarkWord中
 - 线程A判断当前MardWord存储的线程是不是自己的线程ID？如果是直接获得锁(此时MarkWord上是线程IDA)。并把标志为改成01，表示现在是偏向锁状态。
 - 执行同步体
 - 假设在期间有了线程B来争抢，由于此时MardWord上是线程A的ID，所以线程B执行CAS失败。此时线程B阻塞，并撤销偏向锁,升级为轻量级锁。
@@ -89,7 +89,7 @@ synchronized锁升级包括如下几个状态，级别从低到高分别是：<f
 
 ![](synchronized-up/5.png)
 
-java中每个对象都关联了一个监视器锁monitor，当monitor被占用时就会处于锁定状态。线程执行monitorenter 指令时尝试获取monitor的所有权。<font color=red>monitor是可重入的，有计数器，且是非公平的</font>。monitor 依赖操作系统的mutexLock(互斥锁)来实现的，线程被阻塞后便进入内核（Linux）调度状态，这个会导致系统在用户态与内核态之间来回切换，严重影响锁的性能。
+java中每个对象都关联了一个监视器锁monitor，当monitor被占用时就会处于锁定状态。线程执行monitorenter 指令时尝试获取monitor的所有权。<font color=red>monitor是可重入的，有计数器，且是非公平的</font>。<font color=red>monitor 依赖操作系统的mutexLock(互斥锁)来实现的，线程被阻塞后便进入内核（Linux）调度状态，这个会导致系统在用户态与内核态之间来回切换，严重影响锁的性能</font>。
 
 ## 锁清除
 

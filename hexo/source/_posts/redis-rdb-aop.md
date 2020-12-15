@@ -76,12 +76,20 @@ redis使用操作系统的多进程<font color=red>COW机制(Copy On Write)</fon
 
 AOF配置：
 
-```properties
-appendonly yes # 是否开启AOF持久化
-appendfsync no # 由系统决定什么时候写入AOF
-appendfsync always #每次有数据修改发生时都会写入AOF文件。
-appendfsync everysec #每秒钟同步一次，该策略为AOF的缺省策略。
 ```
+# 是否开启AOF持久化
+appendonly yes
+# 由系统决定什么时候写入AOF
+appendfsync no 
+#每次有数据修改发生时都会写入AOF文件。原理是每次来操作命令都执行 fsync 函数，直到同步到硬盘返回
+appendfsync always 
+#每秒钟同步一次，该策略为AOF的缺省策略。先调用 OS write 函数， 写到缓冲区，然后 redis 每秒执行一次 OS fsync 函数
+appendfsync everysec 
+```
+
+### aof过程
+
+当redis收到客户端操作指令后，先进行参数校验。如果校验通过则将操作指令写到操作系统的内存缓存中并执行该指令。到了一定时间后操作系统内核会异步地把内存缓存中的redis操作指令刷写到AOF文件中。也可以通过glibc函数库提供的fsync()函数将指定文件的内容强制从内存缓存中刷写到磁盘上。
 
 ### bgrewriteaof重写
 
@@ -95,7 +103,7 @@ appendfsync everysec #每秒钟同步一次，该策略为AOF的缺省策略。
    - 主进程把aof_rewrite_buf中的数据写入到新的AOF文件。
 5. 使用新的AOF文件覆盖旧的AOF文件，标志AOF重写完成。
 
-可以看出整个重写过程是安全的。因为 Redis 重写是创建新 AOF 文件，重写的过程中会继续将命令追加到现有旧的 AOF 文件里面，即使重写过程中发生停机，现有旧的 AOF 文件也不会丢失。 而一旦新 AOF 文件创建完毕，Redis 就会从旧 AOF 文件切换到新 AOF 文件，并开始对新 AOF 文件进行追加操作。
+可以看出整个重写过程是安全的。因为 Redis 重写是创建新AOF文件，重写的过程中会继续将命令追加到现有旧的 AOF 文件里面，即使重写过程中发生停机，现有旧的 AOF 文件也不会丢失。 而一旦新 AOF 文件创建完毕，Redis 就会从旧 AOF 文件切换到新 AOF 文件，并开始对新 AOF 文件进行追加操作。
 
 **AOF重写机制的触发条件**：
 
@@ -138,7 +146,7 @@ auto-aof-rewrite-percentage 100
 混合持久化需要配置上确认是否开启
 
 ```properties
-#yes表示开启混合持久化
+#yes表示开启混合持久化，默认是开启的
 aof-use-rdb-preamble yes
 ```
 
