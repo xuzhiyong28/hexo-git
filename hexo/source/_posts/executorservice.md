@@ -661,6 +661,54 @@ private Runnable getTask() {
 
 马上关闭，强制关闭正在执行的任务和队列中的任务。
 
+## 常见疑问
+
+**为什么execute方法会抛异常，submit不会**
+
+```java
+executors.execute(new Runnable() {
+    @Override
+    public void run() {
+        throw new RuntimeException("xxx");
+    }
+});
+//抛出异常
+Exception in thread "pool-1-thread-1" java.lang.RuntimeException: xxx
+	at xzy.OtherTest$1.run(OtherTest.java:33)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+executors.submit(new Runnable() {
+    @Override
+    public void run() {
+        throw new RuntimeException("xxx");
+    }
+});
+//不抛出异常
+```
+
+我们定位到**runWorker**源码中，可以看到**task.run()**做了异常处理。
+
+- 如果是execute方法，task=Runnable接口，调用run方法出现错误抛出异常可以被捕获
+- 如果是submit方法，Runnable会被封装成FutureTask，所以task=FutureTask。FutureTask重写了run方法，如果遇到异常会记录起来在get()方法调用时候才抛出。
+
+```java
+try {
+       task.run();
+   } catch (RuntimeException x) {
+       thrown = x; throw x;
+   } catch (Error x) {
+       thrown = x; throw x;
+   } catch (Throwable x) {
+       // 这里不允许抛出 Throwable，所以转换为 Error
+       thrown = x; throw new Error(x);
+   } finally {
+       // 也是一个钩子方法，将 task 和异常作为参数，留给需要的子类实现
+       afterExecute(task, thrown);
+}
+```
+
 
 
 ## 参考

@@ -191,3 +191,68 @@ CMS基于**标记-清除**算法实现。
 ### 垃圾收集器
 
 ![]()![5](jvm-optimization/5.png)
+
+### JAVA内存对象布局
+
+![JAVA内存对象布局](jvm-optimization/6.png)
+
+```java
+package xzy;
+import org.openjdk.jol.info.ClassLayout;
+public class OtherTest {
+    public static void main(String[] args){
+        Object obj = new Object();
+        System.out.println(ClassLayout.parseInstance(obj).toPrintable());
+    }
+}
+//==========================================无指针压缩=========================
+# -XX:-UseCompressedOops
+java.lang.Object object internals:
+ OFFSET  SIZE   TYPE DESCRIPTION                               VALUE
+      0     4        (object header)对象头                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)
+      4     4        (object header)对象头                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
+      8     4        (object header)Class Pointer                           00 1c 95 1e (00000000 00011100 10010101 00011110) (513088512)
+     12     4        (object header)Class Pointer                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
+Instance size: 16 bytes
+Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+//==========================================指针压缩=========================
+java.lang.Object object internals:
+ OFFSET  SIZE   TYPE DESCRIPTION                               VALUE
+      0     4        (object header)对象头                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)
+      4     4        (object header)对象头                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
+      8     4        (object header)Class Pointer                           e5 01 00 f8 (11100101 00000001 00000000 11111000) (-134217243)
+     12     4        (loss due to the next object alignment)对其填充
+Instance size: 16 bytes
+Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+    
+    
+public class OtherTest {
+    public static void main(String[] args){
+        Object[] obj = new Object[10];
+        System.out.println(ClassLayout.parseInstance(obj).toPrintable());
+    }
+}
+//===============================无指针压缩数组===========================
+[Ljava.lang.Object; object internals:
+ OFFSET  SIZE               TYPE DESCRIPTION                               VALUE
+      0     4                    (object header)对象头                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)
+      4     4                    (object header)对象头                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
+      8     4                    (object header)Class Pointer                           60 c7 b1 1e (01100000 11000111 10110001 00011110) (514967392)
+     12     4                    (object header)Class Pointer                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
+     16     4                    (object header)Class Pointer                           0a 00 00 00 (00001010 00000000 00000000 00000000) (10)
+     20     4                    (alignment/padding gap)对齐填充                  
+     24    80   java.lang.Object Object;.<elements>数组长度(8 * 10)                        N/A
+Instance size: 104 bytes
+Space losses: 4 bytes internal + 0 bytes external = 4 bytes total
+//===========================指针压缩数组==============================
+ [Ljava.lang.Object; object internals:
+ OFFSET  SIZE               TYPE DESCRIPTION                               VALUE
+      0     4                    (object header)对象头                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)
+      4     4                    (object header)对象头                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
+      8     4                    (object header)Class Pointer                           3c 23 00 f8 (00111100 00100011 00000000 11111000) (-134208708)
+     12     4                    (object header)对齐填充                           0a 00 00 00 (00001010 00000000 00000000 00000000) (10)
+     16    40   java.lang.Object Object;.<elements>数组长度(4 * 10)                        N/A
+Instance size: 56 bytes
+Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
+```
+
