@@ -284,6 +284,22 @@ SELECT * from 小表 left join 大表 on 小表.a = 大表.b;
 
 8. ORDER BY排序也需要遵循最左前缀列的原则，不然容易用到文件排序
 
+## 优化器追踪
+
+```sql
+-- 查询优化器状态
+show variables like 'optimizer_trace';
+-- 设置回话级别临时开启
+set session optimizer_trace="enabled=on",end_markers_in_json=on;
+-- 设置优化器追踪内存大小
+set OPTIMIZER_TRACE_MAX_MEM_SIZE=1000000;
+-- 执行自己的SQL
+-- 查看优化器
+SELECT trace FROM information_schema.OPTIMIZER_TRACE;
+```
+
+
+
 ## 图示
 
 ![](mysql-explain/1.jpg)

@@ -176,9 +176,26 @@ CMS基于**标记-清除**算法实现。
 
 **几个优化的参数**
 
--XX：CMSInitiatingOccu-pancyFraction的值来用来设置CMS收集器老年代占用百分之多少后执行FullGC，降低内存回收频率，获取更好的性能。
+- -XX:+UseCMSInitiatingOccupancyOnly 和 -XX：CMSInitiatingOccupancyFraction的值来用来设置CMS收集器老年代占用百分之多少后执行FullGC，降低内存回收频率，获取更好的性能。
 
--XX：+UseCMS-CompactAtFullCollection默认开启，用于开启内存碎片的合并整理过程。
+- -XX：+UseCMSCompactAtFullCollection默认开启，用于开启内存碎片的合并整理过程。
+- -XX：CMSFullGCsBeforeCompaction 每隔多少次不压缩的Full GC后，执行一次带压缩的Full GC。
+
+**CMS并发模式失败（Concurrent mode failure）和晋升失败**
+
+- 并发模式失败，CMS的目标就是在回收老年代对象的时候不要停止全部应用线程，在并发周期执行期间，用户的线程依然在运行，如果这时候如果应用线程向老年代请求分配的空间超过预留的空间（担保失败），就回触发concurrent mode failure，然后CMS的并发周期就会被一次Full GC代替。
+- 晋升失败，新生代做minor gc的时候，需要CMS的担保机制确认老年代是否有足够的空间容纳要晋升的对象，担保机制发现不够，则报concurrent mode failure，如果担保机制判断是够的，但是实际上由于碎片问题导致无法分配，就会报晋升失败。
+- 永久代空间（或Java8的元空间）耗尽，默认情况下,CMS不会对永久代进行收集，一旦永久代空间耗尽，就回触发Full GC。
+
+针对并发模式失败的调优 ：
+
+- 想办法增大老年代的空间，增加整个堆的大小，或者减少年轻代的大小。
+- 以更高的频率执行后台的回收线程，即提高CMS并发周期发生的频率，例如调低*CMSInitiatingOccupancyFraction*的值。引用《Java性能权威指南》（**对特定的应用程序，该标志的更优值可以根据 GC 日志中 CMS 周期首次启动失败时的值得到。具体方法是，在垃圾回收日志中寻找并发模式失效，找到后再反向查找 CMS 周期最近的启动记录，然后根据日志来计算这时候的老年代空间占用值，然后设置一个比该值更小的值。**）
+- 增多回收线程的个数CMS默认的垃圾收集线程数是*（CPU个数 + 3）/4*。-XX:ParallelCMSThreads用来设置线程数量。
+
+### JVM动态年龄判断
+
+-XX:MaxTenuringThreshold=3，该参数主要是控制新生代需要经历多少次GC晋升到老年代中的最大阈值。但是不一定是这个阈值才晋升到老年代。因为有动态年龄判断(**Survivor空间中相同年龄所有对象大小的总和大于Survivor空间的一半，年龄大于或等于该年龄的对象就可以直接进入老年代，无须等到MaxTenuringThreshold中要求的年龄**)
 
 ### 垃圾回收图解
 

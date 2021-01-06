@@ -6,6 +6,11 @@ categories:  java
 description: java并发之synchronized锁升级、锁消除、锁粗化
 date: 2020-08-09 19:57:48
 ---
+## 概念
+
+synchronized是java提供的原子性内置锁，这种内置的并且使用者看不到的锁也被称为**监视器锁**，使用synchronized之后，会在编译之后在同步的代码块前后加上monitorenter和monitorexit字节码指令，他依赖操作系统底层互斥锁实现。他的作用主要就是实现原子性操作和解决共享变量的内存可见性问题。
+
+
 ## synchronized使用方法
 
 |              | 锁的是什么        | 代码                                                         |
