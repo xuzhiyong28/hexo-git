@@ -163,8 +163,11 @@ CMS是一款并发、使用*<font color=red>标记-清除</font>*算法的老年
 
 CMS基于**标记-清除**算法实现。
 
-- 初始标记。标记一下GC Roots能直接关联到的对象。--------- <font color=red>Stop The World</font>
-- 并发标记。从GC Roots开始找到它能引用的所有其它对象。
+- 初始标记(<font color=red>Stop The World</font>)。标记一下GC Roots能直接关联到的对象。这一步主要做两件事：
+- - 从GcRoots直接可达的老年代对象
+  - 遍历新生代对象，标记可达的老年代对象
+- 并发标记。遍历初始标记阶段标记出来的存活对象，然后继续递归标记这些对象可达的对象。**在运行期间可能发生新生代的对象晋升到老年代、或者是直接在老年代分配对象、或者更新老年代对象的引用关系等等，对于这些对象，都是需要进行重新标记的，否则有些对象就会被遗漏，发生漏标的情况。**为了提高重新标记的效率，该阶段会把上述对象所在的Card(卡表)标识为Dirty(脏)，后续只需扫描这些Dirty Card的对象，避免扫描整个老年代。
+- 并发预清理。*CMSPrecleaningEnabled*控制是否需要并发预清理，默认启用。**该阶段要尽最大的努力去处理那些在并发阶段被应用线程更新的老年代对象，这样在暂停的重新标记阶段就可以少处理一些，暂停时间也会相应的降低。**
 - 重新标记。为了修正并发标记期间因用户程序继续动作而导致标记产生变动的那一部分对象的标记记录 --- <font color=red>Stop The World</font>
 - 并发清除。
 
@@ -177,9 +180,10 @@ CMS基于**标记-清除**算法实现。
 **几个优化的参数**
 
 - -XX:+UseCMSInitiatingOccupancyOnly 和 -XX：CMSInitiatingOccupancyFraction的值来用来设置CMS收集器老年代占用百分之多少后执行FullGC，降低内存回收频率，获取更好的性能。
-
-- -XX：+UseCMSCompactAtFullCollection默认开启，用于开启内存碎片的合并整理过程。
-- -XX：CMSFullGCsBeforeCompaction 每隔多少次不压缩的Full GC后，执行一次带压缩的Full GC。
+- -XX:+UseCMSCompactAtFullCollection默认开启，要进行Full GC的时候进行内存碎片整理。
+- -XX:CMSFullGCsBeforeCompaction 每隔多少次不压缩的Full GC后，执行一次带压缩的Full GC。
+- CMSScavengeBeforeRemark 如果开启这个参数，会在进入重新标记阶段之前强制触发一次minor gc。
+- CMSMaxAbortablePrecleanTime = 5 表示并发预清理阶段持续5秒还没等到minor gc就中断并发预清理阶段。
 
 **CMS并发模式失败（Concurrent mode failure）和晋升失败**
 
