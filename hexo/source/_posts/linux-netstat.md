@@ -156,6 +156,12 @@ TIME_WAIT是主动关闭连接方式形成的；处于FIN_WAIT_2状态时，收�
 
 https://zhuanlan.zhihu.com/p/90057929
 
+**Linux系统支持的最大TCP连接是多少**
+
+https://zhuanlan.zhihu.com/p/138263151
+
+https://blog.csdn.net/sqlquan/article/details/111561959
+
 **nagle算法有了解吗**
 
 ## netstat

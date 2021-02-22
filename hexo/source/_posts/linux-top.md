@@ -250,6 +250,7 @@ Total DISK READ:       6.01 M/s | Total DISK WRITE:       3.85 K/s
 ```shell
 netstat -na |wc -l
 netstat -anp | grep 3306 | wc -l # 统计3306端口的连接数
+netstat -ant|awk '/^tcp/ {++S[$NF]} END {for(a in S) print (a,S[a])}'  #统计TCP各个状态数量
 ```
 
 Netstat是控制台命令,是一个监控TCP/IP网络的非常有用的工具。

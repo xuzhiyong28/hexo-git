@@ -8,7 +8,9 @@ date: 2020-08-09 19:57:48
 ---
 ## 概念
 
-synchronized是java提供的原子性内置锁，这种内置的并且使用者看不到的锁也被称为**监视器锁**，使用synchronized之后，会在编译之后在同步的代码块前后加上monitorenter和monitorexit字节码指令，他依赖操作系统底层互斥锁实现。他的作用主要就是实现原子性操作和解决共享变量的内存可见性问题。
+synchronized是java提供的原子性内置锁，这种内置的并且使用者看不到的锁也被称为**监视器锁**，使用synchronized之后，会在编译之后在同步的代码块前后加上monitorenter和monitorexit字节码指令，他依赖操作系统底层互斥锁（Mutex Lock）实现。他的作用主要就是实现原子性操作和解决共享变量的内存可见性问题。
+
+**总结：synchronized修饰的代码会在编译的时候加入monitorenter,monitorexit指令，这两个指令是通过操作系统的Mutex Lock实现的，由于使用Mutex Lock需要将当前线程挂起并从用户态切换到内核态来执行，这种切换的代价是非常昂贵的。**
 
 
 ## synchronized使用方法

@@ -38,6 +38,8 @@ maxmemory-policy volatile-lru
 - Volatile-lru：当内存不足以容纳新写入数据时，在设置了过期时间的键空间中，移除最近最少使用的Key。这种情况一般是把Redis既当缓存又做持久化存储的时候才用。不推荐；
 - Volatile-random：当内存不足以容纳新写入数据时，在设置了过期时间的键空间中，<font color=red>随机</font>移除某个Key。依然不推荐；
 - Volatile-ttl：当内存不足以容纳新写入数据时，在设置了过期时间的键空间中，有更早过期时间的Key优先移除。不推荐。
+- volatite-lfu：从所有配置了过期时间的键中驱逐使用频率最少的键 （Redis4.0新加的）
+- allkeys-lfu：从所有键中驱逐使用频率最少的键（Redis4.0新加的）
 
 ### Redis缓存问题
 
