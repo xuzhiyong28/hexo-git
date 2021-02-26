@@ -192,3 +192,105 @@ ribbon:
   #说明：使用Apache HttpClient读取的超时时间，单位为毫秒
   ReadTimeout: 3000
 ```
+
+### Fegin的封装最佳实践
+
+#### Fegin封装
+
+一般来说，我们作为Eureka Client，需要`提供给外部服务`和`实现提供的服务`。因为 Spring Cloud Open Feign 中支持继承的特性，我们可以将 API 的定义提取出来封装成一个单独的接口，给 API 的实现方和调用方共用，在一定程度上简化了重复的代码。
+
+```java
+//提供给外部的API，我们可以统一将其抽离成一个Maven工程
+@FeignClient(name = "user-service")
+public interface UserFeignRemoteClient {
+	@GetMapping("/user/get")
+	public User getUser(@RequestParam("id") Long id);
+}
+
+
+//实现提供的服务
+@RestController
+public class UserController implements UserFeignRemoteClient{
+	@Override
+	public User getUser(@RequestParam("id") Long id){
+		System.out.println("具体实现");
+	}
+}
+
+//提供给外部服务使用
+@Autowired
+private UserFeignRemoteClient userFeignRemoteClient;
+```
+
+其实在 Spring Cloud Open Feign 的文档中，给出的继承示列还要多一个类，第一步是抽出一个公共的接口，比如我们这边的 UserService，UserService 中定义了要实现的 API 的方法。
+
+```java
+public interface UserService {
+	@GetMapping("/user/get")
+	public User getUser(@RequestParam("id") Long id);
+}
+
+//提供给外部的API，我们可以统一将其抽离成一个Maven工程
+@FeignClient(name = "user-service")
+public interface UserFeignRemoteClient extends UserService{
+	
+}
+
+//实现提供的服务
+@RestController
+public class UserController implements UserService{
+	@Override
+	public User getUser(@RequestParam("id") Long id){
+		System.out.println("具体实现");
+	}
+}
+
+//提供给外部服务使用
+@Autowired
+private UserFeignRemoteClient userFeignRemoteClient;
+```
+
+#### Fegin多参数传递
+
+如果Fegin需要多个参数一起传递的话，一般最佳的实践是将参数封装，然后采用`@SpringQueryMap`修师。例如下面
+
+```java
+@RestController
+public class UserController implements UserService{
+	@Override
+	public User getUser(@SpringQueryMap StudentRequest studentRequest){
+		System.out.println("具体实现");
+	}
+}
+public class StudentRequest{
+	private Long id;
+	private String name;
+}
+```
+
+#### Feign拦截器
+
+假设服务A调用服务B，然后服务A需要向服务B传递一些参数，此时就可以用Fegin拦截器。
+
+```java
+@Configuration
+public class FeignInterceptorConfig {
+	@Bean
+	public RequestInterceptor requestInterceptor() {
+		RequestInterceptor requestInterceptor = new RequestInterceptor() {
+
+			@Override
+			public void apply(RequestTemplate template) {
+				//传递token
+				//使用feign client访问别的微服务时，将accessToken header 
+				//config.anyRequest().permitAll() 非强制校验token
+				if(StringUtils.isNotBlank(TokenUtil.getToken())){
+					template.header(UaaConstant.TOKEN_HEADER, TokenUtil.getToken() );
+				}
+			}
+		};
+		return requestInterceptor;
+	}
+}
+```
+
