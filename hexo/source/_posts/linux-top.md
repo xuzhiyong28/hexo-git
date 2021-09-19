@@ -251,6 +251,10 @@ Total DISK READ:       6.01 M/s | Total DISK WRITE:       3.85 K/s
 netstat -na |wc -l
 netstat -anp | grep 3306 | wc -l # 统计3306端口的连接数
 netstat -ant|awk '/^tcp/ {++S[$NF]} END {for(a in S) print (a,S[a])}'  #统计TCP各个状态数量
+netstat -nat | awk '{print $6}' |sort|uniq -c|sort -rn  #统计TCP哪个状态连接数最多
+netstat -nat | grep 'ESTABLISHED' |awk -F : '{print $1}' |sort|uniq -c|sort -rn # 统计状态为ESTABLISHED的IP是哪个
+netstat -ant | awk '/tcp/ {print $6}'|sort |uniq -c |sort -nr #状态统计
+netstat -ant | grep "ESTABLISHED"|awk '/tcp/ {print $5}'|cut -d ":" -f1|sort |uniq -c |sort -nr |head -10 #前十位ESTABLISHED状态ip统计
 ```
 
 Netstat是控制台命令,是一个监控TCP/IP网络的非常有用的工具。

@@ -284,6 +284,11 @@ SELECT * from 小表 left join 大表 on 小表.a = 大表.b;
 
 8. ORDER BY排序也需要遵循最左前缀列的原则，不然容易用到文件排序
 
+9. IN与EXIST的用法
+
+   1. SELECT * FROM a WHERE id IN (SELECT id from b) -  IN适用于`b表比较小，a表比较大`的情况。b表只会执行一次，A表有10000条记录,B表有100条记录,那么最多有可能遍历10000*100次,遍历次数大大减少,效率大大提升。
+   2. SELECT a.* FROM A a  WHERE EXISTS(SELECT 1 FROM B b WHERE a.id=b.id) - EXISTE适用于`b表比较大，a表比较小`的情况。
+
 ## 优化器追踪
 
 ```sql
