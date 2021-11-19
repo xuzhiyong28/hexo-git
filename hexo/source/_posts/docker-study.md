@@ -86,9 +86,3 @@ docker-compose ps
 docker-compose down
 ```
 
-### Docker-Swarm常用命令
-
-```shell
-
-```
-
