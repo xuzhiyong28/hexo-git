@@ -6,6 +6,13 @@ categories:  java
 description: java并发之synchronized锁升级、锁消除、锁粗化
 date: 2020-08-09 19:57:48
 ---
+## 概念
+
+synchronized是java提供的原子性内置锁，这种内置的并且使用者看不到的锁也被称为**监视器锁**，使用synchronized之后，会在编译之后在同步的代码块前后加上monitorenter和monitorexit字节码指令，他依赖操作系统底层互斥锁（Mutex Lock）实现。他的作用主要就是实现原子性操作和解决共享变量的内存可见性问题。
+
+**总结：synchronized修饰的代码会在编译的时候加入monitorenter,monitorexit指令，这两个指令是通过操作系统的Mutex Lock实现的，由于使用Mutex Lock需要将当前线程挂起并从用户态切换到内核态来执行，这种切换的代价是非常昂贵的。**
+
+
 ## synchronized使用方法
 
 |              | 锁的是什么        | 代码                                                         |
@@ -14,6 +21,27 @@ date: 2020-08-09 19:57:48
 | 修饰静态方法 | 静态方法对应的类  | public static synchronized void doSome(){}                   |
 | 修饰代码块1  | 方法对应的new对象 | public void doSome(){<br/>	&nbsp;&nbsp;&nbsp;synchronized(this){<br/>	 &nbsp;&nbsp;&nbsp; ...<br/>	&nbsp;}<br/>} |
 | 修饰代码块2  | 括号内的类        | public void doSome(){<br/>	&nbsp;synchronized(Dog.class){<br/>	 &nbsp;&nbsp; ...<br/>	&nbsp;}<br/>} |
+
+## synchronized原理
+
+如下代码，使用`javap -v OtherTest.class` 解析。
+
+```java
+public class OtherTest {
+    public static void main(String[] args) {
+        Object o = new Object();
+        synchronized (o){
+            System.out.println(o);
+        }
+    }
+}
+```
+
+<!--more-->
+
+![](synchronized-up/6.png)
+
+如下图所示，synchronized的再JVM里的实现原理是<font color=red>JVM基于进入和退出Monitor对象来实现方法同步和代码块同步</font>，主要是使用`monitorenter`和`monnitorexit`指令实现。[java并发系列-monitor机制实现](https://www.cnblogs.com/qingshan-tang/p/12698705.html)。
 
 ## 什么是锁升级？
 
@@ -30,14 +58,14 @@ synchronized锁升级包括如下几个状态，级别从低到高分别是：<f
 我们可以看到对象头中有一个MarkWord。<font color=red>锁升级就是markWord里面标志位的变化</font>。这里我们主要看后面的锁标志位，不同的标志位代表不同的锁状态。大家发现一共有五种状态，用两位是不够的，所以01的时候在向前借一位。
 
 ![不同锁状态对应的锁标志位](synchronized-up/2.png)
-<!--more-->
+
 ### 偏向锁状态
 
 ***偏向锁产生的原因？*** 大多数情况下，锁不仅不存在多线程竞争，而且总是由同一线程多次获得，为了让线程获得锁的代价更低而引入了偏向锁。
 
 ![无锁->偏向锁](synchronized-up/3.png)
 
-- 当一个线程A访问同步块时，如果发现MarkWord没有存储线程ID，那判定是无锁状态，此时通过CAS方式视图将自己的线程ID存储到MarkWord中
+- 当一个线程A访问同步块时，如果发现MarkWord没有存储线程ID，那判定是无锁状态，此时通过CAS方式试图将自己的线程ID存储到MarkWord中
 - 线程A判断当前MardWord存储的线程是不是自己的线程ID？如果是直接获得锁(此时MarkWord上是线程IDA)。并把标志为改成01，表示现在是偏向锁状态。
 - 执行同步体
 - 假设在期间有了线程B来争抢，由于此时MardWord上是线程A的ID，所以线程B执行CAS失败。此时线程B阻塞，并撤销偏向锁,升级为轻量级锁。
@@ -68,7 +96,7 @@ synchronized锁升级包括如下几个状态，级别从低到高分别是：<f
 
 ![](synchronized-up/5.png)
 
-java中每个对象都关联了一个监视器锁monitor，当monitor被占用时就会处于锁定状态。线程执行monitorenter 指令时尝试获取monitor的所有权。<font color=red>monitor是可重入的，有计数器，且是非公平的</font>。monitor 依赖操作系统的mutexLock(互斥锁)来实现的，线程被阻塞后便进入内核（Linux）调度状态，这个会导致系统在用户态与内核态之间来回切换，严重影响锁的性能。
+java中每个对象都关联了一个监视器锁monitor，当monitor被占用时就会处于锁定状态。线程执行monitorenter 指令时尝试获取monitor的所有权。<font color=red>monitor是可重入的，有计数器，且是非公平的</font>。<font color=red>monitor 依赖操作系统的mutexLock(互斥锁)来实现的，线程被阻塞后便进入内核（Linux）调度状态，这个会导致系统在用户态与内核态之间来回切换，严重影响锁的性能</font>。
 
 ## 锁清除
 

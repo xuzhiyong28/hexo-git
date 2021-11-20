@@ -205,6 +205,36 @@ public class OtherController implements Controller {
 
 HandlerMapping通过不同的实现类来将url和handler映射起来。后面执行getHandler()方法时，就可以通过url找到对应的handler。并将handler+多个HandlerInterceptor拦截器封装成HandlerExecutionChain对象。
 
+具体的实现类包括：
+
+- RequestMappingHandlerMapping，使用注解的时候,通过注解将url映射到对应的Controller上。也是我们最常用的方式。
+- BeanNameUrlHandlerMapping，需要在spring-mvc.xml中配置BeanNameUrlHandlerMapping以及bean实现了AbstractController。通过bean将url映射的对应的Controller。
+
+```java
+<bean class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping"></bean>
+<bean id="/hello" class="com.cyw.web.controller.HelloController"></bean>
+public class HelloController extends AbstractController {
+    @Override
+    protected ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+        return new ModelAndView("Hello");
+    }
+}
+```
+
+- SimpleUrlHandlerMapping，通过url直接映射。
+
+```xml
+<bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+   <property name="mappings">
+    <props>
+       <prop key="/hello.htm">helloController</prop>
+     </props>
+   </property>
+</bean>
+<bean id="helloController" class="com.cyw.web.controller.HelloController" />
+```
+
 ### 处理适配器(HandlerAdapter)
 
 HandlerAdapter将会根据适配的结果调用真正的处理器的功能处理方法，完成功能处理；并返回一个ModelAndView对象（包含模型数据、逻辑视图名）。由于handler是有不同的实现方式，例如是实现Controller还是使用@Controller注解，所以需要使用适配器的方式找到不通方式的处理器。系统默认提供了处理适配器来对应不同方式的handler。

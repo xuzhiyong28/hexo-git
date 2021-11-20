@@ -22,6 +22,7 @@ Redis Sentinel功能包括 ：
 
 所以说，本身redis哨兵也是一个<font color=red>分布式集群系统</font>。
 <!--more-->
+
 ## Redis哨兵配置
 
 ```properties
@@ -32,7 +33,7 @@ Redis Sentinel功能包括 ：
 sentinel monitor <master-name> <ip> <port> <quorum>
 
 #sentinel down-after-milliseconds mymaster 2000
-#哨兵定期发送ping命令判断Redis节点和哨兵节点是否可达，如果超过了这个值没有回复pong
+#哨兵定期发送ping命令判断Redis节点和哨兵节点是否可达，如果超过了这个值没有回复pong，
 #主观判断节点是不可达的，单位是毫秒
 sentinel down-after-milliseconds <master-name> <times>
 
@@ -76,7 +77,7 @@ sentinel状态数据结构中保存了主服务的所有从服务信息，leande
 ### 哨兵的定时监控
 
 - 每个哨兵节点每10秒会向主节点和从节点发送info命令获取最拓扑结构图，哨兵配置时只要配置对主节点的监控即可，通过向主节点发送info，获取从节点的信息，并当有新的从节点加入时可以马上感知到
-- 每个哨兵节点每隔2秒会向redis数据节点的指定频道上发送该哨兵节点对于主节点的判断以及当前哨兵节点的信息，同时每个哨兵节点也会订阅该频道，来了解其它哨兵节点的信息及对主节点的判断
+- 每个哨兵节点每隔2秒会向redis数据节点的指定频道（\_\_sentinel\_\_:hello）上发送该哨兵节点对于主节点的判断以及当前哨兵节点的信息，同时每个哨兵节点也会订阅该频道，来了解其它哨兵节点的信息及对主节点的判断
 - 每隔1秒每个哨兵会向主节点、从节点及其余哨兵节点发送一次ping命令做一次心跳检测
 
 ### 工作原理总结

@@ -134,6 +134,11 @@ Master_SSL_Verify_Server_Cert: No
 - Read_Master_Log_Pos 和 Exec_Master_Log_Pos  这个值如果相差太大表示主从出现了延迟
 - Seconds_Behind_Master 当前salve和master记录事件的时间戳，这个值如果越大证明延迟越严重
 
+**结合下原理和show slave status返回的结果来说明，大概流程是这样：**
+
+1. 从库先通过io线程读取主库的二进制文件（Master_Log_File）和位置（Read_Master_Log_Pos）然后缓存到本地（从库服务器）的中继文件（Relay_Log_File）中并记录已经读取到的位置（Relay_Log_Pos）。
+2. 再通过从库的sql线程去读取中继文件（Relay_Log_File），这个sql线程执行会记录已经执行到了哪个文（Relay_Master_Log_File）和哪个位置（Exec_Master_Log_Pos）。
+
 通过看show slave status发现一切正常，因为延迟是发生在凌晨4点。所以有可能的原因就是凌晨4点执行了大量的DDL导致的，之后恢复正常了。所以我们只能通过binlog日志查看凌晨4点时执行了什么语句。
 
 通过上面我们知道了从库是从主库的 mysql-bin.000231日志中同步过来的。所以看下这个binlog日志在凌晨4点时执行的所有DDL语句。
@@ -161,7 +166,7 @@ cat mysql_bin_231_4.log | grep 'INSERT' | grep 'dir_visit_report' | wc -l
 - 优化网络
 - 业务上防止统一时间点大量更新操作
 - 修改binlog配置sync_binlog，innodb_flush_log_at_trx_commit (redo日志)
-- 使用混合模式复制的方式，通过binlog-format配置。项目上作者使用的是行模式，行模式的有点是能保证主从完全一致，但速度会比较慢。具体可以参考《[MYSQL中BINLOG_FORMAT的三种模式](https://www.cnblogs.com/xingyunfashi/p/8431780.html)》
+- 使用混合模式复制的方式，通过binlog-format配置。项目上作者使用的是行模式，行模式的优点是能保证主从完全一致，但速度会比较慢。具体可以参考《[MYSQL中BINLOG_FORMAT的三种模式](https://www.cnblogs.com/xingyunfashi/p/8431780.html)》
 
 ### sync_binlog
 

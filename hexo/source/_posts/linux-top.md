@@ -179,6 +179,12 @@ iostat -d -k -x 20 # 表示间隔20秒输出一次信息
 
 ### 参数说明
 
+- %user：CPU处在用户模式下的时间百分比。
+- %nice：CPU处在带NICE值的用户模式下的时间百分比。
+- %system：CPU处在系统模式下的时间百分比。
+- %iowait：CPU等待输入输出完成时间的百分比。
+- %steal：管理程序维护另一个虚拟处理器时，虚拟CPU的无意识等待时间百分比。
+- %idle：CPU空闲时间百分比。
 - Device ：设备名称
 - rrqm/s ：每秒合并到设备的读取请求数
 - wrqm/s ：每秒合并到设备的写请求数
@@ -194,6 +200,10 @@ iostat -d -k -x 20 # 表示间隔20秒输出一次信息
 - svctm ：平均每次设备I/O操作的服务时间 (毫秒)（这个数据不可信！）
 - %util ：一秒中有百分之多少的时间用于I/O操作，即被IO消耗的CPU百分比，<font color=red>一般地，如果该参数是100%表示设备已经接近满负荷运行了</font>
 
+如果%iowait的值过高，表示硬盘存在I/O瓶颈。
+如果%idle值高，表示CPU较空闲。
+如果%idle值高但系统响应慢时，可能是CPU等待分配内存，应加大内存容量。
+如果%idle值持续低于10，表明CPU处理能力相对较低，系统中最需要解决的资源是CPU。
 ## free命令 -- 查看内存使用
 
 主要用来展示内存使用。其实也可以用top 和 vmstat 。 这里不过多介绍了
@@ -240,6 +250,11 @@ Total DISK READ:       6.01 M/s | Total DISK WRITE:       3.85 K/s
 ```shell
 netstat -na |wc -l
 netstat -anp | grep 3306 | wc -l # 统计3306端口的连接数
+netstat -ant|awk '/^tcp/ {++S[$NF]} END {for(a in S) print (a,S[a])}'  #统计TCP各个状态数量
+netstat -nat | awk '{print $6}' |sort|uniq -c|sort -rn  #统计TCP哪个状态连接数最多
+netstat -nat | grep 'ESTABLISHED' |awk -F : '{print $1}' |sort|uniq -c|sort -rn # 统计状态为ESTABLISHED的IP是哪个
+netstat -ant | awk '/tcp/ {print $6}'|sort |uniq -c |sort -nr #状态统计
+netstat -ant | grep "ESTABLISHED"|awk '/tcp/ {print $5}'|cut -d ":" -f1|sort |uniq -c |sort -nr |head -10 #前十位ESTABLISHED状态ip统计
 ```
 
 Netstat是控制台命令,是一个监控TCP/IP网络的非常有用的工具。

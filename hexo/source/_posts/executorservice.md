@@ -19,7 +19,7 @@ date: 2018-01-18 21:10:00
 
 此外，参考美团上的一段关于线程多的弊端：
 
-- 线程的创建和销毁成本很高，在Linux这样的操作系统中，线程本质上就是一个进程。创建和销毁都是重量级的系统函数。
+- 线程的创建和销毁成本很高，在Linux这样的操作系统中，线程本质上就是一个进程。创建和销毁都是重量级的系统函数，需要调用系统内核的API，然后操作系统为其分配一系列资源，整个正本很高。
 -  线程本身占用较大内存，像Java的线程栈，一般至少分配512K～1M的空间，如果系统中的线程数过千，恐怕整个JVM的内存都会被吃掉一半。
 - 线程的切换成本是很高的。操作系统发生线程切换的时候，需要保留线程的上下文，然后执行系统调用。**如果线程数过高，可能执行线程切换的时间甚至会大于线程执行的时间，这时候带来的表现往往是系统load偏高、CPU sy使用率特别高（超过20%以上)，导致系统几乎陷入不可用的状态。**
 - 容易造成锯齿状的系统负载。因为系统负载是用活动线程数或CPU核心数，一旦线程数量高但外部网络环境不是很稳定，就很容易造成大量请求的结果同时返回，激活大量阻塞线程从而使系统负载压力过大。
@@ -660,6 +660,54 @@ private Runnable getTask() {
 ### shutdownNow
 
 马上关闭，强制关闭正在执行的任务和队列中的任务。
+
+## 常见疑问
+
+**为什么execute方法会抛异常，submit不会**
+
+```java
+executors.execute(new Runnable() {
+    @Override
+    public void run() {
+        throw new RuntimeException("xxx");
+    }
+});
+//抛出异常
+Exception in thread "pool-1-thread-1" java.lang.RuntimeException: xxx
+	at xzy.OtherTest$1.run(OtherTest.java:33)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+executors.submit(new Runnable() {
+    @Override
+    public void run() {
+        throw new RuntimeException("xxx");
+    }
+});
+//不抛出异常
+```
+
+我们定位到**runWorker**源码中，可以看到**task.run()**做了异常处理。
+
+- 如果是execute方法，task=Runnable接口，调用run方法出现错误抛出异常可以被捕获
+- 如果是submit方法，Runnable会被封装成FutureTask，所以task=FutureTask。FutureTask重写了run方法，如果遇到异常会记录起来在get()方法调用时候才抛出。
+
+```java
+try {
+       task.run();
+   } catch (RuntimeException x) {
+       thrown = x; throw x;
+   } catch (Error x) {
+       thrown = x; throw x;
+   } catch (Throwable x) {
+       // 这里不允许抛出 Throwable，所以转换为 Error
+       thrown = x; throw new Error(x);
+   } finally {
+       // 也是一个钩子方法，将 task 和异常作为参数，留给需要的子类实现
+       afterExecute(task, thrown);
+}
+```
 
 
 

@@ -9,7 +9,7 @@ date: 2018-08-07 09:32:25
 ## MySQL三种重要的日志
 MySQL有三种重要的日志，分别是 binlog(归档日志)、redolog(重做日志)、redolog(撤销日志)。
 - binlog归档日志是数据库层面上的日志，主要用来做备份恢复和主从复制。
-- redolog重做日志是Innodb引擎层面上的日志，主要用来保证数据的可靠性。<font color=red>用于故障恢复，实现事务的持久性机制</font>
+- redolog重做日志是<font color=red>Innodb引擎层面上</font>的日志，主要用来保证数据的可靠性。<font color=red>用于故障恢复，实现事务的持久性机制</font>
 - undolog主要用于事务的回滚和MVCC 多版本并发控制。
 
 ### binlog日志
@@ -29,6 +29,39 @@ binlog_format=ROW
   - 优点，不会出现某些特定情况下的存储过程、或function、或trigger的调用和触发无法被正确复制的问题
   - 会产生大量的日志
 - Mixed模式(混合模式)：以上两种模式的混合使用，一般的复制使用STATEMENT模式保存binlog，对于STATEMENT模式无法复制的操作使用ROW模式保存binlog，MySQL会根据执行的SQL语句选择日志保存方式
+
+**binlog写入机制**
+
+![](mysql-log/2.png)
+
+binlog日志在事务没有提交之前会想写入到binlog cache中， 每个线程都有一个binlog cache。在事务提交后才会一次性写入到文件系统的缓存file page中。
+
+然后mysql会根据你的sync_binlog配置决定是否马上刷新到磁盘中。
+
+- sync_binlog=0 的时候，表示每次提交事务都只 write到file page中，不 fsync到磁盘；
+- sync_binlog=1 的时候，表示每次提交事务都会执行 fsync；
+- sync_binlog=N(N>1) 的时候，表示每次提交事务都 write，但累积 N 个事务后才 fsync。
+
+**可以通过如下命令查看binlog_cache_size大小**
+
+```
+show variables like 'binlog_cache_size';
+```
+
+**验证binlog_cache_size设置是否合理**
+
+```
+mysql> show global status like 'binlog_cache_%';
++-----------------------+-------+
+| Variable_name         | Value |
++-----------------------+-------+
+| Binlog_cache_disk_use | 1008  | #记录了使用临时文件写二进制日志的次数，越小越好
+| Binlog_cache_use      | 5721  | #使用缓冲的次数。越小越好
++-----------------------+-------+
+2 rows in set (0.00 sec)
+```
+
+
 
 ### redo日志
 
@@ -64,8 +97,8 @@ InnoDB 的 redo log 是<font color=red>固定大小</font>（可以通过innodb_
 
 #### redo日志重要参数
 redo log buffer 的刷新到磁盘的时机由参数 <font color=red>innodb_flush_log_at_trx_commit</font> 参数控制，可取的值有：0、1、2
-- 0 : 提交事务的时候，不立即把 redo log buffer 里的数据刷入磁盘文件的，而是依靠 InnoDB 的主线程每秒执行一次刷新到磁盘。此时可能你提交事务了，结果 mysql 宕机了，然后此时内存里的数据全部丢失
-- 1 : 提交事务的时候，就必须把 redo log 从内存刷入到磁盘文件里去，只要事务提交成功，那么 redo log 就必然在磁盘里了
+- 0 : 表示每次事务提交时都只是把redo log留在 redo log buffer 中。此时可能你提交事务了，结果mysql宕机了，然后此时内存里的数据全部丢失。
+- 1 : 表示每次事务提交时都将redo log直接持久化到磁盘，只要事务提交成功，那么 redo log 就必然在磁盘里了
 - 2 : 提交事务的时候，把 redo 日志写入磁盘文件对应的 os cache 缓存里去，而不是直接进入磁盘文件，可能 1 秒后才会把 os cache 里的数据写入到磁盘文件里去
 
 可以看到，<font color=red>只有1才能真正地保证事务的持久性</font>，但是由于刷新操作 fsync() 是阻塞的，直到完成后才返回，我们知道写磁盘的速度是很慢的，因此 MySQL 的性能会明显地下降。如果不在乎事务丢失，0和2能获得更高的性能。
