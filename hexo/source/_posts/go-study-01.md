@@ -137,6 +137,10 @@ fmt.Println(*ints)
 
 当用new初始化后执行`(*ints)[0] = 1`是会报错的，因为此时data还没有指向数组。如果要分配数组，我们可以用append方法，这个方法是可以帮我们自动创建底层数组的。所以执行`*ints = append(*ints , 1)`是可以行得通的。
 
+### append方法
+
+在slice末尾添加元素，且长度加1，如果长度没有超过原数组的容量，则返回的还是指向原数组的slice，**否则就是指向新数组的slice**。
+
 ### slice切片的扩容
 
 append是如果容量不够，slice会自动扩容。扩容的原理其实是新建一个底层数组，先将之前数组的元素复制过来，再将新元素追加到后面，然后返回新的 slice，底层数组改变。
@@ -158,3 +162,126 @@ slice的扩容预估规则是怎么样的呢，我们假设原来的容量为old
 - 否则在细分
   - oldLen < 1024   则  newCap = cap
   - oldLen >= 1024 则 扩容1/4 ， 即 newCap = oldCap * 1.25
+
+### panic和recover异常处理
+
+panic和recover是golang中用于处理错误的函数。
+
+- panic的作用是**抛出一条错误信息**，在函数执行过程中的某处调用了panic，则立即抛出一个错误信息，同时函数的正常执行流程终止。但在终止之前定义的defer函数会被执行，之后该goroutine立即停止执行。
+- recover()用于将**panic的信息捕捉**。recover**必须**定义在panic之前的defer语句中(如果不定义在defer则不会生效返回nil)。在这种情况下，当panic被触发时，该goroutine不会简单的终止，而是会执行在它之前定义的defer语句。
+- 需要注意一点，触发panic时整个进程都会挂掉，而不是单单触发panic的协程。
+
+```go
+func TestPanicDemo(t *testing.T){
+    defer func() {
+        if err := recover(); err != nil {
+            fmt.Println("错误 :", err)
+		}
+    }
+    fmt.Println("a")
+	panic("n")
+	fmt.Println("b") //这里不会在执行了
+}
+//输出 ：
+// a
+// 错误 :n
+
+// 下面代码启动了20个协程输出数据，当数字是5的时候抛出panic错误。
+func TestDemo3(t *testing.T) {
+	var wg sync.WaitGroup
+	for i := 0; i < 20; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer func() {
+				wg.Done()
+                  // 如果下面的代码注释掉，当输出5的协程执行panic后整个进程都会挂掉。
+				if err := recover() ; err != nil {fmt.Println(err)} 
+			}()
+			if i == 5 {
+				panic("错误 5")
+			}else {
+				fmt.Println(i)
+			}
+
+		}(i)
+	}
+	wg.Wait()
+}
+
+
+```
+
+### 切片和数组的range
+
+看下面的代码，分别分析他们的执行结果
+
+```go
+func TestOther(t *testing.T) {
+	a := [3]int{1, 2, 3}
+	for k, v := range a {
+		if k == 0 {
+			a[0], a[1] = 100, 200
+			fmt.Println(a)
+		}
+		a[k] = 100 + v
+	}
+	fmt.Println(a)
+
+	b := []int{1, 2, 3}
+	for k, v := range b {
+		if k == 0 {
+			b[0], b[1] = 100, 200
+			fmt.Println(b)
+		}
+		b[k] = 100 + v
+	}
+	fmt.Print(b)
+}
+[100 200 3]
+[101 102 103]
+[100 200 3]
+[101 300 103]
+```
+
+在range开始迭代时就浅拷贝了一个副。
+
+- 对数组来说，相当于拷贝了一个新的数组进行迭代，修改原数组不会影响被迭代数组。
+- 对于切片来说，range拷贝出来的切片与原切片底层是同一个数组，因此对原切片的修改也会影响到被迭代切片。
+
+继续看下面的例子，最终输出的map不是我们预期的。原因是：
+
+因为我们说range是值拷贝，所以对于程序来说，stu 是在 for中申请的一个局部变量，地址为：0x42114e100， 每次拷贝stus中对应的值。所以最终map里面存的都是同一个地址。
+
+```go
+func TestOther(t *testing.T){
+    type student struct {
+        Name string
+        Age  int
+	}
+    m := make(map[string]*student)
+    stus := []student{
+        {Name: "zhou", Age: 24},
+        {Name: "li", Age: 23},
+        {Name: "wang", Age: 22},
+    }
+    for _, stu := range stus {
+        m[stu.Name] = &stu
+    }
+    fmt.Printf("%+v\n", m)
+    for k, v := range m {
+        fmt.Printf("k:%s v:%v\n", k, v)
+    }
+}
+//map[zhou:0x42114e100 li:0x42114e100 wang:0x42114e100]
+//k:li v:&{wang 22}
+//k:wang v:&{wang 22}
+//k:zhou v:&{wang 22}
+```
+
+### channel的几种情况
+
+- 对一个关闭的通道再发送值就会导致panic。
+- 一个关闭的通道进行接收会一直获取值直到通道为空，再获取时会得到对应类型的零值。
+- 关闭一个已经关闭的通道会导致panic。
+- 使用`for range`遍历通道时，当通道关闭的时候会退出`for range`。
+- 使用`for range`遍历通道时，若通道内没值，会一直阻塞。
