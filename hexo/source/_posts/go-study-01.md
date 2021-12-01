@@ -285,3 +285,12 @@ func TestOther(t *testing.T){
 - 关闭一个已经关闭的通道会导致panic。
 - 使用`for range`遍历通道时，当通道关闭的时候会退出`for range`。
 - 使用`for range`遍历通道时，若通道内没值，会一直阻塞。
+
+### defer使用的坑
+
+defer使用的使用注意三个规则就不会错。
+
+- 规则一：当defer被声明时，其参数就会被实时解析。
+- 规则二：defer执行顺序为先进后出。
+- 规则三 defer可以读取有名返回值。
+
