@@ -1,12 +1,16 @@
 ---
 title: 创建你的第一条substrate链
 tags:
-  - 区块链
-categories:  区块链
-description : 创建你的第一条substrate链
-date: 2020-10-30 13:53:30
+
+- 区块链
+  categories:  区块链
+  description : 创建你的第一条substrate链
+  date: 2020-10-30 13:53:30
+
 ---
+
 ### 教程
+
 wiki : https://substrate.dev/docs/zh-CN/tutorials/create-your-first-substrate-chain/interact
 
 教程 : https://zhuanlan.zhihu.com/p/342576492
@@ -101,3 +105,8 @@ sudo apt install yarn
 curl https://getsubstrate.io -sSf | bash -s -- --fast  #设置--fast可以不设置
 ```
 
+### 区块链系统的通信环境
+
+- 同步网络：即整个网络环境里存在一个最大的延迟上界。也就是说，我知道一个消息发给Alice，一秒钟之内(确定的时间)可以到达。
+- 半同步网络：即网络存在一个最大的网络延迟，但是这个网络延迟是一个未知的，我们不知道发出消息是一分钟内到达还是十分钟内到达，但我们知道这个网络延迟，它不是无限大的，所以一定会达到。这个还可以衍生出另外一个模型叫最终同步假设。比如说我不知道整个网络是否分片了，也不知道它分片了多久，可能是一个小时等等，但我知道分片是有限时长，过完这个网络分片的时间，我的网络又恢复到了一个同步状态。
+- 异步网络：即安全假设最少的模型，我们叫异步模型，异步模型指的是网络存在延迟，而且这种延迟不仅是未知的，还可以任意大的。

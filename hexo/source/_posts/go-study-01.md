@@ -1,12 +1,16 @@
 ---
+
 title: GoLang学习笔记备忘
 tags:
-  - GoLang
-categories: 
-  - GoLang
-description : 
-date: 2021-05-18 17:14:00
+
+- GoLang
+  categories: 
+- GoLang
+  description : 
+  date: 2021-05-18 17:14:00
+
 ---
+
 ### 什么时候用指针？
 
 - 不要对 map、slice、channel 这类引用类型使用指针；
@@ -21,9 +25,9 @@ date: 2021-05-18 17:14:00
 
 ```go
 type Slice struct {
-	Data unsafe.Pointer	 // 指向底层数组的指针
-	Len  int			 // 切片的已存储的长度
-	Cap  int			 // 切片的容量
+    Data unsafe.Pointer     // 指向底层数组的指针
+    Len  int             // 切片的已存储的长度
+    Cap  int             // 切片的容量
 }
 ```
 
@@ -31,13 +35,13 @@ type Slice struct {
 
 ```go
 func TestSlice(t *testing.T) {
-	a := [8]int{0, 1, 2, 3, 4, 5, 6, 7}
-	s1 := a[0:5]
-	fmt.Printf("切片的len = %d, cap = %d \n", len(s1) , cap(s1))
+    a := [8]int{0, 1, 2, 3, 4, 5, 6, 7}
+    s1 := a[0:5]
+    fmt.Printf("切片的len = %d, cap = %d \n", len(s1) , cap(s1))
     s2 := a[3:5]
-	fmt.Printf("切片的len = %d, cap = %d \n", len(s2) , cap(s2))
+    fmt.Printf("切片的len = %d, cap = %d \n", len(s2) , cap(s2))
     s1 = append(s1,16)
-	fmt.Println(a)
+    fmt.Println(a)
 }
 //打印结果
 //切片的len = 5, cap = 8 
@@ -58,7 +62,7 @@ func TestSlice(t *testing.T) {
 ```go
 func TestSlice(t *testing.T) {
     a := [8]int{0, 1, 2, 3, 4, 5, 6, 7}
-	s3 := a[6:]
+    s3 := a[6:]
     s3 = append(s3,19)
     fmt.println(a)
 }
@@ -83,8 +87,8 @@ func new(Type) *Type
 
 ```go
 func TestNew(t *testing.T) {
-	a := new(int64)
-	fmt.Printf("指针变量a的类型: %T  指针变量a指向的值: %v 指针变量a的值: %v \n", a, *a, a)
+    a := new(int64)
+    fmt.Printf("指针变量a的类型: %T  指针变量a指向的值: %v 指针变量a的值: %v \n", a, *a, a)
     // 指针变量a的类型: *int64  指针变量a指向的值: 0 指针变量a的值: 0xc00000a300 
 }
 ```
@@ -108,7 +112,7 @@ func make(t Type, size ...IntegerType) Type
 假设有如下代码，此时我只是证明了一个int类型的切片，那么此时这个切片结构的data = nil , len = 0 , cap = 0.
 
 ```go
-var ints []int		#声明一个切片类型
+var ints []int        #声明一个切片类型
 ```
 
 当我们使用make函数为其分配内存时
@@ -126,7 +130,7 @@ ints = append(ints, 16)
 
 ```go
 ints := new([]int)
-(*ints)[0] = 1		// 此时这一句会报错
+(*ints)[0] = 1        // 此时这一句会报错
 *ints = append(*ints , 1)
 fmt.Println(*ints)
 ```
@@ -147,10 +151,10 @@ append是如果容量不够，slice会自动扩容。扩容的原理其实是新
 
 ```go
 func TestSlice(t *testing.T) {
-	ints := []int{1,2}
-	fmt.Printf("切片ints len = %d , cap = %d \n" , len(ints) , cap(ints))
-	ints = append(ints,3,4,5)
-	fmt.Printf("切片ints len = %d , cap = %d \n" , len(ints) , cap(ints))
+    ints := []int{1,2}
+    fmt.Printf("切片ints len = %d , cap = %d \n" , len(ints) , cap(ints))
+    ints = append(ints,3,4,5)
+    fmt.Printf("切片ints len = %d , cap = %d \n" , len(ints) , cap(ints))
 }
 //切片ints len = 2 , cap = 2 
 //切片ints len = 5 , cap = 6
@@ -176,11 +180,11 @@ func TestPanicDemo(t *testing.T){
     defer func() {
         if err := recover(); err != nil {
             fmt.Println("错误 :", err)
-		}
+        }
     }
     fmt.Println("a")
-	panic("n")
-	fmt.Println("b") //这里不会在执行了
+    panic("n")
+    fmt.Println("b") //这里不会在执行了
 }
 //输出 ：
 // a
@@ -188,27 +192,25 @@ func TestPanicDemo(t *testing.T){
 
 // 下面代码启动了20个协程输出数据，当数字是5的时候抛出panic错误。
 func TestDemo3(t *testing.T) {
-	var wg sync.WaitGroup
-	for i := 0; i < 20; i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer func() {
-				wg.Done()
+    var wg sync.WaitGroup
+    for i := 0; i < 20; i++ {
+        wg.Add(1)
+        go func(i int) {
+            defer func() {
+                wg.Done()
                   // 如果下面的代码注释掉，当输出5的协程执行panic后整个进程都会挂掉。
-				if err := recover() ; err != nil {fmt.Println(err)} 
-			}()
-			if i == 5 {
-				panic("错误 5")
-			}else {
-				fmt.Println(i)
-			}
+                if err := recover() ; err != nil {fmt.Println(err)} 
+            }()
+            if i == 5 {
+                panic("错误 5")
+            }else {
+                fmt.Println(i)
+            }
 
-		}(i)
-	}
-	wg.Wait()
+        }(i)
+    }
+    wg.Wait()
 }
-
-
 ```
 
 ### 切片和数组的range
@@ -217,25 +219,25 @@ func TestDemo3(t *testing.T) {
 
 ```go
 func TestOther(t *testing.T) {
-	a := [3]int{1, 2, 3}
-	for k, v := range a {
-		if k == 0 {
-			a[0], a[1] = 100, 200
-			fmt.Println(a)
-		}
-		a[k] = 100 + v
-	}
-	fmt.Println(a)
+    a := [3]int{1, 2, 3}
+    for k, v := range a {
+        if k == 0 {
+            a[0], a[1] = 100, 200
+            fmt.Println(a)
+        }
+        a[k] = 100 + v
+    }
+    fmt.Println(a)
 
-	b := []int{1, 2, 3}
-	for k, v := range b {
-		if k == 0 {
-			b[0], b[1] = 100, 200
-			fmt.Println(b)
-		}
-		b[k] = 100 + v
-	}
-	fmt.Print(b)
+    b := []int{1, 2, 3}
+    for k, v := range b {
+        if k == 0 {
+            b[0], b[1] = 100, 200
+            fmt.Println(b)
+        }
+        b[k] = 100 + v
+    }
+    fmt.Print(b)
 }
 [100 200 3]
 [101 102 103]
@@ -257,7 +259,7 @@ func TestOther(t *testing.T){
     type student struct {
         Name string
         Age  int
-	}
+    }
     m := make(map[string]*student)
     stus := []student{
         {Name: "zhou", Age: 24},
@@ -280,11 +282,29 @@ func TestOther(t *testing.T){
 
 ### channel的几种情况
 
-- 对一个关闭的通道再发送值就会导致panic。
-- 一个关闭的通道进行接收会一直获取值直到通道为空，再获取时会得到对应类型的零值。
-- 关闭一个已经关闭的通道会导致panic。
-- 使用`for range`遍历通道时，当通道关闭的时候会退出`for range`。
-- 使用`for range`遍历通道时，若通道内没值，会一直阻塞。
+1. 对一个关闭的通道再发送值就会导致panic。
+2. 一个关闭的通道进行接收会一直获取值直到通道为空，再获取时会得到对应类型的零值。
+3. 关闭一个已经关闭的通道会导致panic。
+4. 使用`for range`遍历通道时，当通道关闭的时候会退出`for range`。
+5. 使用`for range`遍历通道时，若通道内没值，会一直阻塞。
+
+第5条需要注意下，如果close(ch2)注释掉的话，程序会报错，因为在go func()执行完后ch2没有生产者生产数据了，就会报错。所以在生产者结束后要close()下，这样range才能正常退出。
+
+```go
+func TestOther(t *testing.T) {
+    ch2 := make(chan int, 1)
+    go func() {
+        for i := 0; i < 10; i++ {
+            ch2 <- i
+            time.Sleep(time.Second)
+        }
+        //close(ch2)
+    }()
+    for i := range ch2 {
+        fmt.Println("main" , i)
+    }
+}
+```
 
 ### defer使用的坑
 
@@ -294,3 +314,28 @@ defer使用的使用注意三个规则就不会错。
 - 规则二：defer执行顺序为先进后出。
 - 规则三 defer可以读取有名返回值。
 
+例如下面例子1，文档中说defer语句在方法返回“时”触发，也就是说return和defer是“同时”执行的。`return result`执行的是将result值赋值给返回值，也就是`retValue = result`。接着检查是否有defer，如果有则执行，对于下面的例子，defer操作的是result而不是retValue(返回值)。
+
+例如下面例子2与例子1的不同是例子2采用了`命名返回值`，所以在例子2里面就少了`retValue = result`的操作，所以没有创建`retValue`的过程，`result`就是`retValue`，defer对于result的修改也会被直接返回。
+
+```go
+func TestOther(t *testing.T) {
+    fmt.Println(returnValues())    //输出0
+    fmt.Println(namedReturnValues()) // 输出1
+}
+// 例子1
+func returnValues() int{
+    result := 0
+    defer func() {
+        result++
+    }()
+    return result
+}
+//例子2
+func namedReturnValues() (result int){
+    defer func(){
+        result++
+    }()
+    return result
+}
+```

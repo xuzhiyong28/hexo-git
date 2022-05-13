@@ -1,11 +1,15 @@
 ---
+
 title: Docker学习笔记
 tags:
-  - Docker
-categories:  Docker
-description : Docker学习笔记
-date: 2019-07-18 10:00:00
+
+- Docker
+  categories:  Docker
+  description : Docker学习笔记
+  date: 2019-07-18 10:00:00
+
 ---
+
 ### Docker安装
 
 ```sh
@@ -26,7 +30,6 @@ yum install docker-ce docker-ce-cli containerd.io
 
 #使用docker version查看是否按照成功 
 docker version
-
 ```
 
 ### Docker镜像常用命令
@@ -43,7 +46,7 @@ docker build -f Dockerfile -t 镜像名:[tag] . #构建一个镜像
 
 ```shell
 #从image创建容器并启动
-docker run [可选参数] image | docker container run [可选参数] image
+docker run [可选参数] image:tag | docker container run [可选参数] image:tagdo
 #参书说明 
 --name="Name" 容器名字 tomcat01 tomcat02 用来区分容器 
 -d 后台方式运行 
@@ -60,8 +63,6 @@ docker rm 容器id/名称
 #查看容器
 docker inspect 容器id/名称
 ```
-
-
 
 ### Docker-Compose常用命令
 
@@ -85,4 +86,3 @@ docker-compose ps
 #输出内容包括当前状态、容器运行的命令以及网络端口，但是不会删除卷和镜像
 docker-compose down
 ```
-
