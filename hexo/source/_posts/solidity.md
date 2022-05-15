@@ -332,8 +332,418 @@ contract TrantCall{
 ```
 
 - depositEther转账方法，调用者必须执行传msg.value。这样以太币就会将币从msg.sender传给这个合约。合约里面不用做任何东西，做多做个验证。
-
 - exitTokens提取方法，通过指定amount(单位是wei),之后会合约上扣除对应的以太币，然后msg.sender会加入相应的以太币，假如以太币不够将会报错。
+
+### Solidity知识点
+
+#### Error错误
+
+solidity错误处理分成以下几种:
+
+- require : 用于在执行之前验证输入和条件。
+- revert : 类似于 require，但是能自定义错误结构，且当require后面的错误信息很多时用revert代替更省GAS。
+- assert : 是用来检查不应该是错误的代码。失败的断言可能意味着有一个错误，这个基本用于内部测试。
+
+```javascript
+pragma solidity ^0.8.10;
+
+contract Error {
+
+    error InsufficientBalance(uint256 balance , string errorStr);
+
+    function testRequire(uint256 _i) public pure {
+        require(_i > 10, "Input must be greater than 10");
+    }
+
+    function testRevert(uint256 _i) public pure {
+        if (_i <= 10) {
+            //revert("Input must be greater than 10");
+            revert InsufficientBalance({balance : _i, errorStr : "error is wrong"});
+        }
+    }
+
+    function testAssert(uint256 _i) public pure {
+        assert(_i == 0);
+    }
+}
+```
+
+#### pure和view
+
+两个都用来修饰solidity方法。
+
+- pure : 修饰的方法里面不涉及到任何对状态变量的修改和读取。
+- view : 修饰的方法里面可以涉及到状态的读取但是不能涉及到状态的修改。
+
+```javascript
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+contract ViewAndPure {
+    uint public x = 1;
+    function addToX(uint y) public view returns (uint) {
+        return x + y;
+    }
+    function add(uint i, uint j) public pure returns (uint) {
+        return i + j;
+    }
+}
+```
+
+#### fallback回退函数
+
+fallback是一个函数，它不接受任何参数，也不返回任何值。
+
+它可以在以下情况下执行 ：
+
+- 一个不存在的函数被调用时触发
+- 当对一个合约发送ETH时
+- - 如果`msg.data`  不为空，则触发fallback
+  - 如果`msg.data`为空，判断合约是否有`receive`函数，如果有则触发`receive`而不触发`fallbck`，如果没有则触发`fallback`
+
+![](solidity/6.png)
+
+```javascript
+pragma solidity ^0.8.10;
+contract Fallback {
+    event Log(uint gas);
+    fallback() external payable {
+        emit Log(gasleft());
+    }
+    function getBalance() public view returns (uint) {
+        return address(this).balance;
+    }
+}
+
+contract SendToFallback {
+
+    function transferToFallback(address payable _to) public payable {
+        _to.transfer(msg.value);
+    }
+
+    function callFallback(address payable _to) public payable {
+        (bool sent, ) = _to.call{value: msg.value}("");
+        require(sent, "Failed to send Ether");
+    }
+
+    function despoist() public payable {}
+}
+```
+
+这里说一下上面的这种写法`_to.call{value: msg.value}("")` : 这种方法是当我们使用call进行转账时的写法，表示我需要向_to的地址转msg.value的ETH，并且传入("")的值。
+
+#### call方法调用合约
+
+call函数是通过地址调用其他合约的方法，如果调用的方法不存在且对方的fallback方法存在的话，就会触发对方的fallback。
+$$
+(bool success, bytes memory data)  = _addr.call{value: msg.value, gas: 5000}(abi.encodeWithSignature("foo(string,uint256)",参数1, 参数2))
+$$
+
+```javascript
+pragma solidity ^0.8.10;
+
+contract Receiver {
+    event Received(address caller, uint amount, string message);
+
+    fallback() external payable {
+        emit Received(msg.sender, msg.value, "Fallback was called");
+    }
+
+    function foo(string memory _message, uint _x) public payable returns (uint) {
+        emit Received(msg.sender, msg.value, _message);
+        return _x + 1;
+    }
+}
+
+contract Caller {
+    event Response(bool success, bytes data);
+    function testCallFoo(address payable _addr) public payable {
+       (bool success, bytes memory data)  = _addr.call{value: msg.value, gas: 5000}(
+           abi.encodeWithSignature("foo(string,uint256)","call foo", 123)
+           );
+        emit Response(success, data);
+    }
+
+    function testCallDoesNotExist(address _addr) public {
+        (bool success, bytes memory data) = _addr.call(
+            abi.encodeWithSignature("doesNotExist()")
+        );
+        emit Response(success, data);
+    }
+}
+```
+
+#### Try Cache
+
+Try/Cache只能捕获来自外部函数调用和契约创建的错误。他的好处是我们知道错误但是可以自己处理可以不被回滚。
+
+```javascript
+pragma solidity ^0.8.10;
+contract Foo {
+	address public owner;
+	constructor(address _owner) {
+        require(_owner != address(0), "invalid address");
+        assert(_owner != 0x0000000000000000000000000000000000000001);
+        owner = _owner;
+    }
+    function myFunc(uint x) public pure returns (string memory) {
+    	require(x != 0, "require failed");
+        return "my func was called";
+    }
+}
+contract Bar {
+    event Log(string message);
+    event LogBytes(bytes data);
+    Foo foo;
+    constructor(){
+        foo = Foo(msg.sender); // 创建foo合约
+    }
+    
+    // tryCatchExternalCall(0) => Log("external call failed")
+    // tryCatchExternalCall(1) => Log("my func was called")
+    function tryCatchExternalCall(uint _i) public {
+        try foo.myFunc(_i) returns (string memory result){
+            emit Log(result);
+        }cache {
+            emit Log("external call failed");
+        }
+    }
+    
+    // tryCatchNewContract(0x0000000000000000000000000000000000000000) => Log("invalid address")
+    // tryCatchNewContract(0x0000000000000000000000000000000000000001) => LogBytes("")
+    // tryCatchNewContract(0x0000000000000000000000000000000000000002) => Log("Foo created")
+    function tryCatchNewContract(address _owner) public {
+        try new Foo(_owner) returns (Foo foo) {
+            emit Log("Foo created");
+        } cache Error(string memory reason) {
+            emit Log(reason);
+        } catch (bytes memory reason) {
+            emit LogBytes(reason);
+        }
+    }
+}
+```
+
+#### Hash函数
+
+Solidity的哈希函数主要使用内置的`keccak256`方法，他固定返回一个`byte32`类型。在做哈希函数之前需要通过`abi.encodePacked()`或者`abi.encode`进行打包。
+
+```javascript
+pragma solidity ^0.8.10;
+
+contract HashFunction {
+    function hash(
+        string memory _text,
+        uint _num,
+        address _addr
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_text, _num, _addr));
+    }
+
+    function collision(string memory _text, string memory _anotherText)
+        public
+        pure
+        returns (bytes32)
+    {
+        // encodePacked(AAA, BBB) -> AAABBB
+        // encodePacked(AA, ABBB) -> AAABBB
+        // 使用abi.encodePacked进行打包有可能出现哈希碰撞，，可以使用abi.encode。或者两个参数之间加一个固定参数，例如
+        // encodePacked(AA,1,BBB)
+        return keccak256(abi.encodePacked(_text, _anotherText));
+    }
+}
+contract GuessTheMagicWord {
+    bytes32 public answer =
+        0x60298f78cc0b47170ba79c10aa3851d7648bd96f2f8e46a19dbc777c36fb0c00;
+    function guess(string memory _word) public view returns (bool) {
+        return keccak256(abi.encodePacked(_word)) == answer;
+    }
+}
+```
+
+#### 签名验证
+
+通过智能合约来验证签名主要有下面几个流程 :
+
+1. 在链下对Msg进行签名，签名需要签名者的私钥。web3js有提供对应的函数。
+2. 在线上进行验证签名
+
+web3js链下签名
+
+```javascript
+const signature = await web3.eth.accounts.sign(
+        'Hello world',      // 信息串
+        "e5861347faf0f99409666f0f27dee18832624d2f3d16f1f9f5becda9c025669d"  //私钥
+    	// 私钥对应的地址 : 0xb4551baB04854a09b93492bb61b1B011a82cC27A
+    );
+    console.log(signature);
+    /*{
+        message: 'Hello world',
+        messageHash: '0x8144a6fa26be252b86456491fbcd43c1de7e022241845ffea1c3df066f7cfede',
+        v: '0x1c',
+        r: '0x46cf25d4dee9fc569f76a9328d7e915e27e33d543fb8eeb4cba7d733d7fb9dc8',
+        s: '0x49c7d90ede2cab188d1a3a40c8edf71317d0ca730078cb8de0f7ddf84b9c07af',
+        signature: '0x46cf25d4dee9fc569f76a9328d7e915e27e33d543fb8eeb4cba7d733d7fb9dc849c7d90ede2cab188d1a3a40c8edf71317d0ca730078cb8de0f7ddf84b9c07af1c'
+    }*/
+```
+
+solidity线上验证签名
+
+```javascript
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+contract VerifySignature {
+    
+    function recoverSigner(bytes32 _ethSignedMessageHash, bytes memory _signature) public pure returns (address) {
+        (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
+        return ecrecover(_ethSignedMessageHash, v, r, s);
+    }
+
+    // 解析签名
+    function splitSignature(bytes memory sig) public pure returns (bytes32 r,bytes32 s,uint8 v){
+        require(sig.length == 65, "invalid signature length");
+        assembly {
+            r := mload(add(sig, 32))
+            s := mload(add(sig, 64))
+            v := byte(0, mload(add(sig, 96)))
+        }
+    }
+}
+```
+
+测试方法 ：取`messageHash` 和`signature` 执行recoverSigner合约方法判断返回的地址。
+
+```javascript
+recoverSigner('0x8144a6fa26be252b86456491fbcd43c1de7e022241845ffea1c3df066f7cfede','0x46cf25d4dee9fc569f76a9328d7e915e27e33d543fb8eeb4cba7d733d7fb9dc849c7d90ede2cab188d1a3a40c8edf71317d0ca730078cb8de0f7ddf84b9c07af1c')
+```
+
+#### 继承
+
+继承的写法就是用`is`。  `contract B is A ` 就是表示B继承了A的方法。这样依赖B就可以使用A定义的方法了。
+
+继承后如果B想要重写A的方法，则A合约方法上必须加`virtual`修饰表示方法支持重写，并且B合约重写时需要加`override`。
+
+如果还有一个C继承了B并且要重写A和B都有的方法，那么B合约的方法上就同时加`virtual`和`override`进行修饰。
+
+#### 通过工厂合约创建合约并给予ETH
+
+```javascript
+pragma solidity ^0.8.10;
+
+contract Account {
+    address public bank;
+    address public owner;
+    constructor(address _owner) payable {
+        bank = msg.sender;
+        owner = _owner;
+    }
+}
+
+contract AccountFactory {
+    Account[] public accounts;
+    function createAccount(address _owner) external payable {
+        Account account = new Account{value: msg.value}(_owner);
+        accounts.push(account);
+    }
+}
+```
+
+#### 两种对方法签名的方式
+
+我们使用`call`调用合约函数的时候通常需要通过abi.encodeWithSignature进行编码。除了这个方法还有一个等价的方法，那就是abi.encodeWithSelector。
+
+```javascript
+// 假设要对TestDelegateCall.sol合约的setVars(uint256 x)进行编码
+abi.encodeWithSignature("setVars(uint256)", 100) == abi.encodeWithSelector(TestDelegateCall.setVars.selector,100)
+```
+
+#### create2内联汇编
+
+xxx
+
+#### 委托调用DelegateCall
+
+##### 传统调用call
+
+A账户 call B , send  100 wei .  B call C , send  50 wei
+
+此时在C的视角中， msg.sender = B , msg.value = 50 wei . 此时如果有更改状态的话更改的就是C的状态。50wei被存在C上。
+
+#### 委托调用delegatecall
+
+A账户 call B , send  100 wei .  B delegatecall C , send  50 wei
+
+此时在C的视角中，msg.sender = A , msg.value = 100 wei . 此时如果有更改状态的话更改的是B的状态。100wei被存到B上。
+
+```javascript
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+contract TestDelegateCall {
+    uint public num;
+    address public sender;
+    uint public value;
+
+    function setVars(uint _num) external payable {
+        num = _num;
+        sender = msg.sender;
+        value = msg.value;
+    }
+}
+
+contract DelegateCall {
+    uint public num;
+    address public sender;
+    uint public value;
+    function setVars(address _test, uint _num) external payable {
+        (bool success , bytes memory data ) =_test.delegatecall(abi.encodeWithSignature("setVars(uint256)", _num));
+        require(success, "delegateCall failed");
+    }
+}
+```
+
+#### abi解编码
+
+直接看函数
+
+```javascript
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+contract AbiDecode {
+    struct MyStruct {
+        string name;
+        uint[2] nums;
+    }
+    function encode(uint x, address addr, uint[] calldata arr, MyStruct calldata   )
+    external pure returns (bytes memory) 
+    {
+        return abi.encode(x, addr, arr, myStruct);
+    }
+
+    function decode(bytes calldata data) external pure returns (
+            uint x,
+            address addr,
+            uint[] memory arr,
+            MyStruct memory myStruct
+        )
+    {
+        // (uint x, address addr, uint[] memory arr, MyStruct myStruct) = ...
+        (x, addr, arr, myStruct) = abi.decode(data, (uint, address, uint[], MyStruct));
+    }
+}
+```
+
+#### 小狐狸签名
+
+```
+// 浏览器 F12
+ethereum.enable()
+account = "0xb4551baB04854a09b93492bb61b1B011a82cC27A"
+hash = "xuzhiyong"
+ethereum.request({method:"personal_sign",params:[account,hash]})
+```
+
+
 
 ### keystore详解
 
