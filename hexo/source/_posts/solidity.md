@@ -292,6 +292,8 @@ contract Hacker {
 }
 ```
 
+![](solidity/7.png)
+
 ### solidity合约状态值在底层存储
 
 - 认为一个合约对应了一条无限长的磁带，磁带上以32字节为单位，拥有无数个存储槽；每个存储槽的位置就是它的key，也是用32字节表示。
@@ -402,6 +404,8 @@ fallback是一个函数，它不接受任何参数，也不返回任何值。
   - 如果`msg.data`为空，判断合约是否有`receive`函数，如果有则触发`receive`而不触发`fallbck`，如果没有则触发`fallback`
 
 ![](solidity/6.png)
+
+注 : 我做了一个测试，当向合约发送ETH且msg.data不为空时，如果此时msg.data是一个不存在的函数时才会触发fallback。如果msg.data是一个存在的函数，不会触发fallback。
 
 ```javascript
 pragma solidity ^0.8.10;
@@ -741,6 +745,26 @@ ethereum.enable()
 account = "0xb4551baB04854a09b93492bb61b1B011a82cC27A"
 hash = "xuzhiyong"
 ethereum.request({method:"personal_sign",params:[account,hash]})
+```
+
+#### Solidity-Delete
+
+- delete操作符可以用于任何变量，将其设置成默认值0。
+- 如果对`动态数组`使用delete,则删除所有元素，其长度变成0.
+- 如果对`静态数组`使用delete,则将数组内所有元素设置成默认值。
+- 如果对数组的其中一个元素使用delete,例如`delete array[2]`,则把对应的位置设置为默认值，并不会减少长度。
+- 对于一个mapping,例如`mapping(address => uint256) public testMap` ,如果执行`delete testMap`没有任何效果，如果执行`delete testMap[xxx]`则xxx对应的value会被设置成默认值。
+- 删除结构体，会将所有成员变量置为初值。
+
+#### 初始化可转账合约
+
+如何在部署合约的时候就给合约ETH呢，可以通过在构造函数上加`payable`实现。
+
+```javascript
+contract X {
+	constructor() payable{
+    }
+}
 ```
 
 
