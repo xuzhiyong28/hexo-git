@@ -55,14 +55,20 @@ docker run [可选参数] image:tag | docker container run [可选参数] image:
 -P(大写) 随机指定端口
 
 #进入容器
-docker -it 容器id/名称 /bin/bash
+docker exec -it 容器id/名称 /bin/bash
 #停止，启动，重启，kill容器
 docker stop/start/restart/kill 容器id/名称
 #删除容器，此容器必须没在运行
 docker rm 容器id/名称
 #查看容器
 docker inspect 容器id/名称
+# 删除所有容器
+docker rm -f $(docker ps -aq)
+# 获取容器日志
+docker logs [-f 跟踪日志输出 -t 显示时间戳 --tail 仅列出最新N条容器日志] 容器ID/名称
 ```
+
+
 
 ### Docker-Compose常用命令
 
@@ -85,4 +91,63 @@ docker-compose ps
 
 #输出内容包括当前状态、容器运行的命令以及网络端口，但是不会删除卷和镜像
 docker-compose down
+
+# 校验Compose文件格式是否正确，若正确则显示配置，若格式错误显示错误原因
+docker-compose -f docker-compose.yml config
+
+# 列出docker-compose.yml所包含的镜像
+docker-compose [-f docker-compose.yml] images
+
+# 列出项目中目前的所有容器
+docker-compose [-f docker-compose.yml] skywalking.yml ps
+
+# 查看服务容器的输出
+docker-compose [-f docker-compose.yml] logs [elasticsearch]
+
+#常用选项
+-f file : 指定使用的 Compose 模板文件，默认为 docker-compose.yml，可以多次指定
+-p name : NAME 指定项目名称，默认将使用所在目录名称作为项目名
+–verbose :  输出更多调试信息
 ```
+
+### Docker-Compose模板
+
+```yaml
+version: "3.3"
+
+networks:
+  ems:
+    driver: bridge
+
+services:
+  mysqldb:
+    image: mysql:5.7.19
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - /home/docker-compose-demo/demo1/mysql/conf:/etc/mysql/conf.d
+      - /home/docker-compose-demo/demo1/mysql/logs:/logs
+      - /home/docker-compose-demo/demo1/mysql/data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - ems
+    depends_on:
+      - redis
+      
+  redis:
+    image: redis:4.0.14
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ems
+    volumes:
+      - /home/docker-compose-demo/demo1/redis/data:/data
+    command: redis-server
+```
+
+### 参考
+
+- https://developer.aliyun.com/article/825708#slide-10

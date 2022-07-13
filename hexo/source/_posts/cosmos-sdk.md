@@ -200,8 +200,8 @@ type BaseApp struct { // nolint: maligned
 	snapshotInterval   uint64 // block interval between state sync snapshots
 	snapshotKeepRecent uint32 // recent state sync snapshots to keep
 
-	checkState   *state  // 交易池连接所依赖的临时应用状态和上下文环境
-	deliverState *state  // 共识连接方法所依赖的临时应用状态和上下文环境
+	checkState   *state  // 用于交易检查的状态
+	deliverState *state  // 用于交易执行的状态
 
 	interBlockCache sdk.MultiStorePersistentCache
 
@@ -246,20 +246,27 @@ type Application interface {
 	// Info/Query Connection
 	Info(RequestInfo) ResponseInfo                // Return application info
 	SetOption(RequestSetOption) ResponseSetOption // Set application option
+    // 查询都会这个入口进去
 	Query(RequestQuery) ResponseQuery             // Query for state
 
 	// 在交易放入交易池之前做检查
+    // 调用逻辑 CheckTx-> baseApp.runTx -> 应用msg的ValidateBasic方法
 	CheckTx(RequestCheckTx) ResponseCheckTx // Validate a tx for the mempool
 
-	// 只在链初始化时调用一次，用于初始化链状态
+	// 只在链初始化时调用一次，用于初始化链状态，cosmos-sdk的baseapp实现了这个方法，并在里面调用他自己的方法initChainer
+    //InitChain -> app.initChainer -> 应用的InitGenesis
 	InitChain(RequestInitChain) ResponseInitChain
     // 当全网就新区块内容达成共识，需要将区块提交给上层应用执行，过程分成BeginBlock -> DeliverTx -> EndBlock -> Commit
     // BeginBlock方法用于通知上层应用一个新区块的到来。例如CosMosHub中为了激励参与共识的验证者而设计的通过膨胀铸造资产就发生在这一步
+    // 调用逻辑 BeginBlock -> baseApp.beginBlocker()
 	BeginBlock(RequestBeginBlock) ResponseBeginBlock 
 	// RequestDeliverTx记录区块中的交易，所以DeliverTx是将区块的交易一笔一笔给上层应用
+    // 调用逻辑 DeliverTx -> baseApp.runTx() -> baseApp.anteHandler() -> baseApp.runMsgs() -> 应用模块上handler
     DeliverTx(RequestDeliverTx) ResponseDeliverTx    // Deliver a tx for full processing
     // 通知上层应用当前区块的交易已经发送完毕。一般在EndBlock做链上惩罚
-	EndBlock(RequestEndBlock) ResponseEndBlock       
+    // 调用逻辑 EndBlock -> baseApp.endBlocker() -> 应用各个模块的EndBlock方法
+	EndBlock(RequestEndBlock) ResponseEndBlock
+    // 调用逻辑 Commit() -> baseApp.cms.Commit()
 	Commit() ResponseCommit                          
 	// State Sync Connection
 	ListSnapshots(RequestListSnapshots) ResponseListSnapshots                // List available snapshots

@@ -179,3 +179,4 @@ as-if-serial语义的意思是：**不管怎么重排序（编译器和处理器
 ## 参考
 
 - https://www.toutiao.com/a6839502799437300237/
+  - https://baijiahao.baidu.com/s?id=1709086005694976168&wfr=spider&for=pc	
