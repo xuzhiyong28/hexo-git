@@ -288,9 +288,11 @@ func TestOther(t *testing.T){
 4. 使用`for range`遍历通道时，当通道关闭的时候会退出`for range`。
 5. 使用`for range`遍历通道时，若通道内没值，会一直阻塞。
 
-第5条需要注意下，如果close(ch2)注释掉的话，程序会报错，因为在go func()执行完后ch2没有生产者生产数据了，就会报错。所以在生产者结束后要close()下，这样range才能正常退出。
+注意 ： 造成阻塞的要特别注意，小心由于阻塞造成内存泄露。
 
 ```go
+// 使用`for range`遍历通道时，若通道内没值，会一直阻塞
+// 使用`for range`遍历通道时，当通道关闭的时候会退出`for range`
 func TestOther(t *testing.T) {
     ch2 := make(chan int, 1)
     go func() {
@@ -303,6 +305,32 @@ func TestOther(t *testing.T) {
     for i := range ch2 {
         fmt.Println("main" , i)
     }
+}
+
+// 对一个关闭的通道再发送值就会导致panic
+func TestOther(t *testing.T) {
+	testChan := make(chan int64, 10)
+	testChan <- 1
+	fmt.Println("set 1 success !")
+	close(testChan)
+	testChan <- 1
+}
+
+// 一个关闭的通道进行接收会一直获取值直到通道为空，再获取时会得到对应类型的零值。
+func TestOther(t *testing.T) {
+	ch := make(chan int64 , 1)
+	ch <- 1
+	close(ch)
+	for i := 0 ; i < 10 ; i++ {
+		fmt.Println(<- ch)
+	}
+}
+
+// 关闭一个已经关闭的通道会导致panic
+func TestOther(t *testing.T) {
+	ch := make(chan interface{} , 1)
+	close(ch)
+	close(ch)
 }
 ```
 
