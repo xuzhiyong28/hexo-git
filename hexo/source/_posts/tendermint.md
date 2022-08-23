@@ -4,7 +4,7 @@ date: 2022-05-18 10:04:46
 tags:sentry-Validator搭建模式
 ---
 
-### sentry-Validator搭建模式
+### 搭建模式
 
 ![](tendermint\1.png)
 
@@ -250,4 +250,68 @@ type nodeImpl struct {
 	prometheusSrv    *http.Server
 }
 ```
+
+### 提案者算法
+
+Tendermint 共识协议在每轮都会重新选择提案者，通过采用`轮换选择算法（round-robin algorithm）`保证验证者集合中的每个验证者都有机会被选中。由于每个验证者的投票权重有高有低，因此在采用轮换选择算法选取提案者时，需要保证每个验证者被选中的概率与其投票权重成正比。（ 轮转选择算法：以用优先队列（priority queue）直观理解该算法。想象所有的验证者位于优先队列中，并且每个验证者都根据自己的投票权重大小在优先队列中向队列头部移动（`投票权重越大，向队列头部移动的速度也就越快`））
+
+```go
+type Validator struct {
+	Address          []byte           			// 验证者地址
+	PubKey           crypto.PublicKey			// 验证者公钥
+	VotingPower      int64           			// 投票权重
+	ProposerPriority int64       				// 提案优先级
+}
+```
+
+假设两个验证者 P1 权重为1 ， P2权重为2。
+
+- A(i) : 表示第i个验证者的提案优先级。
+- VP(i) : 表示第i个验证者的投票权重。
+- P : 表示验证者集合的投票权重之和。
+- prop : 表示被选中的验证者。
+
+```go
+//伪代码
+def ProposerSelection(vset)
+// 更新提案优先级并选择提案者
+for each validator i in vset :
+	A(i) += VP(i)
+prop = max(A)
+A(prop) = A(prop) - P
+```
+
+![](tendermint\4.png)
+
+- 在第1轮时，根据`A(i) += VP(i)`每个验证者的优先级等于他的权重，所以优先级`(P1 = 1 , P2 = 3)`,这一轮P2被选为提案者，所以根据`A(P2) = A(P2) - P`, P2的优先级需要减去权重之和，也就是3 - 4 = -1。所以第1轮后优先级为`(P1 = 1, P2 = -1)`。
+- 在第2轮，还是根据上面的算法`A(i) += VP(i)`计算, (P1 =  1 + 1 = 2 , P2 = -1 + 3 = 2)。此时根据地址优先级选择P1作为提案者，所以根据`A(P1) = A(P1) - P`, P1的优先级需要减去权重之和，也就是P1  = 2 - 4 = -2。 所以第2轮后优先级`(P1 = -2, P2 = 2)`
+- 在第3轮，P2的优先级高选择P2作为提案者，根据上面算法`(P1 =  -2 + 1 = -1 , P2 = 2 + 3 = 5)`。这一轮P2被选为提案者，所以`P2 = 5 - 4 = 1`. 最终`(P1 = -1 , P2 = 1)`
+- 在第4轮，P2的优先级高P2作为提案者，根据算法`(P1 = -1 + 1 = 0 , P2 = 1 + 3 = 4)`.这一轮P2被选为提案者，所以 `P2 = 4 - 4 = 0`,最终`(P1 = 0 , P2 = 0)`
+- 第五轮开始时，两个的优先级又都是0了，于是乎跟从第一轮开始算i一样。
+
+### Client
+
+Tendermint Core 作为ABCI客户端向服务器发送ABCI请求，服务器将请求转发给实现了 Application 接口的上层应用进行处理并及时响应。为了能够支持上层应用的多种实现方式，Tendermint Core 的 ABCI 客户端 Client 被定义为接口类型。Tendermint Core 自身提供了 3 种 ABCI Client 实现方式：`localClient`、`grpcClient`、`socketClient`。与此相对应，上层应用需要实现 Application 接口并相应实现 ABCI Server。localClient 本身可以直接调用上层应用的 ABCI 方法，也因此无需实现独立的服务器功能。而 grpcClient 和 socketClient 分别通过 Google 远程过程调用以及套接字交互的形式完成相应通信，因此 Tendermint Core 中提供了对应的 ABCI Server 实现：`GRPCServer`、`SocketServer`。
+
+例如`localClient`实现了`Client`接口，而为了最小化权限管理，`Client`接口又可以区分成以下三个子接口:
+
+- AppConnMempool : 负责交易池连接类的方法调用。
+- AppConnConsensus : 负责共识连接类的方法调用。
+- AppConnQuery : 负责查询连接类的方法调用。
+
+### 共识分析
+
+https://blog.csdn.net/weixin_37504041/article/details/100164730
+
+https://www.jianshu.com/p/130b054b5552
+
+![](tendermint/5.png)
+
+每一轮的开始（New Round），节点对新一轮的区块进行提议。之后，合格的提议区块首先经过一轮预投票（Prevote）。在提议区块获得2/3以上的投票后，进入下一轮的预认可（Precommit），同样是待获得2/3以上的验证人预认可后，被提议区块就正式获得了认可（Commit）。而得到认可的这个区块就被添加的到区块链中。
+
+![](tendermint/6.png)
+
+### 一些学习连接
+
+https://blog.csdn.net/qq_31639829/article/details/116882163  (execution)
 

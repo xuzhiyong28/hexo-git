@@ -53,6 +53,7 @@ docker run [可选参数] image:tag | docker container run [可选参数] image:
 -it 使用交互方式运行，进入容器查看内容 
 -p 指定容器的端口 -p 8080(宿主机):8080(容器) 
 -P(大写) 随机指定端口
+docker run -it images:tag /bin/bash
 
 #进入容器
 docker exec -it 容器id/名称 /bin/bash

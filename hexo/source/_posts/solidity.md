@@ -342,9 +342,9 @@ contract TrantCall{
 
 solidity错误处理分成以下几种:
 
-- require : 用于在执行之前验证输入和条件。
+- require : 用于在执行之前验证输入和条件。require会回退剩下的gas。
 - revert : 类似于 require，但是能自定义错误结构，且当require后面的错误信息很多时用revert代替更省GAS。
-- assert : 是用来检查不应该是错误的代码。失败的断言可能意味着有一个错误，这个基本用于内部测试。
+- assert : 是用来检查不应该是错误的代码。失败的断言可能意味着有一个错误，这个基本用于内部测试，assert会烧掉所有的gas。
 
 ```javascript
 pragma solidity ^0.8.10;
@@ -369,6 +369,12 @@ contract Error {
     }
 }
 ```
+
+区别 ：
+
+- Require使用场景一般是用在`方法开头做一些校验`，一般是一些校验性的使用，如果被执行会退回用户剩下的gas。
+- Assert使用场景一般`用于预防不应该发生的情况`，尽量少用。assert会烧毁所有的gas，一般使用也是在方法末尾。
+- revert跟Require差不多，会退回用户剩下的gas。还支持自定义的错误，revert一般用于要输出更复杂的错误信息。`如果有复杂的 if/else 逻辑流，那么应该考虑使用 revert() 函数而不是require()`
 
 #### pure和view
 
@@ -598,6 +604,7 @@ solidity线上验证签名
 pragma solidity ^0.8.10;
 contract VerifySignature {
     
+    // 返回签名者的地址
     function recoverSigner(bytes32 _ethSignedMessageHash, bytes memory _signature) public pure returns (address) {
         (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
         return ecrecover(_ethSignedMessageHash, v, r, s);
