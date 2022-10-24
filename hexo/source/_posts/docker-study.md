@@ -67,6 +67,8 @@ docker inspect 容器id/名称
 docker rm -f $(docker ps -aq)
 # 获取容器日志
 docker logs [-f 跟踪日志输出 -t 显示时间戳 --tail 仅列出最新N条容器日志] 容器ID/名称
+# 删除volume
+ls -l /var/lib/docker/volumes|grep -Ev "metadata|backingFsBlockDev|grep"|awk '{print $NF}'|xargs rm -fr
 ```
 
 

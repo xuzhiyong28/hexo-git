@@ -18,7 +18,7 @@
 
   <!-- 页面元数据 -->
   
-    <title>Archive: 2020 - 咕噜。咕噜的博客</title>
+    <title>Archive: 2020 - 咕噜咕噜的博客</title>
   
   
 
@@ -52,6 +52,12 @@
   
 
   
+    
+      
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.18.1/styles/solarized-light.css">
+
+    
+  
   
     
 <link rel="stylesheet" href="/css/style.css">
@@ -66,9 +72,10 @@
 
   
   
-</head>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
 
 <body>
+  <script src="https://cdn.jsdelivr.net/gh/zyoushuo/Blog/hexo/js/sakura.js"></script>
   
   <div class="cover-wrapper">
     
@@ -77,10 +84,10 @@
   <div class='a'>
     
     
-      <p class="title">咕噜。咕噜</p>
+      <p class="title">Xuzy s'Blog</p>
     
     
-      <p class="subtitle">每天进步一点点。。。</p>
+      <p class="subtitle"><br/><font size=5>每天努力再多一点，就会发现很多事情并没有那么困难！</font></font></p>
     
   </div>
   <div class='b'>
@@ -429,6 +436,22 @@
         
           
         
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
       
     
     
@@ -447,8 +470,8 @@
         
           
   <h2 class="title">
-    <a href="/2020/07/20/db-w-r-dynamic/">
-      读写分离设计与思考
+    <a href="/2020/12/17/redis-known/">
+      Redis知识点扫盲
     </a>
   </h2>
 
@@ -462,7 +485,7 @@
               
 <div class='new-meta-item author'>
   <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
-    <img src="https://upload.jianshu.io/users/upload_avatars/8707811/949bce11-c063-4540-9c37-c86866ce4f1e.jpg?imageMogr2/auto-orient/strip|imageView2/1/w/240/h/240">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
     <p>咕噜。咕噜</p>
   </a>
 </div>
@@ -471,6 +494,14 @@
           
             
               
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/redis/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>redis</p>
+    </a>
+  </div>
+
 
             
           
@@ -478,7 +509,7 @@
               <div class="new-meta-item date">
   <a class='notlink'>
     <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Jul 20, 2020</p>
+    <p>发布于：Dec 17, 2020</p>
   </a>
 </div>
 
@@ -506,24 +537,322 @@
   <section class="article typo">
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="读写分离基本原理"><a href="#读写分离基本原理" class="headerlink" title="读写分离基本原理"></a>读写分离基本原理</h1><p>高性能数据库集群的第一种方式是“<strong><em>读写分离</em></strong>”，其本质是将访问压力分散到集群中的多个节点，但是没有分散存储压力；第二种方式是“分库分表”，既可以分散访问压力，又可以分散存储压力。</p>
-<p>读写分离的基本实现是：</p>
+        <p>Redis知识点扫盲</p>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2020/12/17/redis-known/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2020/12/10/io/">
+      IO知识详解
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/linux/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>linux</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Dec 10, 2020</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>IO知识详解</p>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2020/12/10/io/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2020/12/02/kafka-messge-complete/">
+      Kafka如何保证消息100%投递（四）
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/kafka/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>kafka</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Dec 2, 2020</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Kafka如何保证消息100%投递</p>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2020/12/02/kafka-messge-complete/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2020/11/11/mysql-lock/">
+      MySQL中InnoDB锁，死锁详解
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/mysql/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>mysql</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Nov 11, 2020</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="为什么有锁"><a href="#为什么有锁" class="headerlink" title="为什么有锁"></a>为什么有锁</h3><p>Mysql锁主要是为了解决多事务并发带来的问题。多事务并发分成以下三种情况：</p>
 <ul>
-<li>数据库服务器搭建主从集群，一主一从、一主多从都可以</li>
-<li>数据库主机负责读写操作，从机只负责读操作</li>
-<li>数据库主机通过复制将数据同步到从机，每台数据库服务器都存储了所有的业务数据</li>
-<li>业务服务器将写操作发给数据库主机，将读操作发给数据库从机</li>
+<li>读读，两个事务都只有读操作，不加锁。</li>
+<li>写写，多个未提交事务在对同一个记录做修改操作时，需要让操作排队，这就是用锁实现的。</li>
+<li>读写，Innodb中读操作利用多版本控制并发（MVCC），写操作使用锁来控制。</li>
 </ul>
-<p><img src="/2020/07/20/db-w-r-dynamic/db1.png" alt></p>
-<h1 id="读写分离常见问题与解决"><a href="#读写分离常见问题与解决" class="headerlink" title="读写分离常见问题与解决"></a>读写分离常见问题与解决</h1><h2 id="主从延迟"><a href="#主从延迟" class="headerlink" title="主从延迟"></a>主从延迟</h2><p>以MYSQL为例，当主库插入数据后从库需要一段时间才能同步，时间可能达到1秒多，如果有大量数同步延迟1分钟也有可能。如果业务服务器将数据写入到数据库主服务器后立刻(1秒内)进行读取，此时读操作访问的是从机，主机还没有将数据复制过来，到从机读取数据是读不到最新数据的，业务上就可能出现问题。</p>
-<h3 id="常见解决方法"><a href="#常见解决方法" class="headerlink" title="常见解决方法"></a>常见解决方法</h3><ol>
-<li>关键业务读写操作指向主机，非关键业务采用读写分离。从业务上来区别理论上是比较好的。</li>
-<li>读从机失败后再读一次主机。这种方式与业务无偶尔，只需要在公共类上处理。不足之处在于如果有很多二次读取，将大大增加主机的读操作压力。</li>
-</ol>
-<h1 id="Spring实现读写分离"><a href="#Spring实现读写分离" class="headerlink" title="Spring实现读写分离"></a>Spring实现读写分离</h1>
+<p>InnoDB锁官方文档地址 ：<a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html#innodb-shared-exclusive-locks" target="_blank" rel="noopener">InnoDB Locking Doc</a>。锁作为MySQL一个很重要的知识点，虽然有隐式加锁解锁的存在开发人员很少涉及到，但了解锁对开发尤为重要，不然遇到死锁问题都不知道哪里出现问题了。</p>
+<h3 id="锁类型与上锁方式"><a href="#锁类型与上锁方式" class="headerlink" title="锁类型与上锁方式"></a>锁类型与上锁方式</h3><p>在MySQL中，锁按照类型划分可以分成 ：表锁，行锁（本文重点），页锁。</p>
+<p>在MySQL中，锁按照种类可以划分成：共享锁（S）和排他锁（X）。</p>
+<p><img src="/2020/11/11/mysql-lock/2.png" alt></p>
       
     </div>
     
+      
+        <div class="button readmore">
+          <a href="/2020/11/11/mysql-lock/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
       
     
   </section>
@@ -546,8 +875,8 @@
         
           
   <h2 class="title">
-    <a href="/2020/07/18/hello-world/">
-      Hello World
+    <a href="/2020/10/30/blockingqueue/">
+      阻塞队列(BlockingQueue)详解(带图解)
     </a>
   </h2>
 
@@ -561,7 +890,7 @@
               
 <div class='new-meta-item author'>
   <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
-    <img src="https://upload.jianshu.io/users/upload_avatars/8707811/949bce11-c063-4540-9c37-c86866ce4f1e.jpg?imageMogr2/auto-orient/strip|imageView2/1/w/240/h/240">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
     <p>咕噜。咕噜</p>
   </a>
 </div>
@@ -570,6 +899,14 @@
           
             
               
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/java/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>java</p>
+    </a>
+  </div>
+
 
             
           
@@ -577,7 +914,7 @@
               <div class="new-meta-item date">
   <a class='notlink'>
     <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Jul 18, 2020</p>
+    <p>发布于：Oct 30, 2020</p>
   </a>
 </div>
 
@@ -605,11 +942,568 @@
   <section class="article typo">
     <div class="article-entry" itemprop="articleBody">
       
-        <p>这是我的第一篇博客，你好，Hexoxxxxddewrwerwerwer。</p>
-
+        <h2 id="BlockingQueue接口"><a href="#BlockingQueue接口" class="headerlink" title="BlockingQueue接口"></a>BlockingQueue接口</h2><p>Java中的<code>BlockingQueue</code>接口是一个线程安全的存取队列。继承Queue（队列）接口，再此基础上新定义了<font color="red">阻塞方法</font>。</p>
+<p><img src="/2020/10/30/blockingqueue/0.png" alt="BlockingQueue接口方法图解"></p>
+<table>
+<thead>
+<tr>
+<th align="left"></th>
+<th align="left">抛出异常</th>
+<th align="left">返回特殊值</th>
+<th align="left">一直阻塞</th>
+<th>阻塞超时后退出</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">插入方法</td>
+<td align="left">add(o)</td>
+<td align="left">offer(o)</td>
+<td align="left">put(o)</td>
+<td>offer(o, timeout, timeunit)</td>
+</tr>
+<tr>
+<td align="left">移除方法</td>
+<td align="left">remove(o)</td>
+<td align="left">poll()</td>
+<td align="left">take(o)</td>
+<td>poll(o, timeout, timeunit)</td>
+</tr>
+<tr>
+<td align="left">检查方法</td>
+<td align="left">element()</td>
+<td align="left">peek()</td>
+<td align="left">—</td>
+<td>—</td>
+</tr>
+</tbody></table>
       
     </div>
     
+      
+        <div class="button readmore">
+          <a href="/2020/10/30/blockingqueue/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2020/10/30/blockchain-1/">
+      创建你的第一条substrate链
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>区块链</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Oct 30, 2020</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>创建你的第一条substrate链</p>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2020/10/30/blockchain-1/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2020/10/09/kafka-base/">
+      Kafka概念与架构知识点汇总（一）
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/kafka/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>kafka</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Oct 9, 2020</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>Kafka是一个<strong>分布式</strong>，<strong>分区</strong>，<strong>多副本</strong>，<strong>发布-订阅模式</strong>，<strong>基于zookeeper协调</strong>的分布式日志系统，消息队列（MQ）。主要应用场景是：日志收集系统和消息系统。</p>
+<h3 id="术语"><a href="#术语" class="headerlink" title="术语"></a>术语</h3><ul>
+<li>Broker（服务器），Kafka的服务器被称为Broker，一个集群中包含一个或多个Broker。</li>
+<li>Topic（主题），每条发布到Kafka集群的消息都有一个类别，这个类别被称为Topic。</li>
+<li>Partition（分区），一个Topic被分成多个分区，这也是Kafka吞吐量高的原因之一，负载均衡。</li>
+<li>Producer（生产者），数据的发布者，将消息发布到topic中。</li>
+<li>Consumer（消费者），从topic中消费消息，一个消费者可以消费多个不同的Topic或者多个不同的Partition</li>
+<li>Consumer Group（消费者组），每个Consumer属于一个特定的Consumer Group。</li>
+<li>Replica（副本），一个分区有多个Replica，这也是Kafka高可用的原因。</li>
+<li>Leader（领导者副本），当前负责数据的读写的partition。</li>
+<li>Follower（追随者副本），负责从Leader获取数据并存储，不负责读写，作为一个冷备份，当Leader挂的时候就会从Follower中选举一个出来当Leader。</li>
+<li>LogSegemnt（数据段），消息的持久化方式。</li>
+<li>AR（Assigned Repllicas），分区中的所有副本统称为AR。</li>
+<li>ISR（in-sync Replica），所有与leader副本保持一定程度同步的副本（包括Leader）称之为ISR。</li>
+<li>Controller（控制者），负责管理整个集群中分区和副本的状态。</li></ul>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2020/10/09/kafka-base/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2020/10/03/redis-data-type/">
+      Redis数据结构总结
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/redis/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>redis</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Oct 3, 2020</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>本文主要总结Redis几种数据结构的特点，Redis由于单线程和纯内存的特点，所以在数据结构上也做了很多优化，了解Redis的数据结构有利于我们更好的根据实际场景使用正确的数据结构。</p>
+<h3 id="基础数据结构"><a href="#基础数据结构" class="headerlink" title="基础数据结构"></a>基础数据结构</h3><h4 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h4><p>Redis在内部定义了6种基础的数据结构，包括：<font color="red">简单动态字符串，链表，字典，跳跃表，整数集合，压缩列表</font>。Redis使用这几种基础的数据结构创建了一个对象系统，这个系统包含了字符串对象，列表对象，哈希对象，集合对象，有序集合对象。</p>
+<p>举个例子，对于命令<code>SET msg &quot;helloWorld&quot;</code>。msg使用的是字符串对象（对于Redis来说保存的键总是一个字符串对象），而helloWorld使用的是<code>简单动态字符串</code>。了解这6种基础数据接口才能进一步了解Redis种的字符串，列表，哈希，集合，有序集合。</p>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2020/10/03/redis-data-type/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2020/09/27/springboot-custom-start/">
+      SpringBoot自动配置原理和自定义起步依赖
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/spring/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>spring</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Sep 27, 2020</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>SpringBoot采用了“习惯优于配置”的理念，没有了繁琐的配置，让我们开发起来变得更加快捷。例如我们需要在项目中使用Redis模块进行开发。只需要引入spring-boot-starter-data-redis包，就会自动加载了Redis所需要的模块。我们只需要在配置文件application.properties上配置redis的相关连接信息，并在代码上使用RedisTemplate.java类就可以操作Redis。</p>
+<pre><code class="xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-data-redis&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2020/09/27/springboot-custom-start/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2020/09/13/spring-extend/">
+      Spring扩展点详解
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/spring/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>spring</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Sep 13, 2020</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><h3 id="BeanDefinitionRegistryPostProcessor"><a href="#BeanDefinitionRegistryPostProcessor" class="headerlink" title="BeanDefinitionRegistryPostProcessor"></a>BeanDefinitionRegistryPostProcessor</h3><p><img src="/2020/09/13/spring-extend/1.png" alt></p>
+<p>这个扩展点主要发生在获取BeanDefinition后，可以在这里动态注册自己的beanDefinition，或者对已注册的BeanDefinition做一些改变，提供了两个方法</p>
+<ul>
+<li>postProcessBeanDefinitionRegistry(BeanDefinitionRegistry beanDefinitionRegistry)，该方法用来注册更多的bean到spring容器中。</li>
+<li>postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)，主要用来对已注册BeanDefinition做一些改变。</li></ul>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2020/09/13/spring-extend/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
       
     
   </section>
@@ -621,6 +1515,21 @@
     
   </section>
   
+    
+      <br>
+      <div class="prev-next">
+        
+        <p class="current">
+          1 / 4
+        </p>
+        
+          <a class="next" rel="next" href="/archives/2020/page/2/">
+            <section class="post next white-box shadow">
+              &nbsp;Next&nbsp;<i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </section>
+          </a>
+        
+      </div>
     
     <!-- 根据主题中的设置决定是否在archive中针对摘要部分的MathJax公式加载mathjax.js文件 -->
     
@@ -642,7 +1551,7 @@
     
       
         <a class='avatar flat-box' href='/about/'>
-          <img no-lazy src='https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/avatar/avatar.png'/>
+          <img no-lazy src='https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg'/>
         </a>
       
     
@@ -651,7 +1560,7 @@
         
         
         
-          <p><span id="jinrishici-sentence">咕噜。咕噜的博客</span></p>
+          <p><span id="jinrishici-sentence">咕噜咕噜的博客</span></p>
           <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script>
         
       </div>
@@ -668,7 +1577,7 @@
           
         
           
-            <a href="mailto:me@xaoxuu.com"
+            <a href="mailto:jip0574@qq.com"
               class="social fas fa-envelope flat-btn"
               target="_blank"
               rel="external nofollow noopener noreferrer">
@@ -701,6 +1610,104 @@
   
     
     
+  
+
+  <section class="widget category shadow desktop">
+    
+  <header>
+    
+      <a href='/blog/categories/'><i class="fas fa-folder-open fa-fw" aria-hidden="true"></i><span class='name'>文章分类</span></a>
+    
+  </header>
+
+
+    <div class='content'>
+      <ul class="entry navigation">
+        
+          <li><a class="flat-box"
+            title="/categories/Docker/" href="/categories/Docker/"
+            id="categoriesDocker"
+            ><div class='name'>Docker</div><div class='badge'>(2)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/ElasticSearch/" href="/categories/ElasticSearch/"
+            id="categoriesElasticSearch"
+            ><div class='name'>ElasticSearch</div><div class='badge'>(1)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/GoLang/" href="/categories/GoLang/"
+            id="categoriesGoLang"
+            ><div class='name'>GoLang</div><div class='badge'>(2)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/SpringCloud/" href="/categories/SpringCloud/"
+            id="categoriesSpringCloud"
+            ><div class='name'>SpringCloud</div><div class='badge'>(2)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/influxdb/" href="/categories/influxdb/"
+            id="categoriesinfluxdb"
+            ><div class='name'>influxdb</div><div class='badge'>(1)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/java/" href="/categories/java/"
+            id="categoriesjava"
+            ><div class='name'>java</div><div class='badge'>(16)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/kafka/" href="/categories/kafka/"
+            id="categorieskafka"
+            ><div class='name'>kafka</div><div class='badge'>(4)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/linux/" href="/categories/linux/"
+            id="categorieslinux"
+            ><div class='name'>linux</div><div class='badge'>(3)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/mysql/" href="/categories/mysql/"
+            id="categoriesmysql"
+            ><div class='name'>mysql</div><div class='badge'>(9)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/redis/" href="/categories/redis/"
+            id="categoriesredis"
+            ><div class='name'>redis</div><div class='badge'>(9)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/rust/" href="/categories/rust/"
+            id="categoriesrust"
+            ><div class='name'>rust</div><div class='badge'>(1)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/shardingjdbc/" href="/categories/shardingjdbc/"
+            id="categoriesshardingjdbc"
+            ><div class='name'>shardingjdbc</div><div class='badge'>(3)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/spring/" href="/categories/spring/"
+            id="categoriesspring"
+            ><div class='name'>spring</div><div class='badge'>(5)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/zookeeper/" href="/categories/zookeeper/"
+            id="categorieszookeeper"
+            ><div class='name'>zookeeper</div><div class='badge'>(1)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/" href="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/"
+            id="categoriesE58CBAE59D97E993BE"
+            ><div class='name'>区块链</div><div class='badge'>(2)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/%E6%9E%B6%E6%9E%84/" href="/categories/%E6%9E%B6%E6%9E%84/"
+            id="categoriesE69EB6E69E84"
+            ><div class='name'>架构</div><div class='badge'>(1)</div></a></li>
+        
+      </ul>
+    </div>
+  </section>
+
 
   
 
@@ -719,7 +1726,7 @@
 
 
     <div class='content'>
-      <a href="/tags/hexo/" style="font-size: 24px; color: #555">hexo</a> <a href="/tags/mysql/" style="font-size: 14px; color: #999">mysql</a> <a href="/tags/%E6%9E%B6%E6%9E%84/" style="font-size: 14px; color: #999">架构</a>
+      <a href="/tags/Docker/" style="font-size: 15.43px; color: #8f8f8f">Docker</a> <a href="/tags/ElasticSearch/" style="font-size: 14px; color: #999">ElasticSearch</a> <a href="/tags/GoLang/" style="font-size: 15.43px; color: #8f8f8f">GoLang</a> <a href="/tags/SpringCloud/" style="font-size: 15.43px; color: #8f8f8f">SpringCloud</a> <a href="/tags/influxdb/" style="font-size: 14px; color: #999">influxdb</a> <a href="/tags/java8/" style="font-size: 14px; color: #999">java8</a> <a href="/tags/java%E5%B9%B6%E5%8F%91/" style="font-size: 24px; color: #555">java并发</a> <a href="/tags/java%E9%9B%86%E5%90%88/" style="font-size: 14px; color: #999">java集合</a> <a href="/tags/jvm/" style="font-size: 15.43px; color: #8f8f8f">jvm</a> <a href="/tags/kafka/" style="font-size: 18.29px; color: #7c7c7c">kafka</a> <a href="/tags/linux/" style="font-size: 16.86px; color: #868686">linux</a> <a href="/tags/mysql/" style="font-size: 22.57px; color: #5f5f5f">mysql</a> <a href="/tags/redis/" style="font-size: 21.14px; color: #686868">redis</a> <a href="/tags/rust/" style="font-size: 14px; color: #999">rust</a> <a href="/tags/shardingjdbc/" style="font-size: 16.86px; color: #868686">shardingjdbc</a> <a href="/tags/spring/" style="font-size: 19.71px; color: #727272">spring</a> <a href="/tags/zookeeper/" style="font-size: 14px; color: #999">zookeeper</a> <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" style="font-size: 15.43px; color: #8f8f8f">区块链</a> <a href="/tags/%E6%9E%B6%E6%9E%84/" style="font-size: 14px; color: #999">架构</a> <a href="/tags/%E7%BD%91%E7%BB%9C/" style="font-size: 14px; color: #999">网络</a> <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" style="font-size: 14px; color: #999">设计模式</a> <a href="/tags/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/" style="font-size: 15.43px; color: #8f8f8f">项目实践</a>
     </div>
   </section>
 
@@ -751,7 +1758,7 @@
       list-max-height='340px'
       server='netease'
       type='playlist'
-      id='3175833810'
+      id='2682558306'
       list-folded='true'>
     </meting-js>
   
@@ -773,7 +1780,7 @@
             
           
             
-              <a href="mailto:me@xaoxuu.com"
+              <a href="mailto:jip0574@qq.com"
                 class="social fas fa-envelope flat-btn"
                 target="_blank"
                 rel="external nofollow noopener noreferrer">
@@ -893,7 +1900,7 @@
 
     <script type="text/javascript">
       $(function(){
-        var imgs=["https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/41F215B9-261F-48B4-80B5-4E86E165259E.jpeg"];
+        var imgs=["https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/41F215B9-261F-48B4-80B5-4E86E165259E.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/BBC19066-E176-47C2-9D22-48C81EE5DF6B.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/B18FCBB3-67FD-48CC-B4F3-457BA145F17A.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/35F12181-F0E9-45BD-B134-37E4B4A660CF.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/00E0F0ED-9F1C-407A-9AA6-545649D919F4.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/67239FBB-E15D-4F4F-8EE8-0F1C9F3C4E7C.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/B951AE18-D431-417F-B3FE-A382403FF21B.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/2884F904-F1F3-479E-AE27-5EBC291B63B0.jpeg"];
         if ('true' == 'true') {
           function shuffle(arr){
             /*From countercurrent-time*/
@@ -965,6 +1972,13 @@
 
 
 
+
+  
+    
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.1/build/highlight.min.js"></script>
+
+    <script>hljs.initHighlightingOnLoad();</script>
+  
 
 
 

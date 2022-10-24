@@ -16,10 +16,12 @@
 
   <!-- 页面元数据 -->
   
-    <title>读写分离设计与思考 - 咕噜。咕噜的博客</title>
+    <title>读写分离设计与思考 - 咕噜咕噜的博客</title>
   
     <meta name="keywords" content="mysql,架构">
   
+  
+    <meta name="description" content="高性能数据库集群的第一种方式是“读写分离”">
   
 
   <!-- feed -->
@@ -52,6 +54,12 @@
   
 
   
+    
+      
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.18.1/styles/solarized-light.css">
+
+    
+  
   
     
 <link rel="stylesheet" href="/css/style.css">
@@ -66,9 +74,10 @@
 
   
   
-</head>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
 
 <body>
+  <script src="https://cdn.jsdelivr.net/gh/zyoushuo/Blog/hexo/js/sakura.js"></script>
   
   <div id="loading-bar-wrapper">
   <div id="loading-bar"></div>
@@ -360,7 +369,7 @@
               
 <div class='new-meta-item author'>
   <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
-    <img src="https://upload.jianshu.io/users/upload_avatars/8707811/949bce11-c063-4540-9c37-c86866ce4f1e.jpg?imageMogr2/auto-orient/strip|imageView2/1/w/240/h/240">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
     <p>咕噜。咕噜</p>
   </a>
 </div>
@@ -369,6 +378,14 @@
           
             
               
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/%E6%9E%B6%E6%9E%84/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>架构</p>
+    </a>
+  </div>
+
 
             
           
@@ -399,7 +416,7 @@
       <section class="article typo">
         <div class="article-entry" itemprop="articleBody">
           
-          <h1 id="读写分离基本原理"><a href="#读写分离基本原理" class="headerlink" title="读写分离基本原理"></a>读写分离基本原理</h1><p>高性能数据库集群的第一种方式是“<strong><em>读写分离</em></strong>”，其本质是将访问压力分散到集群中的多个节点，但是没有分散存储压力；第二种方式是“分库分表”，既可以分散访问压力，又可以分散存储压力。</p>
+          <h2 id="读写分离基本原理"><a href="#读写分离基本原理" class="headerlink" title="读写分离基本原理"></a>读写分离基本原理</h2><p>高性能数据库集群的第一种方式是“<strong><em>读写分离</em></strong>”，其本质是将访问压力分散到集群中的多个节点，但是没有分散存储压力；第二种方式是“分库分表”，既可以分散访问压力，又可以分散存储压力。</p>
 <p>读写分离的基本实现是：</p>
 <ul>
 <li>数据库服务器搭建主从集群，一主一从、一主多从都可以</li>
@@ -408,12 +425,153 @@
 <li>业务服务器将写操作发给数据库主机，将读操作发给数据库从机</li>
 </ul>
 <p><img src="/2020/07/20/db-w-r-dynamic/db1.png" alt></p>
-<h1 id="读写分离常见问题与解决"><a href="#读写分离常见问题与解决" class="headerlink" title="读写分离常见问题与解决"></a>读写分离常见问题与解决</h1><h2 id="主从延迟"><a href="#主从延迟" class="headerlink" title="主从延迟"></a>主从延迟</h2><p>以MYSQL为例，当主库插入数据后从库需要一段时间才能同步，时间可能达到1秒多，如果有大量数同步延迟1分钟也有可能。如果业务服务器将数据写入到数据库主服务器后立刻(1秒内)进行读取，此时读操作访问的是从机，主机还没有将数据复制过来，到从机读取数据是读不到最新数据的，业务上就可能出现问题。</p>
+<a id="more"></a>
+
+<h2 id="读写分离常见问题与解决"><a href="#读写分离常见问题与解决" class="headerlink" title="读写分离常见问题与解决"></a>读写分离常见问题与解决</h2><h3 id="主从延迟"><a href="#主从延迟" class="headerlink" title="主从延迟"></a>主从延迟</h3><p>以MYSQL为例，当主库插入数据后从库需要一段时间才能同步，时间可能达到1秒多，如果有大量数同步延迟1分钟也有可能。如果业务服务器将数据写入到数据库主服务器后立刻(1秒内)进行读取，此时读操作访问的是从机，主机还没有将数据复制过来，到从机读取数据是读不到最新数据的，业务上就可能出现问题。</p>
 <h3 id="常见解决方法"><a href="#常见解决方法" class="headerlink" title="常见解决方法"></a>常见解决方法</h3><ol>
 <li>关键业务读写操作指向主机，非关键业务采用读写分离。从业务上来区别理论上是比较好的。</li>
 <li>读从机失败后再读一次主机。这种方式与业务无偶尔，只需要在公共类上处理。不足之处在于如果有很多二次读取，将大大增加主机的读操作压力。</li>
 </ol>
-<h1 id="Spring实现读写分离"><a href="#Spring实现读写分离" class="headerlink" title="Spring实现读写分离"></a>Spring实现读写分离</h1>
+<h2 id="Spring实现读写分离"><a href="#Spring实现读写分离" class="headerlink" title="Spring实现读写分离"></a>Spring实现读写分离</h2><h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>Srping提供了一个AbstractRoutingDataSource类来支持多数据库。我们先来看一下他的继承结构。实现了InitializingBean接口,所以在bean初始化之前会调用afterPropertiesSet方法初始化数据库信息<br><img src="/2020/07/20/db-w-r-dynamic/AbstractRoutingDataSource.png" alt></p>
+<pre><code>    Override
+    public void afterPropertiesSet() {
+        if (this.targetDataSources == null) {
+            throw new IllegalArgumentException(&quot;Property &#39;targetDataSources&#39; is required&quot;);
+        }
+        //获取xml文件配置的数据库并存到resolvedDataSources对象中
+        this.resolvedDataSources = new HashMap&lt;&gt;(this.targetDataSources.size());
+        this.targetDataSources.forEach((key, value) -&gt; {
+            Object lookupKey = resolveSpecifiedLookupKey(key);
+            DataSource dataSource = resolveSpecifiedDataSource(value);
+            this.resolvedDataSources.put(lookupKey, dataSource);
+        });
+        if (this.defaultTargetDataSource != null) {
+            this.resolvedDefaultDataSource = resolveSpecifiedDataSource(this.defaultTargetDataSource);
+        }
+    }</code></pre><p>因为DynamicDataSource重写了determineCurrentLookupKey方法，所以在每次获取数据库时都会从ThreadLocal中获取当前线程对应的数据库类型</p>
+<pre><code>    //每次获取数据库连接时从这里进入
+    @Override
+    public Connection getConnection() throws SQLException {
+        return determineTargetDataSource().getConnection();
+    }
+
+    protected DataSource determineTargetDataSource() {
+        Assert.notNull(this.resolvedDataSources, &quot;DataSource router not initialized&quot;);
+        Object lookupKey = determineCurrentLookupKey();
+        DataSource dataSource = this.resolvedDataSources.get(lookupKey);
+        if (dataSource == null &amp;&amp; (this.lenientFallback || lookupKey == null)) {
+            dataSource = this.resolvedDefaultDataSource;
+        }
+        if (dataSource == null) {
+            throw new IllegalStateException(&quot;Cannot determine target DataSource for lookup key [&quot; + lookupKey + &quot;]&quot;);
+        }
+        return dataSource;
+    }
+
+    //子类重写determineCurrentLookupKey方法
+    protected Object determineCurrentLookupKey() {
+        return DBContextHolder.get();
+    }
+</code></pre><h3 id="实现代码"><a href="#实现代码" class="headerlink" title="实现代码"></a>实现代码</h3><h4 id="导出MAVEN包"><a href="#导出MAVEN包" class="headerlink" title="导出MAVEN包"></a>导出MAVEN包</h4><pre><code>&lt;dependency&gt;
+      &lt;groupId&gt;com.alibaba&lt;/groupId&gt;
+      &lt;artifactId&gt;druid&lt;/artifactId&gt;
+      &lt;version&gt;1.0.9&lt;/version&gt;
+&lt;/dependency&gt;</code></pre><h4 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h4><pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+       xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
+       xmlns:tx=&quot;http://www.springframework.org/schema/tx&quot; xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
+       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd&quot;&gt;
+    &lt;context:component-scan base-package=&quot;com.xzy.tx&quot;/&gt;
+    &lt;tx:annotation-driven/&gt;
+    &lt;!--读写分离动态数据库--&gt;
+    &lt;bean id=&quot;dynamicDataSource&quot; class=&quot;com.xzy.rwDynamic.DynamicDataSource&quot;&gt;
+        &lt;property name=&quot;targetDataSources&quot;&gt;
+            &lt;map&gt;
+                &lt;entry value-ref=&quot;dataSourceMaster&quot; key=&quot;dataSourceMaster&quot;&gt;&lt;/entry&gt;
+                &lt;entry value-ref=&quot;dataSourceSlave&quot; key=&quot;dataSourceSlave&quot;&gt;&lt;/entry&gt;
+            &lt;/map&gt;
+        &lt;/property&gt;
+    &lt;/bean&gt;
+
+    &lt;bean id=&quot;transactionManager&quot;
+          class=&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&gt;
+        &lt;property name=&quot;dataSource&quot; ref=&quot;dynamicDataSource&quot;/&gt;
+    &lt;/bean&gt;
+
+    &lt;bean id=&quot;jdbcTemplate&quot; class=&quot;org.springframework.jdbc.core.JdbcTemplate&quot;&gt;
+        &lt;property name=&quot;dataSource&quot; ref=&quot;dynamicDataSource&quot;&gt;&lt;/property&gt;
+    &lt;/bean&gt;
+    &lt;!--主库--&gt;
+    &lt;bean id=&quot;dataSourceMaster&quot; class=&quot;com.alibaba.druid.pool.DruidDataSource&quot; init-method=&quot;init&quot;
+          destroy-method=&quot;close&quot;&gt;
+        &lt;!--省略很多--&gt;
+    &lt;/bean&gt;
+    &lt;!--从库--&gt;
+    &lt;bean id=&quot;dataSourceSlave&quot; class=&quot;com.alibaba.druid.pool.DruidDataSource&quot; init-method=&quot;init&quot; destroy-method=&quot;close&quot;&gt;
+        &lt;!--省略很多--&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;</code></pre><h4 id="逻辑代码"><a href="#逻辑代码" class="headerlink" title="逻辑代码"></a>逻辑代码</h4><pre><code>import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
+
+/***
+ * 动态数据库
+ */
+public class DynamicDataSource extends AbstractRoutingDataSource {
+    protected Object determineCurrentLookupKey() {
+        return DBContextHolder.get();
+    }
+}</code></pre><pre><code>package com.xzy.rwDynamic;
+/**
+ * 枚举类
+*/
+public enum DbType {
+    MASTER(&quot;dataSourceMaster&quot;),
+    SLAVE(&quot;dataSourceSlave&quot;);
+    private String type;
+    DbType(String type){
+        this.type = type;
+    }
+    public String getType() {
+        return type;
+    }
+    public void setType(String type) {
+        this.type = type;
+    }
+}</code></pre><pre><code>package com.xzy.rwDynamic;
+import org.apache.commons.lang3.StringUtils;
+
+public class DBContextHolder {
+    private static final ThreadLocal&lt;String&gt; dbHolder = new ThreadLocal&lt;String&gt;();
+
+    public static String get(){
+        String db = dbHolder.get();
+        return StringUtils.isNoneBlank(db) ? db : DbType.MASTER.getType();
+    }
+    public static void set(String type){
+        if(StringUtils.isBlank(type)){
+            dbHolder.set(DbType.MASTER.getType());
+        }else{
+            dbHolder.set(type);
+        }
+    }
+    public static void remove(){
+        dbHolder.remove();
+    }
+}</code></pre><h4 id="测试代码"><a href="#测试代码" class="headerlink" title="测试代码"></a>测试代码</h4><pre><code>@Test
+    public void testwrDynamic(){
+        //设置当前线程使用主线程
+        DBContextHolder.set(DbType.MASTER.getType());
+        ApplicationContext context = new ClassPathXmlApplicationContext(&quot;classpath:applicationContext-w-r-dynamic.xml&quot;);
+        JdbcTemplate jdbcTemplate = context.getBean(JdbcTemplate.class);
+        jdbcTemplate.queryForList(&quot;select * from user&quot;);
+        DBContextHolder.remove()
+    }</code></pre><h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><p>每次需要读写分离时，都需要在开头DBContextHolder.set()，然后在结尾DBContextHolder.remove()。这样代码臃肿，耦合性强。可以使用AOP+自定义注解的方式，使用环绕增强对代码进行处理</p>
+
           
             <div class='article_footer'>
               
@@ -474,14 +632,14 @@
   <div class='content article-entry'>
     
       
-        <div class='fancybox'><img src='https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/qrcode/wiki_volantis.png'
+        <div class='fancybox'><img src='https://cdn.jsdelivr.net/gh/xuzhiyong28/tuchuang/img/http_blob.png'
         
           height='64px'
         ></div>
       
     
       
-        <div class='fancybox'><img src='https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/qrcode/wiki_volantis.png'
+        <div class='fancybox'><img src='https://cdn.jsdelivr.net/gh/xuzhiyong28/tuchuang/img/http_jianshu.png'
         
           height='64px'
         ></div>
@@ -505,10 +663,10 @@
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-07-20T16:48:45+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-04-08T08:47:06+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：Jul 20, 2020</p>
+    <p>更新于：Apr 8, 2021</p>
   </a>
 </div>
 
@@ -528,52 +686,6 @@
         
       
         
-          
-  <div class="new-meta-item share -mob-share-list">
-  <div class="-mob-share-list share-body">
-    
-      
-        <a class="-mob-share-qq" title="" rel="external nofollow noopener noreferrer"
-          
-          href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2020/07/20/db-w-r-dynamic/&title=读写分离设计与思考 - 咕噜。咕噜的博客&summary="
-          
-          >
-          
-            <img src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/128/qq.png">
-          
-        </a>
-      
-    
-      
-        <a class="-mob-share-qzone" title="" rel="external nofollow noopener noreferrer"
-          
-          href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://yoursite.com/2020/07/20/db-w-r-dynamic/&title=读写分离设计与思考 - 咕噜。咕噜的博客&summary="
-          
-          >
-          
-            <img src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/128/qzone.png">
-          
-        </a>
-      
-    
-      
-        <a class="-mob-share-weibo" title="" rel="external nofollow noopener noreferrer"
-          
-          href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2020/07/20/db-w-r-dynamic/&title=读写分离设计与思考 - 咕噜。咕噜的博客&summary="
-          
-          >
-          
-            <img src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/128/weibo.png">
-          
-        </a>
-      
-    
-  </div>
-</div>
-
-
-
-        
       
     </div>
   </section>
@@ -583,11 +695,23 @@
         
           <div class="prev-next">
             
+              <a class='prev' href='/2020/07/28/hashmap/'>
+                <p class='title'><i class="fas fa-chevron-left" aria-hidden="true"></i>HashMap原理浅析</p>
+                <p class='content'>基础数组的优点缺点
+数组在内存空间上连续。能实现快速访问某个下标的值。
+数组空间的大小一旦确定后就不能更改，如果需要增大减小需要新建数组重新设值。
+
+链表的优点缺点
+链表在内存空间上是不连续的。...</p>
+              </a>
             
-              <a class='next' href='/2020/07/18/hello-world/'>
-                <p class='title'>Hello World<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
-                <p class='content'>这是我的第一篇博客，你好，Hexoxxxxddewrwerwerwer。
-</p>
+            
+              <a class='next' href='/2020/05/10/spring-forbean/'>
+                <p class='title'>Spring循环依赖详解<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+                <p class='content'>什么是循环依赖所谓的循环依赖是指，A 依赖 B，B 又依赖 A，它们之间形成了循环依赖。或者是 A 依赖 B，B 依赖 C，C 又依赖 A，形成了循环依赖。更或者是自己依赖自己。
+
+
+Sprin...</p>
               </a>
             
           </div>
@@ -658,7 +782,7 @@
 
 
     <div class='content'>
-      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#主从延迟"><span class="toc-text">主从延迟</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#常见解决方法"><span class="toc-text">常见解决方法</span></a></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#读写分离基本原理"><span class="toc-text">读写分离基本原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#读写分离常见问题与解决"><span class="toc-text">读写分离常见问题与解决</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#主从延迟"><span class="toc-text">主从延迟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#常见解决方法"><span class="toc-text">常见解决方法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Spring实现读写分离"><span class="toc-text">Spring实现读写分离</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#原理"><span class="toc-text">原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实现代码"><span class="toc-text">实现代码</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#导出MAVEN包"><span class="toc-text">导出MAVEN包</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#配置文件"><span class="toc-text">配置文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#逻辑代码"><span class="toc-text">逻辑代码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#测试代码"><span class="toc-text">测试代码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#扩展"><span class="toc-text">扩展</span></a></li></ol></li></ol></li></ol>
     </div>
   </section>
 
@@ -688,7 +812,7 @@
       list-max-height='340px'
       server='netease'
       type='playlist'
-      id='3175833810'
+      id='2682558306'
       list-folded='true'>
     </meting-js>
   
@@ -710,7 +834,7 @@
             
           
             
-              <a href="mailto:me@xaoxuu.com"
+              <a href="mailto:jip0574@qq.com"
                 class="social fas fa-envelope flat-btn"
                 target="_blank"
                 rel="external nofollow noopener noreferrer">
@@ -822,7 +946,7 @@
 
     <script type="text/javascript">
       $(function(){
-        var imgs=["https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/41F215B9-261F-48B4-80B5-4E86E165259E.jpeg"];
+        var imgs=["https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/41F215B9-261F-48B4-80B5-4E86E165259E.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/BBC19066-E176-47C2-9D22-48C81EE5DF6B.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/B18FCBB3-67FD-48CC-B4F3-457BA145F17A.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/35F12181-F0E9-45BD-B134-37E4B4A660CF.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/00E0F0ED-9F1C-407A-9AA6-545649D919F4.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/67239FBB-E15D-4F4F-8EE8-0F1C9F3C4E7C.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/B951AE18-D431-417F-B3FE-A382403FF21B.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/2884F904-F1F3-479E-AE27-5EBC291B63B0.jpeg"];
         if ('true' == 'true') {
           function shuffle(arr){
             /*From countercurrent-time*/
@@ -948,6 +1072,13 @@
 
 
 
+
+  
+    
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.1/build/highlight.min.js"></script>
+
+    <script>hljs.initHighlightingOnLoad();</script>
+  
 
 
 

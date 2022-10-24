@@ -20,7 +20,7 @@
 
   <!-- 页面元数据 -->
   
-    <title>咕噜。咕噜的博客</title>
+    <title>咕噜咕噜的博客</title>
   
   
     <meta name="description" content="程序员博客">
@@ -56,6 +56,12 @@
   
 
   
+    
+      
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.18.1/styles/solarized-light.css">
+
+    
+  
   
     
 <link rel="stylesheet" href="/css/style.css">
@@ -70,21 +76,22 @@
 
   
   
-</head>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
 
 <body>
+  <script src="https://cdn.jsdelivr.net/gh/zyoushuo/Blog/hexo/js/sakura.js"></script>
   
   <div class="cover-wrapper">
     
-      <cover class='cover  full'>
+      <cover class='cover  half'>
         <div class='cover-body'>
   <div class='a'>
     
     
-      <p class="title">咕噜。咕噜</p>
+      <p class="title">Xuzy s'Blog</p>
     
     
-      <p class="subtitle">每天进步一点点。。。</p>
+      <p class="subtitle"><br/><font size=5>每天努力再多一点，就会发现很多事情并没有那么困难！</font></font></p>
     
   </div>
   <div class='b'>
@@ -160,7 +167,6 @@
   </div>
 </div>
 
-        <div class="scroll-down"><i class="fa fa-chevron-down scroll-down-effects"></i></div>
       </cover>
     
     <div id="loading-bar-wrapper">
@@ -435,6 +441,124 @@
         
           
         
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
       
     
     
@@ -453,8 +577,8 @@
         
           
   <h2 class="title">
-    <a href="/2020/07/20/db-w-r-dynamic/">
-      读写分离设计与思考
+    <a href="/2021/11/12/go-pointer/">
+      GoLang指针
     </a>
   </h2>
 
@@ -468,7 +592,7 @@
               
 <div class='new-meta-item author'>
   <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
-    <img src="https://upload.jianshu.io/users/upload_avatars/8707811/949bce11-c063-4540-9c37-c86866ce4f1e.jpg?imageMogr2/auto-orient/strip|imageView2/1/w/240/h/240">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
     <p>咕噜。咕噜</p>
   </a>
 </div>
@@ -477,6 +601,14 @@
           
             
               
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/GoLang/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>GoLang</p>
+    </a>
+  </div>
+
 
             
           
@@ -484,7 +616,7 @@
               <div class="new-meta-item date">
   <a class='notlink'>
     <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Jul 20, 2020</p>
+    <p>发布于：Nov 12, 2021</p>
   </a>
 </div>
 
@@ -512,24 +644,1071 @@
   <section class="article typo">
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="读写分离基本原理"><a href="#读写分离基本原理" class="headerlink" title="读写分离基本原理"></a>读写分离基本原理</h1><p>高性能数据库集群的第一种方式是“<strong><em>读写分离</em></strong>”，其本质是将访问压力分散到集群中的多个节点，但是没有分散存储压力；第二种方式是“分库分表”，既可以分散访问压力，又可以分散存储压力。</p>
-<p>读写分离的基本实现是：</p>
+        <h3 id="什么是指针，指针变量，指针类型？"><a href="#什么是指针，指针变量，指针类型？" class="headerlink" title="什么是指针，指针变量，指针类型？"></a>什么是指针，指针变量，指针类型？</h3><p>任何程序数据载入内存后，在内存中都有他们的地址，这个就是<strong>指针</strong>。</p>
+<p>为了保存一个数据在内存中的地址，需要<strong>指针变量</strong>。</p>
+<p>Go语言中的值类型(int、float、bool、string、array、struct)都有对应的指针类型，如：<code>*int</code>、<code>*int64</code>、<code>*string</code>等。所以指针类型里面存放的值就是指针，也就是地址。</p>
+<p>下面看个列子，图文结合的理解一下。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+    a <span class="token operator">:=</span> <span class="token number">10</span>
+    b <span class="token operator">:=</span> <span class="token operator">&amp;</span>a
+    fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"a:%d ptr:%p\n"</span><span class="token punctuation">,</span> a <span class="token punctuation">,</span> <span class="token operator">&amp;</span>a<span class="token punctuation">)</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"b:%p type:%T\n"</span><span class="token punctuation">,</span> b<span class="token punctuation">,</span> b<span class="token punctuation">)</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>b<span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">// 结果</span>
+    <span class="token comment" spellcheck="true">// a:10 ptr:0xc000054080</span>
+    <span class="token comment" spellcheck="true">// b:0xc000054080 type:*int</span>
+    <span class="token comment" spellcheck="true">// 0xc000080018</span>
+<span class="token punctuation">}</span></code></pre>
+<p><img src="/2021/11/12/go-pointer/1.png" alt></p>
+<p>如上图，把内存区域理解成上面的一个一个连续的小方格。方格里面是用来存储数据的。每个方格都是一个物理地址。</p>
 <ul>
-<li>数据库服务器搭建主从集群，一主一从、一主多从都可以</li>
-<li>数据库主机负责读写操作，从机只负责读操作</li>
-<li>数据库主机通过复制将数据同步到从机，每台数据库服务器都存储了所有的业务数据</li>
-<li>业务服务器将写操作发给数据库主机，将读操作发给数据库从机</li>
+<li>当执行 <code>a := 10</code> 时，数值10被存放到了物理地址为<code>0xc00054080</code>的方格上。变量a引用了这个方格，所以我们程序访问a时就能定位到这个方格，由于变量a里面存的是10这个数值，所以他是一个数值类型的变量。</li>
+<li>当执行<code>b := &amp;a</code>时，因为在go语言中，<code>&amp;a</code>表示的意思是取变量a指向的物理地址（也就是存储10对应的物理地址）。所以执行这条代码时会在内存的其他方格，假设在<code>0xc00080018</code>这个方格上，就会存储&amp;a,也就是<code>0xc00054080</code>这个数据。我之所以称它为<code>这个数据</code>，是因为他不是我们平常经常存的数值类型，布尔类型等，他就是一个物理地址，所以我们称他是一个<code>指针类型</code>。而b就表示是一个<code>指针变量</code>。</li>
+<li>因为上面我们说过go语言中&amp;表示取变量指向的物理地址。所以&amp;b的值就是<code>0cx00080018</code>这个物理地址了。</li>
 </ul>
-<p><img src="/2020/07/20/db-w-r-dynamic/db1.png" alt></p>
-<h1 id="读写分离常见问题与解决"><a href="#读写分离常见问题与解决" class="headerlink" title="读写分离常见问题与解决"></a>读写分离常见问题与解决</h1><h2 id="主从延迟"><a href="#主从延迟" class="headerlink" title="主从延迟"></a>主从延迟</h2><p>以MYSQL为例，当主库插入数据后从库需要一段时间才能同步，时间可能达到1秒多，如果有大量数同步延迟1分钟也有可能。如果业务服务器将数据写入到数据库主服务器后立刻(1秒内)进行读取，此时读操作访问的是从机，主机还没有将数据复制过来，到从机读取数据是读不到最新数据的，业务上就可能出现问题。</p>
-<h3 id="常见解决方法"><a href="#常见解决方法" class="headerlink" title="常见解决方法"></a>常见解决方法</h3><ol>
-<li>关键业务读写操作指向主机，非关键业务采用读写分离。从业务上来区别理论上是比较好的。</li>
-<li>读从机失败后再读一次主机。这种方式与业务无偶尔，只需要在公共类上处理。不足之处在于如果有很多二次读取，将大大增加主机的读操作压力。</li>
+<h3 id="golang中的值传递和引用传递"><a href="#golang中的值传递和引用传递" class="headerlink" title="golang中的值传递和引用传递"></a>golang中的值传递和引用传递</h3><p>先来看看两者的概念 :</p>
+<ul>
+<li>值传递 ： 方法调用时，传递的参数是按值的拷贝传递，传递的是值的拷贝，也就是说传递后就互不相关了。</li>
+<li>引用传递： 方法调用时传递的引用的地址，也就是变量所对应的内存空间的地址。</li>
+</ul>
+<h4 id="例子1"><a href="#例子1" class="headerlink" title="例子1"></a>例子1</h4><pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">TestOther1</span><span class="token punctuation">(</span>t <span class="token operator">*</span>testing<span class="token punctuation">.</span>T<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">var</span> a <span class="token builtin">int64</span> <span class="token operator">=</span> <span class="token number">10</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"变量a对应的地址 %p\n"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>a<span class="token punctuation">)</span>
+    <span class="token function">modifiedNumber</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"最终a的值 %d"</span><span class="token punctuation">,</span> a<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+<span class="token keyword">func</span> <span class="token function">modifiedNumber</span><span class="token punctuation">(</span>c <span class="token builtin">int64</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"变量c对应的地址 %p\n"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>c<span class="token punctuation">)</span>
+    c <span class="token operator">=</span> <span class="token number">100</span>
+<span class="token punctuation">}</span>
+<span class="token comment" spellcheck="true">//变量a对应的地址 0xc00009e298</span>
+<span class="token comment" spellcheck="true">//变量c对应的地址 0xc00009e2a0</span>
+<span class="token comment" spellcheck="true">//最终a的值 10</span></code></pre>
+<p><img src="/2021/11/12/go-pointer/2.png" alt></p>
+<p>看图分析 ，基本类型例如int64等类型采用的是<code>值传递</code>，也就是说变量c复制了变量a存储在方格<code>0xc0009e298</code>里面的值10，然后存到了另外一个方格<code>0xc0009e2a0</code>。那变量c值的变化不影响变量a。</p>
+<h4 id="例子2"><a href="#例子2" class="headerlink" title="例子2"></a>例子2</h4><pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">TestOther2</span><span class="token punctuation">(</span>t <span class="token operator">*</span>testing<span class="token punctuation">.</span>T<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">var</span> a <span class="token builtin">int64</span> <span class="token operator">=</span> <span class="token number">10</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"变量a对应的地址 %p"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>a<span class="token punctuation">)</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token function">modifiedNumber2</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>a<span class="token punctuation">)</span> <span class="token comment" spellcheck="true">// args就是实际参数</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"最终a的值 %d"</span><span class="token punctuation">,</span> a<span class="token punctuation">)</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+<span class="token keyword">func</span> <span class="token function">modifiedNumber2</span><span class="token punctuation">(</span>c <span class="token operator">*</span><span class="token builtin">int64</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token comment" spellcheck="true">//这里定义的args就是形式参数</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"变量c存储的值 %v"</span> <span class="token punctuation">,</span> c<span class="token punctuation">)</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token operator">*</span>c <span class="token operator">=</span> <span class="token number">100</span>
+<span class="token punctuation">}</span>
+<span class="token comment" spellcheck="true">//变量a对应的地址 0xc00000a348</span>
+<span class="token comment" spellcheck="true">//变量c存储的值 0xc00000a348</span>
+<span class="token comment" spellcheck="true">//最终a的值 100</span></code></pre>
+<p><img src="/2021/11/12/go-pointer/3.png" alt></p>
+<p>如图所示，c是一个指针类型，c存放的是a的物理地址<code>0xc00000a348</code>。当执行<code>*c = 100</code>时候，*c在go中代表c变量中存储的物理地址<code>0xc00000a348</code>对应的方格它存的值。所以当 *c =100时，就会更改<code>0xc000003a68</code>这个物理地址里面存的数，所以变量a的值最终变成了100。所以对于指针类型来说，它也是值传递，它拷贝了一份变量a对应的物理地址。本身变量c是一个指针类型，它存物理地址没毛病。所以总的来说，指针类型也是通过值传递的。</p>
+<p>总结 ： golang中形参实参传递都是用的值传递。</p>
+
+      
+    </div>
+    
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2021/05/30/solidity/">
+      Solidity开发
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>区块链</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：May 30, 2021</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Solidity开发</p>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2021/05/30/solidity/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2021/05/18/go-study-01/">
+      GoLang学习笔记备忘
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/GoLang/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>GoLang</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：May 18, 2021</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="什么时候用指针？"><a href="#什么时候用指针？" class="headerlink" title="什么时候用指针？"></a>什么时候用指针？</h3><ul>
+<li>不要对 map、slice、channel 这类引用类型使用指针；</li>
+<li>如果需要修改方法接收者内部的数据或者状态时，需要使用指针；</li>
+<li>如果需要修改参数的值或者内部数据时，也需要使用指针类型的参数；</li>
+<li>如果是比较大的结构体，每次参数传递或者调用方法都要内存拷贝，内存占用多，这时候可以考虑使用指针；</li>
+<li>像 int、bool 这样的小数据类型没必要使用指针；</li>
+<li>如果需要并发安全，则尽可能地不要使用指针，使用指针一定要保证并发安全；</li>
+<li>指针最好不要嵌套，也就是不要使用一个指向指针的指针，虽然 Go 语言允许这么做，但是这会使你的代码变得异常复杂。</li>
+</ul>
+<h3 id="slice切片类型结构"><a href="#slice切片类型结构" class="headerlink" title="slice切片类型结构"></a>slice切片类型结构</h3><pre class=" language-go"><code class="language-go"><span class="token keyword">type</span> Slice <span class="token keyword">struct</span> <span class="token punctuation">{</span>
+    Data unsafe<span class="token punctuation">.</span>Pointer     <span class="token comment" spellcheck="true">// 指向底层数组的指针</span>
+    Len  <span class="token builtin">int</span>             <span class="token comment" spellcheck="true">// 切片的已存储的长度</span>
+    Cap  <span class="token builtin">int</span>             <span class="token comment" spellcheck="true">// 切片的容量</span>
+<span class="token punctuation">}</span></code></pre>
+<p><img src="/2021/05/18/go-study-01/1.png" alt></p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">TestSlice</span><span class="token punctuation">(</span>t <span class="token operator">*</span>testing<span class="token punctuation">.</span>T<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    a <span class="token operator">:=</span> <span class="token punctuation">[</span><span class="token number">8</span><span class="token punctuation">]</span><span class="token builtin">int</span><span class="token punctuation">{</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">}</span>
+    s1 <span class="token operator">:=</span> a<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">:</span><span class="token number">5</span><span class="token punctuation">]</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"切片的len = %d, cap = %d \n"</span><span class="token punctuation">,</span> <span class="token function">len</span><span class="token punctuation">(</span>s1<span class="token punctuation">)</span> <span class="token punctuation">,</span> <span class="token function">cap</span><span class="token punctuation">(</span>s1<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    s2 <span class="token operator">:=</span> a<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">:</span><span class="token number">5</span><span class="token punctuation">]</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"切片的len = %d, cap = %d \n"</span><span class="token punctuation">,</span> <span class="token function">len</span><span class="token punctuation">(</span>s2<span class="token punctuation">)</span> <span class="token punctuation">,</span> <span class="token function">cap</span><span class="token punctuation">(</span>s2<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    s1 <span class="token operator">=</span> <span class="token function">append</span><span class="token punctuation">(</span>s1<span class="token punctuation">,</span><span class="token number">16</span><span class="token punctuation">)</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+<span class="token comment" spellcheck="true">//打印结果</span>
+<span class="token comment" spellcheck="true">//切片的len = 5, cap = 8 </span>
+<span class="token comment" spellcheck="true">//切片的len = 2, cap = 5 </span>
+<span class="token comment" spellcheck="true">//[0 1 2 3 4 16 6 7]</span></code></pre>
+<p>切片的本质就是对底层数组的封装，它包含了三个信息：底层数组的指针、切片的长度（len）和切片的容量（cap）。如图</p>
+<ul>
+<li>s1字段中<code>Data unsafe.Pointer</code>记录了数组a的下标为0的地址。s1字段中<code>Data unsafe.Pointer</code>记录了数组a的下标为3的地址。</li>
+<li>切片的长度是<code>左闭右开</code>的，容量是从指向的起始位置开始算，例如s1指向是下标0，按照容量是数组剩余大小的话，cap = 8， 同理s2的cap = 5。</li>
+<li>s1 = append(s1,16)执行时，因为切片会操作原来的数组，所以这时候打印数组a时，数组a下标为6的值会变成16。</li>
+</ul>
+<p>上面我们说s1 = append(s1,16)时，s1会操作底层的数组。下面还有一种情况并不会修改到底层数组，我们具体来看个图。</p>
+<p><img src="/2021/05/18/go-study-01/2.png" alt></p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">TestSlice</span><span class="token punctuation">(</span>t <span class="token operator">*</span>testing<span class="token punctuation">.</span>T<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    a <span class="token operator">:=</span> <span class="token punctuation">[</span><span class="token number">8</span><span class="token punctuation">]</span><span class="token builtin">int</span><span class="token punctuation">{</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">}</span>
+    s3 <span class="token operator">:=</span> a<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">:</span><span class="token punctuation">]</span>
+    s3 <span class="token operator">=</span> <span class="token function">append</span><span class="token punctuation">(</span>s3<span class="token punctuation">,</span><span class="token number">19</span><span class="token punctuation">)</span>
+    fmt<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+<span class="token comment" spellcheck="true">// 打印结果 ： [0 1 2 3 4 5 6 7]</span></code></pre>
+<p>上面执行s3 = append(s3,19)后，数组并没有我们想象中的发生改变，原因是此时s3的容量=长度，如果append增加元素时需要扩容，而扩容就会导致s3指向新的数组。</p>
+<h3 id="make和new的区别"><a href="#make和new的区别" class="headerlink" title="make和new的区别"></a>make和new的区别</h3><p>new 是 Golang 的内建函数，用于分配内存和初始化默认值。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">new</span><span class="token punctuation">(</span>Type<span class="token punctuation">)</span> <span class="token operator">*</span>Type</code></pre>
+<p>几个重要的点 : </p>
+<ul>
+<li>传入的是一个类型。</li>
+<li>返回的是一个指针类型。</li>
+<li>其值会被分配成初始值。</li>
+</ul>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">TestNew</span><span class="token punctuation">(</span>t <span class="token operator">*</span>testing<span class="token punctuation">.</span>T<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    a <span class="token operator">:=</span> <span class="token function">new</span><span class="token punctuation">(</span><span class="token builtin">int64</span><span class="token punctuation">)</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"指针变量a的类型: %T  指针变量a指向的值: %v 指针变量a的值: %v \n"</span><span class="token punctuation">,</span> a<span class="token punctuation">,</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> a<span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">// 指针变量a的类型: *int64  指针变量a指向的值: 0 指针变量a的值: 0xc00000a300 </span>
+<span class="token punctuation">}</span></code></pre>
+<p><img src="/2021/05/18/go-study-01/3.png" alt></p>
+<p>如图所示，new出来的是一个指针类型，指向了初始化的值对应的物理地址。</p>
+<p>make是Golang的内建函数，<strong>只用于slice,map,channel</strong>的内存分配和初始化。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">make</span><span class="token punctuation">(</span>t Type<span class="token punctuation">,</span> size <span class="token operator">...</span>IntegerType<span class="token punctuation">)</span> Type</code></pre>
+<p>可以看到，返回的是一个类型，而不是指针类型。</p>
+<h3 id="new和make初始化切片例子详解"><a href="#new和make初始化切片例子详解" class="headerlink" title="new和make初始化切片例子详解"></a>new和make初始化切片例子详解</h3><p>下面通过一个例子具体来看下make和new初始化切片的情况。</p>
+<p>假设有如下代码，此时我只是证明了一个int类型的切片，那么此时这个切片结构的data = nil , len = 0 , cap = 0.</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">var</span> ints <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">int</span>        #声明一个切片类型</code></pre>
+<p>当我们使用make函数为其分配内存时</p>
+<pre class=" language-go"><code class="language-go">ints <span class="token operator">:=</span> <span class="token function">make</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">int</span> <span class="token punctuation">,</span> <span class="token number">2</span> <span class="token punctuation">,</span><span class="token number">5</span><span class="token punctuation">)</span>
+ints <span class="token operator">=</span> <span class="token function">append</span><span class="token punctuation">(</span>ints<span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">)</span></code></pre>
+<p>此时make会帮我们<strong>开辟这个切片的底层数组</strong>，且存储两个元素，如下图，绿色表示已经存储了两个元素。当继续执行append时，就会在第三个方格中继续存入。</p>
+<p><img src="/2021/05/18/go-study-01/4.png" alt></p>
+<p>如果是使用new分配的话，我们再来看一下，还是上面的代码</p>
+<pre class=" language-go"><code class="language-go">ints <span class="token operator">:=</span> <span class="token function">new</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">int</span><span class="token punctuation">)</span>
+<span class="token punctuation">(</span><span class="token operator">*</span>ints<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span>        <span class="token comment" spellcheck="true">// 此时这一句会报错</span>
+<span class="token operator">*</span>ints <span class="token operator">=</span> <span class="token function">append</span><span class="token punctuation">(</span><span class="token operator">*</span>ints <span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span><span class="token operator">*</span>ints<span class="token punctuation">)</span></code></pre>
+<p>由于new只是分配内存和初始化0值，并不会像make那样为其分配内存。所以此时ints是一个指针类型，指向了切片这个结构，且这个切片的data = nil , len = 0 , cap = 0 。</p>
+<p><img src="/2021/05/18/go-study-01/5.png" alt></p>
+<p>当用new初始化后执行<code>(*ints)[0] = 1</code>是会报错的，因为此时data还没有指向数组。如果要分配数组，我们可以用append方法，这个方法是可以帮我们自动创建底层数组的。所以执行<code>*ints = append(*ints , 1)</code>是可以行得通的。</p>
+<h3 id="slice切片的扩容"><a href="#slice切片的扩容" class="headerlink" title="slice切片的扩容"></a>slice切片的扩容</h3><p>append是如果容量不够，slice会自动扩容。扩容的原理其实是新建一个底层数组，先将之前数组的元素复制过来，再将新元素追加到后面，然后返回新的 slice，底层数组改变。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">TestSlice</span><span class="token punctuation">(</span>t <span class="token operator">*</span>testing<span class="token punctuation">.</span>T<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    ints <span class="token operator">:=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">int</span><span class="token punctuation">{</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">}</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"切片ints len = %d , cap = %d \n"</span> <span class="token punctuation">,</span> <span class="token function">len</span><span class="token punctuation">(</span>ints<span class="token punctuation">)</span> <span class="token punctuation">,</span> <span class="token function">cap</span><span class="token punctuation">(</span>ints<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    ints <span class="token operator">=</span> <span class="token function">append</span><span class="token punctuation">(</span>ints<span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">,</span><span class="token number">4</span><span class="token punctuation">,</span><span class="token number">5</span><span class="token punctuation">)</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"切片ints len = %d , cap = %d \n"</span> <span class="token punctuation">,</span> <span class="token function">len</span><span class="token punctuation">(</span>ints<span class="token punctuation">)</span> <span class="token punctuation">,</span> <span class="token function">cap</span><span class="token punctuation">(</span>ints<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+<span class="token comment" spellcheck="true">//切片ints len = 2 , cap = 2 </span>
+<span class="token comment" spellcheck="true">//切片ints len = 5 , cap = 6</span></code></pre>
+<p>slice的扩容预估规则是怎么样的呢，我们假设原来的容量为oldCap，最小容量为cap。例如上面的代码，刚开始oldCap=2，append()后要求最小容量是5，即cap = 5。</p>
+<ul>
+<li>如果 oldCap * 2 &lt; cap ，即假设我把原来的容量扩容2倍后小于所需最小容量，则将newCap = cap。</li>
+<li>否则在细分<ul>
+<li>oldLen &lt; 1024   则  newCap = cap</li>
+<li>oldLen &gt;= 1024 则 扩容1/4 ， 即 newCap = oldCap * 1.25</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+    
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2021/04/24/elasticsearch-01/">
+      ElasticSearch常见问题汇总(0)
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/ElasticSearch/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>ElasticSearch</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Apr 24, 2021</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>ElasticSearch常见问题汇总</p>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2021/04/24/elasticsearch-01/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2021/04/08/sring-class/">
+      彻底理解class常量池、String常量池、运行时常量池
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/java/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>java</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Apr 8, 2021</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>经常看网上博客，发现很多文章用了常量池，class常量池，运行时常量池，字符串常量池。傻傻分不清楚他们之间有什么区别。</p>
+<h2 id="常量池和class常量池"><a href="#常量池和class常量池" class="headerlink" title="常量池和class常量池"></a>常量池和class常量池</h2><p>其实，常量池 <font color="red">=</font> Class常量池。</p>
+<p>常量池,也叫 Class 常量池。Java文件被编译成 Class文件，Class文件中除了包含类的版本、字段、方法、接口等描述信息外，还有一项就是常量池，Class常量池可以理解为是Class文件中的资源仓库。用于存放编译器生成的各种<code>字面量</code>和<code>符号引用</code>。</p>
+<p><img src="/2021/04/08/sring-class/1.jpg" alt></p>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2021/04/08/sring-class/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2021/04/08/linux-top/">
+      Linux故障排查命令使用(top、iostat、vmstat、netstat、free、df、iotop)
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/linux/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>linux</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Apr 8, 2021</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="top命令详解"><a href="#top命令详解" class="headerlink" title="top命令详解"></a>top命令详解</h2><h3 id="各项指标详解"><a href="#各项指标详解" class="headerlink" title="各项指标详解"></a>各项指标详解</h3><p><img src="/2021/04/08/linux-top/1.png" alt="top命令展示"></p>
+<h4 id="第一行：系统运行时间和平均负载"><a href="#第一行：系统运行时间和平均负载" class="headerlink" title="第一行：系统运行时间和平均负载"></a>第一行：系统运行时间和平均负载</h4><pre><code class="shell">top - 14:46:47 up 909 days,  3:15,  1 user,  load average: 1.80, 1.50, 1.37</code></pre>
+<ul>
+<li>14:46:47 表示当前系统时间</li>
+<li>up 909 days 表示已经运行了909天期间没重启</li>
+<li>1 user 表示当前登录的用户数量</li>
+<li>load average: 1.80, 1.50, 1.37 表示当前系统5分钟;10分钟;15分钟的负载<br><font color="red">load average数据是每隔5秒钟检查一次活跃的进程数，然后按特定算法计算出的数值。如果这个数除以逻辑CPU的数量，结果高于5的时候就表明系统在超负荷运转了。</font></li></ul>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2021/04/08/linux-top/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2021/04/08/linux-netstat/">
+      Linux命令之netstat与TCP详解
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/linux/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>linux</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Apr 8, 2021</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Linux命令之netstat与TCP详解</p>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2021/04/08/linux-netstat/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2021/02/10/influxdb-1/">
+      influxdb学习(一)
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/influxdb/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>influxdb</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Feb 10, 2021</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>influxdb学习(一)</p>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2021/02/10/influxdb-1/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2021/02/02/shardingphere-problem/">
+      ShardingPhere使用中遇到的问题记录
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/shardingjdbc/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>shardingjdbc</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Feb 2, 2021</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="问题1：shardingphere启动慢"><a href="#问题1：shardingphere启动慢" class="headerlink" title="问题1：shardingphere启动慢"></a><strong>问题1：shardingphere启动慢</strong></h3><p>项目中使用了shardingphere分库分表，在使用了一段时间后发现项目启动越来越慢，原因定位在加载shardingphere时耗时比较长。但不知道具体是哪一个步骤。</p>
+<p><strong>定位可能原因：一般情况下我们项目会用到数据库连接池，在shardingjdbc启动时会初始化数据库连接池，可能是其中一台机器初始化连接时超时导致整体启动时间慢。</strong></p>
+<p>很遗憾不是这个问题，通过打印连接日志，数据库连接速度很快，不是这个问题导致的。无奈之下，跟了一遍shardingjdbc启动源码，发现问题所在。</p>
+<p><strong>定位原因：在shardingjdbc启动时，会加载分库分表中所有的表结构进行校验，判断是否所有的表结构都是一致的。</strong></p>
+      
+    </div>
+    
+      
+        <div class="button readmore">
+          <a href="/2021/02/02/shardingphere-problem/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+      
+    
+  </section>
+</article>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <article class="post white-box shadow reveal ">
+  
+
+
+  <section class='meta'>
+    
+      
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h2 class="title">
+    <a href="/2021/02/02/shardingjdbc-reg/">
+      ShardingJdbc编排治理详解
+    </a>
+  </h2>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
+    <img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg">
+    <p>咕噜。咕噜</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/shardingjdbc/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>shardingjdbc</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：Feb 2, 2021</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+  <section class="article typo">
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="分布式配置中心"><a href="#分布式配置中心" class="headerlink" title="分布式配置中心"></a>分布式配置中心</h2><p>在分布式系统或者微服务中，我们经常用到分布式配置中心，他可以将配置定义到一个单独的地方以便所有分布式系统从能从中读取配置，对于修改配置也只需要修改一个地方就行。</p>
+<h2 id="ShardingSphere编排治理"><a href="#ShardingSphere编排治理" class="headerlink" title="ShardingSphere编排治理"></a>ShardingSphere编排治理</h2><h3 id="为啥需要编排治理？"><a href="#为啥需要编排治理？" class="headerlink" title="为啥需要编排治理？"></a>为啥需要编排治理？</h3><p>ShardingSphere的编排治理提供了配置中心和注册中心功能。<br>在使用ShardingSphere我们经常定义了一堆分库分表规则。传统的ShardingJdcb我们一般将分库分表规则配置在yml文件或者xml文件中。然而在分布式系统中，假设我们有100台机器做负载均衡，由于需求原因分库分表规则需要添加规则，这时候我们的处理如下：</p>
+<ol>
+<li>对100台机器上的分库分表配置文件yml文件进行逐一修改</li>
+<li>逐一重启100台机器Tomcat</li>
 </ol>
-<h1 id="Spring实现读写分离"><a href="#Spring实现读写分离" class="headerlink" title="Spring实现读写分离"></a>Spring实现读写分离</h1>
+<p>这其中的复杂程度可想而知。有人会说，可以将配置定义在一个分布式配置中心中。 没错 ！！！</p>
+<p>所以ShardingSphere提供了编排治理功能，通俗一点就是通过ShardingSphere + Zookeeper 或者 Etcd  实现 分布式配置功能，并且通过Zookeeper的Watch机制保证每次修改后<font color="red">自动加载无需重启</font>。</p>
       
     </div>
     
+      
+        <div class="button readmore">
+          <a href="/2021/02/02/shardingjdbc-reg/">
+            阅读全文 <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
       
     
   </section>
@@ -538,181 +1717,24 @@
           </div>
         
       
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
     
-      
-      
-      <div class="meta" id="header-meta">
+  </section>
+  
+    
+      <br>
+      <div class="prev-next">
         
-          
-  <h2 class="title">
-    <a href="/2020/07/18/hello-world/">
-      Hello World
-    </a>
-  </h2>
-
-
+        <p class="current">
+          1 / 7
+        </p>
         
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
-    <img src="https://upload.jianshu.io/users/upload_avatars/8707811/949bce11-c063-4540-9c37-c86866ce4f1e.jpg?imageMogr2/auto-orient/strip|imageView2/1/w/240/h/240">
-    <p>咕噜。咕噜</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Jul 18, 2020</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
+          <a class="next" rel="next" href="/page/2/">
+            <section class="post next white-box shadow">
+              &nbsp;Next&nbsp;<i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </section>
+          </a>
         
       </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>这是我的第一篇博客，你好，Hexoxxxxddewrwerwerwer。</p>
-
-      
-    </div>
-    
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <article class="post white-box shadow reveal ">
-  
-
-
-  <section class='meta'>
-    
-      
-      
-      <div class="meta" id="header-meta">
-        
-          
-  <h2 class="title">
-    <a href="/2015/09/03/myblob/">
-      你好，Hexo
-    </a>
-  </h2>
-
-
-        
-        <div class='new-meta-box'>
-          
-            
-          
-            
-              
-<div class='new-meta-item author'>
-  <a href="https://xuzhiyong28.github.io" target="_blank" rel="nofollow noopener">
-    <img src="https://upload.jianshu.io/users/upload_avatars/8707811/949bce11-c063-4540-9c37-c86866ce4f1e.jpg?imageMogr2/auto-orient/strip|imageView2/1/w/240/h/240">
-    <p>咕噜。咕噜</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              <div class="new-meta-item date">
-  <a class='notlink'>
-    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
-    <p>发布于：Sep 3, 2015</p>
-  </a>
-</div>
-
-            
-          
-            
-              
-
-            
-          
-            
-              
-
-            
-          
-        </div>
-        
-          <hr>
-        
-      </div>
-    
-  </section>
-
-
-  <section class="article typo">
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>这是我的第一篇博客，你好，Hexoxxxxddewrwerwerwer。</p>
-
-      
-    </div>
-    
-      
-    
-  </section>
-</article>
-
-          </div>
-        
-      
-    
-  </section>
-  
     
     <!-- 根据主题中的设置决定是否在archive中针对摘要部分的MathJax公式加载mathjax.js文件 -->
     
@@ -733,7 +1755,7 @@
     
       
         <a class='avatar flat-box' href='/about/'>
-          <img no-lazy src='https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/avatar/avatar.png'/>
+          <img no-lazy src='https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2592725124,834309066&fm=15&gp=0.jpg'/>
         </a>
       
     
@@ -742,7 +1764,7 @@
         
         
         
-          <p><span id="jinrishici-sentence">咕噜。咕噜的博客</span></p>
+          <p><span id="jinrishici-sentence">咕噜咕噜的博客</span></p>
           <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script>
         
       </div>
@@ -759,7 +1781,7 @@
           
         
           
-            <a href="mailto:me@xaoxuu.com"
+            <a href="mailto:jip0574@qq.com"
               class="social fas fa-envelope flat-btn"
               target="_blank"
               rel="external nofollow noopener noreferrer">
@@ -792,6 +1814,104 @@
   
     
     
+  
+
+  <section class="widget category shadow desktop">
+    
+  <header>
+    
+      <a href='/blog/categories/'><i class="fas fa-folder-open fa-fw" aria-hidden="true"></i><span class='name'>文章分类</span></a>
+    
+  </header>
+
+
+    <div class='content'>
+      <ul class="entry navigation">
+        
+          <li><a class="flat-box"
+            title="/categories/Docker/" href="/categories/Docker/"
+            id="categoriesDocker"
+            ><div class='name'>Docker</div><div class='badge'>(2)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/ElasticSearch/" href="/categories/ElasticSearch/"
+            id="categoriesElasticSearch"
+            ><div class='name'>ElasticSearch</div><div class='badge'>(1)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/GoLang/" href="/categories/GoLang/"
+            id="categoriesGoLang"
+            ><div class='name'>GoLang</div><div class='badge'>(2)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/SpringCloud/" href="/categories/SpringCloud/"
+            id="categoriesSpringCloud"
+            ><div class='name'>SpringCloud</div><div class='badge'>(2)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/influxdb/" href="/categories/influxdb/"
+            id="categoriesinfluxdb"
+            ><div class='name'>influxdb</div><div class='badge'>(1)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/java/" href="/categories/java/"
+            id="categoriesjava"
+            ><div class='name'>java</div><div class='badge'>(16)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/kafka/" href="/categories/kafka/"
+            id="categorieskafka"
+            ><div class='name'>kafka</div><div class='badge'>(4)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/linux/" href="/categories/linux/"
+            id="categorieslinux"
+            ><div class='name'>linux</div><div class='badge'>(3)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/mysql/" href="/categories/mysql/"
+            id="categoriesmysql"
+            ><div class='name'>mysql</div><div class='badge'>(9)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/redis/" href="/categories/redis/"
+            id="categoriesredis"
+            ><div class='name'>redis</div><div class='badge'>(9)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/rust/" href="/categories/rust/"
+            id="categoriesrust"
+            ><div class='name'>rust</div><div class='badge'>(1)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/shardingjdbc/" href="/categories/shardingjdbc/"
+            id="categoriesshardingjdbc"
+            ><div class='name'>shardingjdbc</div><div class='badge'>(3)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/spring/" href="/categories/spring/"
+            id="categoriesspring"
+            ><div class='name'>spring</div><div class='badge'>(5)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/zookeeper/" href="/categories/zookeeper/"
+            id="categorieszookeeper"
+            ><div class='name'>zookeeper</div><div class='badge'>(1)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/" href="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/"
+            id="categoriesE58CBAE59D97E993BE"
+            ><div class='name'>区块链</div><div class='badge'>(2)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/%E6%9E%B6%E6%9E%84/" href="/categories/%E6%9E%B6%E6%9E%84/"
+            id="categoriesE69EB6E69E84"
+            ><div class='name'>架构</div><div class='badge'>(1)</div></a></li>
+        
+      </ul>
+    </div>
+  </section>
+
 
   
 
@@ -810,7 +1930,7 @@
 
 
     <div class='content'>
-      <a href="/tags/hexo/" style="font-size: 24px; color: #555">hexo</a> <a href="/tags/mysql/" style="font-size: 14px; color: #999">mysql</a> <a href="/tags/%E6%9E%B6%E6%9E%84/" style="font-size: 14px; color: #999">架构</a>
+      <a href="/tags/Docker/" style="font-size: 15.43px; color: #8f8f8f">Docker</a> <a href="/tags/ElasticSearch/" style="font-size: 14px; color: #999">ElasticSearch</a> <a href="/tags/GoLang/" style="font-size: 15.43px; color: #8f8f8f">GoLang</a> <a href="/tags/SpringCloud/" style="font-size: 15.43px; color: #8f8f8f">SpringCloud</a> <a href="/tags/influxdb/" style="font-size: 14px; color: #999">influxdb</a> <a href="/tags/java8/" style="font-size: 14px; color: #999">java8</a> <a href="/tags/java%E5%B9%B6%E5%8F%91/" style="font-size: 24px; color: #555">java并发</a> <a href="/tags/java%E9%9B%86%E5%90%88/" style="font-size: 14px; color: #999">java集合</a> <a href="/tags/jvm/" style="font-size: 15.43px; color: #8f8f8f">jvm</a> <a href="/tags/kafka/" style="font-size: 18.29px; color: #7c7c7c">kafka</a> <a href="/tags/linux/" style="font-size: 16.86px; color: #868686">linux</a> <a href="/tags/mysql/" style="font-size: 22.57px; color: #5f5f5f">mysql</a> <a href="/tags/redis/" style="font-size: 21.14px; color: #686868">redis</a> <a href="/tags/rust/" style="font-size: 14px; color: #999">rust</a> <a href="/tags/shardingjdbc/" style="font-size: 16.86px; color: #868686">shardingjdbc</a> <a href="/tags/spring/" style="font-size: 19.71px; color: #727272">spring</a> <a href="/tags/zookeeper/" style="font-size: 14px; color: #999">zookeeper</a> <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" style="font-size: 15.43px; color: #8f8f8f">区块链</a> <a href="/tags/%E6%9E%B6%E6%9E%84/" style="font-size: 14px; color: #999">架构</a> <a href="/tags/%E7%BD%91%E7%BB%9C/" style="font-size: 14px; color: #999">网络</a> <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" style="font-size: 14px; color: #999">设计模式</a> <a href="/tags/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/" style="font-size: 15.43px; color: #8f8f8f">项目实践</a>
     </div>
   </section>
 
@@ -842,7 +1962,7 @@
       list-max-height='340px'
       server='netease'
       type='playlist'
-      id='3175833810'
+      id='2682558306'
       list-folded='true'>
     </meting-js>
   
@@ -864,7 +1984,7 @@
             
           
             
-              <a href="mailto:me@xaoxuu.com"
+              <a href="mailto:jip0574@qq.com"
                 class="social fas fa-envelope flat-btn"
                 target="_blank"
                 rel="external nofollow noopener noreferrer">
@@ -976,7 +2096,7 @@
 
     <script type="text/javascript">
       $(function(){
-        var imgs=["https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/41F215B9-261F-48B4-80B5-4E86E165259E.jpeg"];
+        var imgs=["https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/41F215B9-261F-48B4-80B5-4E86E165259E.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/BBC19066-E176-47C2-9D22-48C81EE5DF6B.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/B18FCBB3-67FD-48CC-B4F3-457BA145F17A.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/35F12181-F0E9-45BD-B134-37E4B4A660CF.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/00E0F0ED-9F1C-407A-9AA6-545649D919F4.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/67239FBB-E15D-4F4F-8EE8-0F1C9F3C4E7C.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/B951AE18-D431-417F-B3FE-A382403FF21B.jpeg", "https://cdn.jsdelivr.net/gh/xaoxuu/cdn-wallpaper/abstract/2884F904-F1F3-479E-AE27-5EBC291B63B0.jpeg"];
         if ('true' == 'true') {
           function shuffle(arr){
             /*From countercurrent-time*/
@@ -1048,6 +2168,13 @@
 
 
 
+
+  
+    
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.1/build/highlight.min.js"></script>
+
+    <script>hljs.initHighlightingOnLoad();</script>
+  
 
 
 
