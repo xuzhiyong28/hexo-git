@@ -333,6 +333,6 @@ func New(stack *node.Node, config *ethconfig.Config) // backend.go
 https://blog.csdn.net/cljdsc/article/details/116275499
 
 - 相同nonce下的两笔交易，后面的一笔会失败提示"nonce too low"
-- 不连续nonce下的交易，假如现在nonce=3，然后我们发了一笔nonce=5的交易，那么这笔交易会被暂未被加入到区块中的交易。对于这笔交易会被放在queue队列中(`一个是待被打包的pending列表，一个是当前无法执行的交易queued列表`)。
+- 不连续nonce下的交易，假如现在nonce=3，然后我们发了一笔nonce=5的交易。对于这笔交易会被放在queue队列中(`一个是待被打包的pending列表，一个是当前无法执行的交易queued列表`)。
 - 假如在发了nonce=5交易的基础上，我们再发一条nonce=4。此时nonce有了4，5的交易后，两笔都会被写入区块。
 - 假设我们发了一笔nonce=6的交易，但由于手续费不高或网络拥堵或nonce值过高，此交易处于queued中迟迟未被打包，此时我们再发一笔交易，同样nonce=6,如果手续费更低，那么报错`replacement transaction underpriced`；如果手续费高于原来的交易，那么这笔会被覆盖。

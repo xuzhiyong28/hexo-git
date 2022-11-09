@@ -213,15 +213,42 @@ tcpdump -n port 3306 #监控端口3306的TCP情况抓包 -n不把网络地址转
 
 ```shell
 # 监控端口3306的TCP情况并且截获所有10.8.152.162 的主机收到的和发出的所有的数据包
-tcpdump -n port 3306 and host 10.8.152.162 
+tcpdump -i eth0 -n port 3306 and host 10.8.152.162 
 # 截获主机210.27.48.1 和主机210.27.48.2 或210.27.48.3的通信
 tcpdump host 210.27.48.1 and \ (210.27.48.2 or 210.27.48.3 \) 
-# 果想要获取主机210.27.48.1接收或发出的telnet包
-tcpdump tcp port 23 and host 210.27.48.1
+# 果想要获取主机210.27.48.1接收或发出的telnet包,并输入到tcp.pacp文件
+tcpdump -i eth0 tcp port 8080 and host 210.27.48.1 -w tcp.pacp
 ```
+
+### tcp返回结果解析
+
+![](linux-netstat/7.png)
+
+```
+21:26:49.013621 IP 172.20.20.1.15605 > 172.20.20.2.5920: Flags [P.], seq 49:97, ack 106048, win 4723, length 48
+```
+
+从上面的输出来看，可以总结出：
+
+1. 第一列：时分秒毫秒 21:26:49.013621
+2. 第二列：网络协议 IP
+3. 第三列：发送方的ip地址+端口号，其中172.20.20.1是 ip，而15605 是端口号
+4. 第四列：箭头 >， 表示数据流向
+5. 第五列：接收方的ip地址+端口号，其中 172.20.20.2 是 ip，而5920 是端口号
+6. 第六列：冒号
+7. 第七列：数据包内容，包括Flags 标识符，seq 号，ack 号，win 窗口，数据长度 length，其中 [P.] 表示 PUSH 标志位为 1，更多标识符见下面
+
+使用 tcpdump 抓包后，会遇到的 TCP 报文 Flags，有以下几种：
+
+- `[S]` : SYN（开始连接）
+- `[P]` : PSH（推送数据）
+- `[F]` : FIN （结束连接）
+- `[R]` : RST（重置连接）
+- `[.]` : 没有 Flag （意思是除上面四种类型外的其他情况，有可能是 ACK 也有可能是 URG）
 
 ## 参考
 
 - https://juejin.cn/post/6844903734300901390
 - [Linux tcpdump命令详解](https://www.cnblogs.com/ggjucheng/archive/2012/01/14/2322659.html)
 - [wireshark抓包新手使用教程](https://www.cnblogs.com/mq0036/p/11187138.html)
+- https://www.cnblogs.com/wongbingming/archive/2020/06/30/13212306.html

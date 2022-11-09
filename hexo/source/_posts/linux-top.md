@@ -51,6 +51,7 @@ Cpu(s):  3.8%us,  0.4%sy,  0.0%ni, 95.7%id,  0.1%wa,  0.0%hi,  0.0%si,  0.0%st
 ```shell
 Mem:  231349636k total, 72512612k used, 158837024k free,   299360k buffers
 Swap:  8388600k total,        0k used,  8388600k free,  3648000k cached
+# 主要是看swap的free，这个才是真正使用的内存。mem的free表示的是被分配的内存，不是实际使用的。
 ```
 - Mem
  - total 物理内存重量
@@ -364,11 +365,63 @@ jmap主要用来帮助我们查看堆内存情况，并支持导出成dump文件
 jmap -heap PID # 打印堆的使用情况
 jmap -histo:live PID | head -50 #打印每个class的实例数目,内存占用,类全名信息. 如果live子参数加上后,只统计活的对象数量. 一般可以通过这个命令查看哪个对象占用的内存不合理
 jmap -dump:live,format=b,file=/tmp/xxxx.hprof PID #导出存活对象的dump文件以便后面分析。live可以不加，加了表示存活对象
+jmap -head PID # 查看内存使用情况
 ```
 
 减少内存使用时一个重要目标，在堆分析上最简单的方法是利用堆直方图。通过堆直方图我们可以快速看到应用内的对象数目，同时不需要进行完整的堆转储（因为堆转储需要一段时间来分析，而且会消耗大量磁盘空间）。
 
 ![存活对象的堆直方图](linux-top/6.png)
+
+```
+# jmap -head PID 命令输出
+Debugger attached successfully.
+Server compiler detected.
+JVM version is 25.212-b04
+
+using thread-local object allocation.
+Parallel GC with 4 thread(s)
+
+Heap Configuration:
+   MinHeapFreeRatio         = 0                         【最小堆使用比例】
+   MaxHeapFreeRatio         = 100                       【最大堆可用比例】
+   MaxHeapSize              = 268435456 (256.0MB)       【最大堆空间大小】
+   NewSize                  = 44564480 (42.5MB)         【新生代分配大小】
+   MaxNewSize               = 89128960 (85.0MB)         【新生代最大可分配大小】
+   OldSize                  = 89653248 (85.5MB)         【老年代大小】
+   NewRatio                 = 2                            【新生代占的比例】
+   SurvivorRatio            = 8                            【新生代与suvivor的比例】
+   MetaspaceSize            = 21807104 (20.796875MB)
+   CompressedClassSpaceSize = 1073741824 (1024.0MB)
+   MaxMetaspaceSize         = 17592186044415 MB
+   G1HeapRegionSize         = 0 (0.0MB)
+
+Heap Usage:                                              【堆使用情况】
+PS Young Generation                                      【新生代】
+Eden Space:                                              【Eden区】
+   capacity = 87031808 (83.0MB)                           【Eden区容量】
+   used     = 66957240 (63.85540008544922MB)              【Eden区使用量】
+   free     = 20074568 (19.14459991455078MB)              【Eden区当前剩余容量】
+   76.93421697042075% used                                【Eden区使用情况百分比】
+From Space:                                              【From survivor区】  
+   capacity = 1048576 (1.0MB)                             【From survivor区容量】
+   used     = 278544 (0.2656402587890625MB)               【From survivor区已使用量】
+   free     = 770032 (0.7343597412109375MB)               【From survivor区剩余容量】
+   26.56402587890625% used                                【From survivor区使用比例】
+To Space:                                                【To survivor区】
+   capacity = 1048576 (1.0MB)                             【To survivor区容量】
+   used     = 0 (0.0MB)                                   【To survivor区使用量】
+   free     = 1048576 (1.0MB)                             【To survivor区剩余容量】
+   0.0% used                                              【To survivor区使用比例】
+PS Old Generation                                        【老年代】
+   capacity = 179306496 (171.0MB)                         【老年代容量】
+   used     = 106356544 (101.42950439453125MB)            【老年代已使用容量】
+   free     = 72949952 (69.57049560546875MB)              【老年代剩余容量】
+   59.31549964592471% used                                【老年代使用比例】
+
+30237 interned Strings occupying 3151392 bytes.
+```
+
+
 
 ## JVM调优命令 - jstack
 
