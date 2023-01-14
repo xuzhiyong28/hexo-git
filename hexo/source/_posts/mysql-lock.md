@@ -160,3 +160,71 @@ ON DUPLICATE KEY UPDATE
 最终笔者采用的是对domain先进行排序后再分批次 + 死锁后重试，用了这个方法后就没再出现过死锁。
 
 这里为啥排序后可以解决，因为导致这个问题的原因是每个事务的doamin都是乱序的，那么多事务执行就容易出现上面的问题。InnoDB的索引是按照规则进行排序的，那么将所有domian排序后再分批次，那么就不会出现。且为了保险也做了死锁重试来兜底。
+
+### Update锁了什么？
+
+update语句在RR(可重复读)隔离级别下到底锁了什么?
+
+#### 准备工作
+
+1. 查看数据库是否是可重复读隔离级别`select @@transaction_isolation`
+
+2. 使用`Naivat`开启两个会话，且两个会话都设置成手动提交。`SET autocommit = 0`
+
+3. 创建一个表，`id`字段是主键，并插入两个数据。
+
+   ```sql
+   CREATE TABLE `test` (
+     `id` int NOT NULL,
+     `name` varchar(255) NOT NULL,
+     PRIMARY KEY (`id`)
+   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+   INSERT INTO `test` (`id`, `name`) VALUES (10, 'a10');
+   INSERT INTO `test` (`id`, `name`) VALUES (50, 'a50');
+   ```
+
+#### 实验
+
+在上面表的基础上，我们分别在分别启用两个会话，第一个会话执行如下语句:
+
+- m1 : UPDATE test set name = CONCAT("a", name) where id = 7;
+- m2 : UPDATE test set name = CONCAT("a", name) where id = 10;
+- m3 : UPDATE test set name = CONCAT("a", name) where id = 12;
+- m4 : UPDATE test set name = CONCAT("a", name) where id >= 8 and id <= 11;
+
+实验如下 :
+
+在会话1上执行m1,m2,m3,m4语句,例如:
+
+```sql
+//session 1
+set autocommit = 0;
+UPDATE test set name = CONCAT("a", name) where id = 7;
+commit;	// 不执行，模拟事务还没有提交的时候
+```
+
+在会话2上执行INSET语句,看是否会被锁，这里直接给结果:
+
+![](mysql-lock/9.png)
+
+例如，第一个会话1执行了m1语句后，在会话2上执行INSERT -1，6，8，9会被锁定。INSERT 10 会发生主键冲突(原来表里有这个ID)，但不会锁定。INSETT 11 ~ 51都不会锁定。所以我们可以看出m1语句更新时锁定了(负无穷,10)这个区间。
+
+#### 结论
+
+对于主键精准匹配时，只锁定单行，例如 `m2 : UPDATE test set name = CONCAT("a", name) where id = 10`
+
+![](mysql-lock/10.png)
+
+对于主键无法精准匹配时，例如没有这个主键时，会锁定间隙，但不锁定索引值(a,b)，左开右开。
+
+- 例如m1语句，由于主键不存在7这个数字，所以他锁定了间隙，就是锁定了(负无穷,10)这个区间。
+- 例如m3语句，由于主键不存在12这个数字，12位于10~50之间，所以他锁定了(10, 50)这个间隙，但是不会锁定10和50.
+
+![](mysql-lock/11.png)
+
+对于主键是一个范围的情况下，锁定区间，锁定所有攘括的间隙和索引值。例如m4, 由于范围是`id >=8 and id <= 11`。
+
+- 对于`id >= 8`,他锁定的范围就是(负无穷, 50)
+- 对于`id <= 11`,他锁定的范围就是(50, 负无穷)
+
+![](mysql-lock/12.png)

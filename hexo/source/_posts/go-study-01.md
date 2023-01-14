@@ -27,7 +27,7 @@ tags:
 type Slice struct {
     Data unsafe.Pointer     // 指向底层数组的指针
     Len  int             // 切片的已存储的长度
-    Cap  int             // 切片的容量
+    Cap  int             // 切片的容量,可以存多少个元素
 }
 ```
 
@@ -70,6 +70,18 @@ func TestSlice(t *testing.T) {
 ```
 
 上面执行s3 = append(s3,19)后，数组并没有我们想象中的发生改变，原因是此时s3的容量=长度，如果append增加元素时需要扩容，而扩容就会导致s3指向新的数组。
+
+几张图:
+
+![](go-study-01/7.png)
+
+`ps := new([]string)`只是定义了一个切片的结构，他里面还没有初始化，应该通过append添加元素时候才会开辟底层数组。
+
+![](go-study-01/8.png)
+
+
+
+![切片与数组](go-study-01/9.png)
 
 ### make和new的区别
 
@@ -350,9 +362,10 @@ defer使用的使用注意三个规则就不会错。
 func TestOther(t *testing.T) {
     fmt.Println(returnValues())    //输出0
     fmt.Println(namedReturnValues()) // 输出1
+    fmt.Println(test3())  // 输出 0
 }
 // 例子1
-func returnValues() int{
+func returnValues() int {
     result := 0
     defer func() {
         result++
@@ -366,4 +379,27 @@ func namedReturnValues() (result int){
     }()
     return result
 }
+
+// 有值返回值临时赋值
+func test3() (i int) {
+    var temp int
+    defer temp++
+    return temp
+}
 ```
+
+### String结构
+
+![](go-study-01/6.png)
+
+### 切片扩容规则
+
+![](go-study-01/10.png)
+
+### map
+
+map结构图解
+
+![](go-study-01/11.png)
+
+![](go-study-01/12.png)
