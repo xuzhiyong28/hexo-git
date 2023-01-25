@@ -117,7 +117,6 @@ docker-compose [-f docker-compose.yml] logs [elasticsearch]
 
 ```yaml
 version: "3.3"
-
 networks:
   ems:
     driver: bridge
@@ -150,6 +149,98 @@ services:
       - /home/docker-compose-demo/demo1/redis/data:/data
     command: redis-server
 ```
+
+```yaml
+version: '3.5'
+services:
+  nacos1:
+    restart: always
+    # 指定使用的镜像,或者不使用image,而是使用build来指定Dockerfile的路径
+    image: nacos/nacos-server:${NACOS_VERSION}
+    container_name: nacos1
+    #用来给容器root权限
+    privileged: true
+    # 暴露端口信息， 宿主机端口:容器端口
+    # ports和expose有区别，与posts不同的是expose只可以暴露端口而不能映射到主机，只供外部服务连接使用；仅可以指定内部端口为参数
+    ports:
+     - "8001:8001"
+     - "8011:9555"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1024M 
+    # 从文件中获取环境变量
+    env_file: 
+     - ./nacos.env
+    # 设置环境变量 
+    environment:
+        NACOS_SERVER_IP: ${NACOS_SERVER_IP_1}
+        NACOS_APPLICATION_PORT: 8001
+        NACOS_SERVERS: ${NACOS_SERVERS}
+    # 设置卷挂载的路径 宿主机路径:容器路径    
+    volumes:
+     - ./logs_01/:/home/nacos/logs/
+     - ./data_01/:/home/nacos/data/
+     - ./config/:/home/nacos/config/
+    networks:
+      - ha-network-overlay
+  nacos2:
+    restart: always
+    image: nacos/nacos-server:${NACOS_VERSION}
+    container_name: nacos2
+    privileged: true
+    ports:
+     - "8002:8002"
+     - "8012:9555"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1024M    
+    env_file: 
+     - ./nacos.env     
+    environment:
+        NACOS_SERVER_IP: ${NACOS_SERVER_IP_2}
+        NACOS_APPLICATION_PORT: 8002
+        NACOS_SERVERS: ${NACOS_SERVERS}
+    volumes:
+     - ./logs_02/:/home/nacos/logs/
+     - ./data_02/:/home/nacos/data/
+     - ./config/:/home/nacos/config/
+    networks:
+      - ha-network-overlay
+  nacos3:
+    restart: always
+    image: nacos/nacos-server:${NACOS_VERSION}
+    container_name: nacos3
+    privileged: true
+    ports:
+     - "8003:8003"
+     - "8013:9555"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1024M    
+    env_file: 
+     - ./nacos.env 
+    environment:
+        NACOS_SERVER_IP: ${NACOS_SERVER_IP_3}
+        NACOS_APPLICATION_PORT: 8003
+        NACOS_SERVERS: ${NACOS_SERVERS}         
+    volumes:
+     - ./logs_03/:/home/nacos/logs/
+     - ./data_03/:/home/nacos/data/
+     - ./config/:/home/nacos/config/
+    networks:
+      - ha-network-overlay
+networks:
+   ha-network-overlay:
+     external: true
+```
+
+
 
 ### 参考
 
