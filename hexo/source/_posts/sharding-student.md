@@ -7,6 +7,8 @@ categories:
 description : 采用shardingjdbc实现按年分库按月分表
 date: 2021-01-09 10:14:00
 ---
+<!--more-->
+
 sharding-jdbc官方文档:https://shardingsphere.apache.org/document/current/cn/overview/
 **本文采用当当的shardingjdbc实现按年分库，按月分表**
 
@@ -22,7 +24,6 @@ select * from ips where flowtime = '20181202';
 ```
 select * from `sharding_2018`.ips_12 where flowtime = '20181202';
 ```
-<!--more-->
 #### 具体实现
 ##### maven导出具体sharding需要的包
 ```

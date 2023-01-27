@@ -7,7 +7,10 @@ description : 详解volatile用法和原理
 date: 2019-07-18 10:00:00
 ---
 
+<!--more-->
+
 ## Java内存模型(jmm)
+
 看个例子
 ```java
 public class VolatileExample extends Thread{

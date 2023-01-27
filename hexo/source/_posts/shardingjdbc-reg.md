@@ -7,7 +7,10 @@ categories:
 description : ShardingJdbc结合zookeeper做全局配置
 date: 2021-02-02 10:25:35
 ---
+<!--more-->
+
 ## 分布式配置中心
+
 在分布式系统或者微服务中，我们经常用到分布式配置中心，他可以将配置定义到一个单独的地方以便所有分布式系统从能从中读取配置，对于修改配置也只需要修改一个地方就行。
 ## ShardingSphere编排治理
 
@@ -22,7 +25,6 @@ ShardingSphere的编排治理提供了配置中心和注册中心功能。
 这其中的复杂程度可想而知。有人会说，可以将配置定义在一个分布式配置中心中。 没错 ！！！
 
 所以ShardingSphere提供了编排治理功能，通俗一点就是通过ShardingSphere + Zookeeper 或者 Etcd  实现 分布式配置功能，并且通过Zookeeper的Watch机制保证每次修改后<font color=red>自动加载无需重启</font>。
-<!--more-->
 ### 如何使用？
 
 导入编排治理Maven

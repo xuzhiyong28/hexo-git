@@ -6,6 +6,8 @@ categories:  Docker
 description : Docker实战测试
 date: 2019-07-18 10:00:00
 ---
+<!--more-->
+
 ### Docker搭建Redis集群
 
 ***1.创建Docker自定义网络***

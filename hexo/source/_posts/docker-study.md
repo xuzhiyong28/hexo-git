@@ -1,14 +1,14 @@
 ---
-
 title: Docker学习笔记
 tags:
-
-- Docker
-  categories:  Docker
-  description : Docker学习笔记
-  date: 2019-07-18 10:00:00
+	- Docker
+categories:  Docker
+description : Docker学习笔记
+date: 2019-07-18 10:00:00
 
 ---
+
+<!--more-->
 
 ### Docker安装
 

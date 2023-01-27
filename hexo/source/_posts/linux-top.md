@@ -5,7 +5,10 @@ tags:
 categories:  linux
 description: Linux故障排查命令使用和JVM命令(jstat、jps、jmap、jstack)
 ---
+<!--more-->
+
 ## top命令详解
+
 ### 各项指标详解
 ![top命令展示](linux-top/1.png)
 
@@ -18,7 +21,7 @@ top - 14:46:47 up 909 days,  3:15,  1 user,  load average: 1.80, 1.50, 1.37
 - 1 user 表示当前登录的用户数量
 - load average: 1.80, 1.50, 1.37 表示当前系统5分钟;10分钟;15分钟的负载
 <font color=red>load average数据是每隔5秒钟检查一次活跃的进程数，然后按特定算法计算出的数值。如果这个数除以逻辑CPU的数量，结果高于5的时候就表明系统在超负荷运转了。</font>
-<!--more-->
+
 #### 第二行：任务信息
 ```shell
 Tasks: 652 total,   1 running, 651 sleeping,   0 stopped,   0 zombie

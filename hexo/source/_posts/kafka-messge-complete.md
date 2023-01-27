@@ -6,6 +6,8 @@ categories:  kafka
 description : Kafka如何保证消息100%投递
 date: 2020-12-02 17:35:09
 ---
+<!--more-->
+
 ## Kafka数据丢失原因
 
 Kafka存在数据丢失问题，主要存在在Broker，Producer。

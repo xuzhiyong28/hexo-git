@@ -7,13 +7,15 @@ categories:  java
 description : CompletableFuture使用详解
 date: 2019-07-18 10:00:00
 ---
+<!--more-->
+
 ## CompletableFuture介绍
+
 CompletableFuture是JDK8新出来一种异步组合式编程。
 Future接口可以构建异步应用，但依然有其局限性。它很难直接表述多个Future 结果之间的依赖性。实际开发中，我们经常需要达成以下目的：
 - 将多个异步计算的结果合并成一个
 - 等待Future集合中的所有任务都完成
 - Future完成事件（即，任务完成以后触发执行动作）
-<!--more-->
 ## CompletableFuture使用
 ### 场景一：普通异步使用
 CompletableFuture提供了4个方法用来执行异步调用。一组是有返回值的，一组是无返回值的

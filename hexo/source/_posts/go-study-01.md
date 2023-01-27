@@ -2,14 +2,14 @@
 
 title: GoLang学习笔记备忘
 tags:
-
-- GoLang
-  categories: 
-- GoLang
-  description : 
-  date: 2021-05-18 17:14:00
-
+	- GoLang
+categories: 
+	- GoLang
+description : 
+date: 2021-05-18 17:14:00
 ---
+
+<!--more-->
 
 ### 什么时候用指针？
 

@@ -4,6 +4,8 @@ date: 2022-05-18 10:04:46
 tags:sentry-Validator搭建模式
 ---
 
+<!--more-->
+
 ### 搭建模式
 
 ![](tendermint\1.png)

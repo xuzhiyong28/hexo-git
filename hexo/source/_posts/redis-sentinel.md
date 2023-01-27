@@ -6,6 +6,8 @@ categories: redis
 description : redis哨兵原理解析
 date: 2020-08-14 16:58:58
 ---
+<!--more-->
+
 ## Redis哨兵概述
 
 Redis Sentinel是一个分布式系统，为Redis提供<font color=red>高可用性</font>解决方案，通过监控各个Redis节点(主从服务器)实现<font color=red>自动障迁移</font>。

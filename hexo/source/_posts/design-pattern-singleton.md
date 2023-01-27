@@ -6,7 +6,10 @@ categories:  java
 description : 设计模式之单例模式
 date: 2019-07-18 10:00:00
 ---
+<!--more-->
+
 ## 单例模式
+
 ### 概念
 单例模式(Singleton Pattern)：确保某一个类只有一个实例，而且自行实例化并向整个系统提供这个实例，这个类称为单例类，它提供全局访问的方法。单例模式是一种对象创建型模式
 ### 特性
@@ -30,10 +33,8 @@ public class SingletonOne {
 public static void main(String[] args){
     SingletonOne singletonOne = SingletonOne.getInstance();
 }
-```
-<!--more-->
 缺陷 ：
-
+```
 - 不支持多线程，在并发环境下会导致创建多个实例
 
 #### 懒汉式线程安全单例模式

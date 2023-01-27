@@ -7,6 +7,8 @@ description : Mysql-InnoDB索引详解(一)
 date: 2019-07-18 10:00:00
 ---
 
+<!--more-->
+
 ## InnoDB数据页结构
 
 页是InnoDB管理存储空间的基本单位，一个页一般大小为16KB，我们的记录是存放到页中的。其中Infimum + Supremum记录的是最小最大记录。User Records是真实存储我们插入的记录部分。

@@ -2,13 +2,14 @@
 
 title: Fork/join框架你会用吗？
 tags:
-
-- java并发
-  categories:  java
-  description : 详解Fork/join框架
-  date: 2020-07-30 16:35:57
+	- java并发
+categories:  java
+description : 详解Fork/join框架
+date: 2020-07-30 16:35:57
 
 ---
+
+<!--more-->
 
 ## Fork/Join框架介绍
 

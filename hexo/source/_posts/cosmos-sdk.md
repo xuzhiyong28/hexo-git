@@ -3,9 +3,12 @@ gotitle: cosmos-sdk
 date: 2022-06-19 10:20:11
 tags:
 	- 区块链
+	- Cosmos
 description : COSMOS-SDK学习
 date: 2021-06-30 13:53:30
 ---
+
+<!--more-->
 
 ## Cosmos-sdk模块化设计
 

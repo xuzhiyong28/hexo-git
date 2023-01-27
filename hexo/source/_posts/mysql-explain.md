@@ -7,6 +7,8 @@ categories:  mysql
 description : MySQL索引优化EXPLAIN
 date: 2020-07-31 17:34:03
 ---
+<!--more-->
+
 ## 正文
 
 ### EXPLAIN字段说明

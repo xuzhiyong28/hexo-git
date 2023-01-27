@@ -7,6 +7,8 @@ description : 详解java中断线程的几种方式和方法interrupt()，Thread
 date: 2020-08-27 10:57:08
 ---
 
+<!--more-->
+
 ## 概述
 
 java中提供了多种方式来实现线程的中断。本文通过列举其中的方式。并对方法interrupt()，Thread.interrupt()，isInterrupted()进行区分。

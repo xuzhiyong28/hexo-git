@@ -4,10 +4,12 @@ tags:
   - GoLang
 categories: 
   - GoLang
-description : 
 date: 2021-11-20 17:14:00
 ---
 ### goroutine调度机制之GMP模型
+
+<!--more-->
+
 goroutine的GMP调度模型主要有如下三个对象 ：
 
 - G代表一个goroutine对象，由关键字go创建。

@@ -1,8 +1,9 @@
 ---
 title: fabric-study
 date: 2022-08-22 11:02:26
-tags:
 ---
+
+<!--more-->
 
 ### 本地搭建fabric
 

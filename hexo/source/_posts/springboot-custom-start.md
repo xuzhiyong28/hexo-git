@@ -8,6 +8,8 @@ description : SpringBoot自动配置原理和自定义起步依赖
 date: 2020-09-27 10:32:09
 ---
 
+<!--more-->
+
 ## 概述
 
 SpringBoot采用了“习惯优于配置”的理念，没有了繁琐的配置，让我们开发起来变得更加快捷。例如我们需要在项目中使用Redis模块进行开发。只需要引入spring-boot-starter-data-redis包，就会自动加载了Redis所需要的模块。我们只需要在配置文件application.properties上配置redis的相关连接信息，并在代码上使用RedisTemplate.java类就可以操作Redis。
@@ -18,7 +20,7 @@ SpringBoot采用了“习惯优于配置”的理念，没有了繁琐的配置�
     <artifactId>spring-boot-starter-data-redis</artifactId>
 </dependency>
 ```
-<!--more-->
+
 类似的这种起步依赖大大降低了我们的配置成本。在SpringBoot中大概分成两类起步依赖：**SpringBoot自带起步依赖** 和 **开发者自带起步依赖**。
 
 - spring-boot-starter-xxx是官方提供的starter。

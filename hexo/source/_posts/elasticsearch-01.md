@@ -7,6 +7,8 @@ categories:  ElasticSearch
 description : ElasticSearch常见问题汇总
 ---
 
+<!--more-->
+
 ## match/term等区别
 
 **Elasticsearch中 match、match_phrase、query_string和term的区别**

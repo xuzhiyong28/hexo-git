@@ -1,13 +1,15 @@
 ---
 title: 创建你的第一条substrate链
 tags:
-
-- 区块链
-  categories:  区块链
-  description : 创建你的第一条substrate链
-  date: 2020-10-30 13:53:30
+	- 区块链
+	- Substrate
+categories:  区块链
+description : 创建你的第一条substrate链
+date: 2020-10-30 13:53:30
 
 ---
+
+<!--more-->
 
 ### 教程
 

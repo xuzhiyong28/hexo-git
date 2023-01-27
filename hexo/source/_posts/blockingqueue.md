@@ -1,11 +1,13 @@
 ---
 title: 阻塞队列(BlockingQueue)详解(带图解)
 tags:
-  - java并发
+  - java
 categories:  java
 description : 详解Fork/join框架
 date: 2020-10-30 13:53:30
 ---
+
+<!--more-->
 
 ## BlockingQueue接口
 
