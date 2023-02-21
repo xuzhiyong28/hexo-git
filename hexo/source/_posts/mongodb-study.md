@@ -132,6 +132,7 @@ mongodb的终极查询
 - 分页查询 : 分页查询其效果就是要实现从某一个位置开始取指定条数的数据。这就引出了两个方法，查找开始(skip)，获取指定条数数据(limit)
   - skip语法为skip（num）:指跳过指定条数（num）的数据
   - limit语法为limit（num）:指限制只获取num条数据
+  - 分页查询常用格式 : `db.collection.fin(查询条件).sort(排序方式).skip((页码-1)*每页数据条数).limit(每页数据条数)`
 
 
 
