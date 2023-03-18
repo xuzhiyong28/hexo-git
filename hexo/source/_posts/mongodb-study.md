@@ -87,7 +87,7 @@ db.user001.find()
 db.user001.find({name : "java"}, {_id : 0, name : 1, from : 1})
 ```
 
-高级查询 :  `db.集合名称.find({字段: { 查询符 : 值} })`
+高级查询 :  `db.集合名称.find({字段1: { 查询符 : 值},字段2: { 查询符 : 值} })`
 
 mongodb的单个查询符包括 : 
 
@@ -133,6 +133,193 @@ mongodb的终极查询
   - skip语法为skip（num）:指跳过指定条数（num）的数据
   - limit语法为limit（num）:指限制只获取num条数据
   - 分页查询常用格式 : `db.collection.fin(查询条件).sort(排序方式).skip((页码-1)*每页数据条数).limit(每页数据条数)`
+
+
+
+## MongoDB官方文档
+
+地址 : https://www.mongodb.com/docs/v6.0/
+
+### 插入
+
+- 插入单个文档 : `db.collection.insertOne()`
+- 插入多个文档 : `db.collection.insertMany()`
+
+```sql
+db.inventory.insertOne(
+   { item: "canvas", qty: 100, tags: ["cotton"], size: { h: 28, w: 35.5, uom: "cm" } }
+)
+```
+
+其他插入的方法 : (像下面的方法都是更新时或者查询时没有找到某个文档就执行操作，但是需要设置upsert=true)
+
+- db.collection.updateOne() 当与upsert: true选项一起使用时。
+- db.collection.updateMany() 当与upsert: true选项一起使用时
+- db.collection.findAndModify() 当与upsert: true选项一起使用时
+- db.collection.findOneAndUpdate() 当与upsert: true选项一起使用时
+- db.collection.findOneAndReplace() 当与upsert: true选项一起使用时
+- db.collection.bulkWrite()
+
+### 查询
+
+#### 普通查询
+
+数据初始化
+
+```sql
+db.inventory.insertMany([
+   { item: "journal", qty: 25, size: { h: 14, w: 21, uom: "cm" }, status: "A" },
+   { item: "notebook", qty: 50, size: { h: 8.5, w: 11, uom: "in" }, status: "A" },
+   { item: "paper", qty: 100, size: { h: 8.5, w: 11, uom: "in" }, status: "D" },
+   { item: "planner", qty: 75, size: { h: 22.85, w: 30, uom: "cm" }, status: "D" },
+   { item: "postcard", qty: 45, size: { h: 10, w: 15.25, uom: "cm" }, status: "A" }
+]);
+```
+
+```sql
+// SELECT * FROM inventory
+db.inventory.find( {} )
+
+// SELECT * FROM inventory WHERE status = "D"
+db.inventory.find( { status: "D" } )
+
+// SELECT * FROM inventory WHERE status in ("A", "D")
+db.inventory.find( { status: { $in: [ "A", "D" ] } } )
+
+// SELECT * FROM inventory WHERE status = "A" AND qty < 30
+db.inventory.find( { status: "A", qty: { $lt: 30 } } )
+
+//SELECT * FROM inventory WHERE status = "A" OR qty < 30
+db.inventory.find( { $or: [ { status: "A" }, { qty: { $lt: 30 } } ] } )
+
+// SELECT * FROM inventory WHERE status = "A" AND ( qty < 30 OR item LIKE "p%")
+db.inventory.find( {
+     status: "A",
+     $or: [ { qty: { $lt: 30 } }, { item: /^p/ } ]
+} )
+
+// SELECT item FROM inventory WHERE status = "A" AND ( qty < 30 OR item LIKE "p%")
+db.inventory.find( {
+     status: "A",
+     $or: [ { qty: { $lt: 30 } }, { item: /^p/ } ]
+}, {_id : 0,  item : 1} ) // _id 表示不展示ID
+
+// SELECT _id, item, status from inventory WHERE status = "A"
+db.inventory.find( { status: "A" }, { item: 1, status: 1 } )
+// SELECT item, status from inventory WHERE status = "A"
+db.inventory.find( { status: "A" }, { item: 1, status: 1, _id: 0 } )
+
+// 除了instock和satus不展示，其他的都展示
+db.inventory.find( { status: "A" }, { status: 0, instock: 0 } )
+```
+
+#### 嵌套文档的查询
+
+初始化数据
+
+```sql
+db.inventory.insertMany( [
+   { item: "journal", qty: 25, size: { h: 14, w: 21, uom: "cm" }, status: "A" },
+   { item: "notebook", qty: 50, size: { h: 8.5, w: 11, uom: "in" }, status: "A" },
+   { item: "paper", qty: 100, size: { h: 8.5, w: 11, uom: "in" }, status: "D" },
+   { item: "planner", qty: 75, size: { h: 22.85, w: 30, uom: "cm" }, status: "D" },
+   { item: "postcard", qty: 45, size: { h: 10, w: 15.25, uom: "cm" }, status: "A" }
+]);
+```
+
+```sql
+// 查询选择所有字段大小等于文档{ h: 14, w: 21, uom: "cm" 的文档(精准匹配，必须h,w,uom都匹配，包括字段顺序)
+db.inventory.find( { size: { h: 14, w: 21, uom: "cm" } } )
+
+// 嵌套字段的查询
+// 查询siz中num=in的数据
+db.inventory.find( { "size.uom": "in" } )
+db.inventory.find( { "size.h": { $lt: 15 } } )
+// 查询 size.h < 15 and size.uom = in and status = D 的数据
+db.inventory.find( { "size.h": { $lt: 15 }, "size.uom": "in", status: "D" } )
+```
+
+#### 数组查询
+
+初始化
+
+```sql
+db.inventory.insertMany([
+   { item: "journal", qty: 25, tags: ["blank", "red"], dim_cm: [ 14, 21 ] },
+   { item: "notebook", qty: 50, tags: ["red", "blank"], dim_cm: [ 14, 21 ] },
+   { item: "paper", qty: 100, tags: ["red", "blank", "plain"], dim_cm: [ 14, 21 ] },
+   { item: "planner", qty: 75, tags: ["blank", "red"], dim_cm: [ 22.85, 30 ] },
+   { item: "postcard", qty: 45, tags: ["blue"], dim_cm: [ 10, 15.25 ] }
+]);
+```
+
+```sql
+// 下面的例子是查询所有字段标签值为数组的文件
+// 下面的例子只会查询一条，因为必须是tags刚好宝航red和blank并且字段顺序一致
+db.inventory.find( { tags: ["red", "blank"] } )
+
+// 查询 tags包含red和blank,且不考虑字段顺序
+db.inventory.find( { tags: { $all: ["red", "blank"] } } )
+
+
+// 查询tags包含red的数据，这里会查询出四条 与上面的{ tags: ["red", "blank"] }区分，或者直接使用
+//db.inventory.find( { tags: { $all: "blank" } } )
+db.inventory.find( { tags: ["red"] } )
+
+// 对数组 dim _ cm 至少包含一个值大于25的元素的所有文档执行以下操作查询,这里只会查询出一条
+db.inventory.find( { dim_cm: { $gt: 25 } } )
+
+// 对dim_cm查询，找出以下几种情况
+// 1. 一个元素可以满足大于15的条件
+// 2. 一个元素可以满足小于20的条件
+// 3. 一个元素可以同时满足上面条件
+db.inventory.find( { dim_cm: { $gt: 15, $lt: 20 } } )
+// 与上面的例子进行区分，存在一个元素的值大于15小于20
+db.inventory.find( { dim_cm: { $elemMatch: { $gt: 15, $lt: 20 } } } )
+
+// 第一个值必须大于25的文档
+db.inventory.find( { "dim_cm.1": { $gt: 25 } } )
+
+// tags数组包含3个item的文档
+db.inventory.find( { "tags": { $size: 3 } } )
+```
+
+#### 嵌套数组对象查询
+
+初始化
+
+```sql
+db.inventory.insertMany( [
+   { item: "journal", instock: [ { warehouse: "A", qty: 5 }, { warehouse: "C", qty: 15 } ] },
+   { item: "notebook", instock: [ { warehouse: "C", qty: 5 } ] },
+   { item: "paper", instock: [ { warehouse: "A", qty: 60 }, { warehouse: "B", qty: 15 } ] },
+   { item: "planner", instock: [ { warehouse: "A", qty: 40 }, { warehouse: "B", qty: 5 } ] },
+   { item: "postcard", instock: [ { warehouse: "B", qty: 15 }, { warehouse: "C", qty: 35 } ] }
+]);
+```
+
+```
+// 查询instock数组中包含warehouse=A和qty=5的，指定文档完全匹配，包括字段顺序
+db.inventory.find( { "instock": { warehouse: "A", qty: 5 } } )
+// 顺序调换，查不到数据
+db.inventory.find( { "instock": { qty: 5, warehouse: "A" } } )
+
+// 查询instock对象数组至少有一个包含字段qty的嵌入式文件，其值小于或等于20
+db.inventory.find( { 'instock.qty': { $lte: 20 } } )
+// instock数组的第一个元素是包含字段qty的文件，其值小于或等于20
+db.inventory.find( { 'instock.0.qty': { $lte: 20 } } )
+
+// instock数组中至少有一个内嵌的文档，其中包含字段qty等于5和字段 warehouse等于A的文档，不要求顺序
+db.inventory.find( { "instock": { $elemMatch: { qty: 5, warehouse: "A" } } } )
+
+// instock数组中至少有一个包含字段qty大于10且小于或等于20的嵌入式文档
+db.inventory.find( { "instock": { $elemMatch: { qty: { $gt: 10, $lte: 20 } } } } )
+// 区别上一个 满足 
+// 1. instock数组中至少有一个包含字段qty大于10
+// 2. instock数组中至少有一个包含字段小于或等于20
+// 3. 上面两个条件都满足
+db.inventory.find( { "instock.qty": { $gt: 10,  $lte: 20 } } )
+```
 
 
 

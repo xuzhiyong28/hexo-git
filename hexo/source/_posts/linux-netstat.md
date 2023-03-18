@@ -168,6 +168,12 @@ https://blog.csdn.net/sqlquan/article/details/111561959
 
 netstat命令用于显示与IP、TCP、UDP和ICMP协议相关的统计数据，一般用于检验本机各端口的网络连接情况。netstat是在内核中访问网络及相关信息的程序，它能提供TCP连接，TCP和UDP监听，进程内存管理的相关报告。
 
+常用参数
+
+
+
+
+
 这个命令的参数太多，一般来说我们都是用它来查TCP连接的，然后看连接的状态对比对。
 
 ```shell

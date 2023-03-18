@@ -71,7 +71,110 @@ docker logs [-f 跟踪日志输出 -t 显示时间戳 --tail 仅列出最新N条
 ls -l /var/lib/docker/volumes|grep -Ev "metadata|backingFsBlockDev|grep"|awk '{print $NF}'|xargs rm -fr
 ```
 
+### Dockerfile
 
+#### CMD与ENTRYPOINT
+
+CMD的命令会被docker run 的命令覆盖而ENTRYPOINT不会。
+
+Dockerfile1
+
+```shell
+...
+ENTRYPOINT ["/user/sbin/nginx"]
+```
+
+- 当执行 `docker run -it 镜像名称 -g "daemon off"`时, 容器里面会执行`/user/sbin/nginx -g "daemon off" `。所以使用entrypoint时候，run命令后面的参数将作为entrypoint的入参。
+
+Dockerfile2
+
+```shell
+...
+CMD ["/user/sbin/nginx"]
+```
+
+- 当执行 `docker run -it 镜像名称 -g "daemon off"`时, 容器里面会执行`-g "daemon off" `。所以使用cmd时候，run命令后面的参数将会覆盖CMD。
+
+Dockerfile3
+
+```shell
+...
+ENTRYPOINT ["echo","hello","i am"]
+CMD ["docker"]
+```
+
+当同时存在CMD和ENTRYPOINT时
+
+- 若使用`docker run -it 镜像名称`，此时run后面没有带参数，CMD的指令会变成ENTRYPOINT的参数，所以会执行`echo hello i am docker`
+- 若使用`docker run -it 镜像名称 world`，此时run后面带有参数，CMD指令会被run后面的参数覆盖，所以会执行`echo hello i am world`。
+
+#### EXPOSE
+
+用来指定构建的镜像在运行为容器时对外暴露的端口。
+
+个人理解：EXPOSE 暴露的端口更像是指明了该容器提供的服务需要用到的端口。EXPOSE并不会直接将端口自动和宿主主机某个端口建立联系，需要在执行`docker run -P`时通过-P指定与宿主主机的端口关联。
+
+```
+...
+FROM nginx
+EXPOST 80
+```
+
+当执行`docker run -it 镜像名称`，通过`docker inspect 镜像名称`查看容器元数据时
+
+```
+...
+"Ports" : {
+	"80/tcp" : null 
+}
+```
+
+表明若没有使用-P指定与宿主机的映射，则无法对外提供端口。
+
+#### WORKDIR
+
+用来为Dockerfile中的任何RUN、CMD、ENTRYPOINT、COPY和ADD指令设置工作目录。如果
+
+WORKDIR不存在，即使它没有在任何后续Dockerfile指令中使用，它也将被创建。
+
+#### ENV
+
+用来为构建镜像设置环境变量。这个值将出现在构建阶段中所有后续指令的环境中。
+
+```
+ENV <key>=<value>
+ENV <key> <value>
+```
+
+#### VOLUME
+
+用来定义容器运行时可以挂在到宿主机的目录。
+
+Dockerfile中的VOLUME与`docker -v ` 命令的区别 ：
+
+##### Docker VOLUME
+
+```
+...
+VOLUME ["/user/local/oas/file"]
+```
+
+上述 VOLUME /usr/local/oas/file/ 定义的是容器内目录所在路径，在容器创建过程中会在容器中创建该目录，而宿主机上的挂载目录名是随机生成的，例如
+
+```
+/var/lib/docker/volumes/593fda6d7b8296bfca22894b326727c734133eebb11c9bc2c25a73b892157a37
+```
+
+所以在Dockerfile使用VOLUME挂载，宿主主机生成与之对应的目录是随机生成。
+
+##### docker -v
+
+```
+docker run —name tengine-web -d -p 9527:80 -p 9000:9000 \
+-v /usr/local/tengine/logs:/var/log/nginx
+```
+
+docker -v 可以指定挂载到宿主机的具体目录，相对于Dockerfile的 VOLUME 挂载方式更具有可控性。
 
 ### Docker-Compose常用命令
 
