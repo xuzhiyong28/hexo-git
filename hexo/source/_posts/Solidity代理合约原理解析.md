@@ -1,4 +1,4 @@
-​	我们知道以太坊的合约在部署到网络上后就不允许修改。如果需要修改必须是重新部署一个新合约，但是新合约里面存储的数据将不复存在。
+	我们知道以太坊的合约在部署到网络上后就不允许修改。如果需要修改必须是重新部署一个新合约，但是新合约里面存储的数据将不复存在。
 
 ​	假设公司老板让小咕在主网部署了一个ERC20合约，合约部署有一阵子了，参与的用户也在合约上有了代币，忽然有天要增加需求，老板要求小咕在原有的ERC20合约上加一个claim方法，此时小咕犯难了。
 
@@ -92,7 +92,7 @@ contract TransparentUpgradeableProxy is ERC1967Proxy {
         }
     }
 
-    
+    // 获取管理合约的地址
     function admin() external ifAdmin returns (address admin_) {
         admin_ = _getAdmin();
     }
@@ -394,7 +394,7 @@ contract A_PROXY {
 
 **具体方法执行**
 
-- 用户调用代理合于的X方法
+- 用户调用代理合约的X方法
   - TransparentUpgradeableProxy代理合约上没找到X方法
     - 执行Proxy.fallback
       - 执行Proxy._delegate
@@ -404,3 +404,35 @@ contract A_PROXY {
 **升级合约方法**
 
 那么说了那么多如果要升级合约要怎么办？通过上面分析我们知道，假设要升级合约，不就只要将TransparentUpgradeableProxy代理合约中的`Implementation`的值替换成新合约的值不就好了吗。但是你会发现他不允许直接调用。Openzeppelin为我们提供了一个合约`ProxyAdmin.sol`专门用来更改Implementation，这样做的目的主要是为了安全，毕竟升级合约那么重要的事肯定是要超超超级管理员去做，所以他将合约升级分离出来管理。
+
+- ProxyAdmin.upgrade
+  - TransparentUpgradeableProxy.upgradeTo
+    - ERC1967Upgrade._upgradeToAndCall
+      - ERC1967Upgrade._upgradeTo
+        - ERC1967Upgrade._setImplementation
+
+
+
+#### Beacon模式
+
+​	以上代理，存在一种缺陷，就是如果我要升级一批具有相同逻辑合约的代理合约，那么需要在每个代理合约都执行一遍升级（因为每个代理合约独立存储了_implementation）。信标合约，就是将所有的具有相同逻辑合约的代理合约的_implementation 只存一份在信标合约中，所有的代理合约通过和信标合约接口调用，获取_implementation，这样，在升级的时候，就可以只升级信标合约，就能搞定所有的代理合约的升级。
+
+![](Solidity代理合约原理解析\5.png)
+
+部署顺序
+
+1. 首先先部署逻辑合约，获得逻辑合约地址(Implementation)
+2. 部署信标合约，传入逻辑合约地址。这样之后信标合约上就记录了逻辑合约地址
+3. 部署代理合约(BeaconProxy)，传入信标合约的地址。
+
+用户与代理合约(BeaconProxy)进行交互，由于代理合约继承了`ERC1967Upgrade.sol`和`Proxy.sol`。此时在代理合约中implementation的值是信标合约，所以代理合约委托调用到逻辑合约实际上是调用`IBeacon(_getBeacon()).implementation()`。 其中`_getBeacon()`表示获取信标合约的地址。
+
+**那如何升级呢？** 通过信标合约修改他里面的`_implementaion`值，因为这个值存储但是逻辑合约的地址。
+
+**Beacon模式的好处是什么？**
+
+如上图所示，其实信标合约就是在代理合约和逻辑合约中加加了一层，代理合约通过信标合约获取到逻辑合约的地址进行委托调用。假设我们图上的逻辑合约不仅仅只有一个代理合约，有多个的情况下，例如：
+
+![](Solidity代理合约原理解析\6.png)
+
+我们就可以直接修改信标合约中逻辑合约的地址，这样所有的代理合约都可以实现变化。
