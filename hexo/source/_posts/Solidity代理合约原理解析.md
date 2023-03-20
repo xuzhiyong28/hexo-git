@@ -27,7 +27,7 @@
 
 ​	所以Solidity就提供了委托调用delegatecall的方式，合约A使用合约B的代码来执行，但是最终的数据存储在合约A上，其实可以理解成A用B的代码来进行计算，但是存储是存在A自己的超级数组上。
 
-![](Solidity代理合约原理解析\2.png)
+![](Solidity代理合约原理解析/2.png)
 
 那为什么还要一个`fallback`函数了？我们来学习下`fallback`回退函数的作用 : **如果在一个对合约调用中，没有其他函数与给定的函数标识符匹配，则fallback会被调用**。在合约调用中，用户发起一笔交易调用合约时是需要指定方法名的，确切的来说是ABI编码，总之合约调用时需要**指定调用哪个合约的哪个方法**。但是`ERC20_STORAGE.SOL`上并没有对应的方法，所以我们需要在`ERC20_STORAGE.SOL`上添加`fallback`回退函数，当合约调用时没有匹配时执行回退函数，回退函数中再通过`delegatecall`调用`ERC20.SOL`的方法，最终实现代理。
 
@@ -56,7 +56,7 @@ contract ERC20_STORAGE {
 }
 ```
 
-![](Solidity代理合约原理解析\3.png)
+![](Solidity代理合约原理解析/3.png)
 
 ### Openzeppelin的三种代理模式
 
@@ -64,7 +64,7 @@ contract ERC20_STORAGE {
 
 代码地址 : https://github.com/OpenZeppelin/openzeppelin-contracts/tree/master/contracts/proxy/transparent
 
-![](Solidity代理合约原理解析\4.png)
+![](Solidity代理合约原理解析/4.png)
 
 具体代码分析
 
@@ -417,7 +417,7 @@ contract A_PROXY {
 
 ​	以上代理，存在一种缺陷，就是如果我要升级一批具有相同逻辑合约的代理合约，那么需要在每个代理合约都执行一遍升级（因为每个代理合约独立存储了_implementation）。信标合约，就是将所有的具有相同逻辑合约的代理合约的_implementation 只存一份在信标合约中，所有的代理合约通过和信标合约接口调用，获取_implementation，这样，在升级的时候，就可以只升级信标合约，就能搞定所有的代理合约的升级。
 
-![](Solidity代理合约原理解析\5.png)
+![](Solidity代理合约原理解析/5.png)
 
 部署顺序
 
@@ -433,6 +433,6 @@ contract A_PROXY {
 
 如上图所示，其实信标合约就是在代理合约和逻辑合约中加加了一层，代理合约通过信标合约获取到逻辑合约的地址进行委托调用。假设我们图上的逻辑合约不仅仅只有一个代理合约，有多个的情况下，例如：
 
-![](Solidity代理合约原理解析\6.png)
+![](Solidity代理合约原理解析/6.png)
 
 我们就可以直接修改信标合约中逻辑合约的地址，这样所有的代理合约都可以实现变化。
