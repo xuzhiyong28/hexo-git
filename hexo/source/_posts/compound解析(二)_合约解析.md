@@ -391,11 +391,127 @@ function mintFresh(address minter, uint mintAmount) internal returns (uint, uint
     require(vars.mathErr == MathError.NO_ERROR, "MINT_NEW_ACCOUNT_BALANCE_CALCULATION_FAILED");
     // 更新合约的总供给量和用户对应的数量
     totalSupply = vars.totalSupplyNew;
+    // 这里就是存用户的token量
     accountTokens[minter] = vars.accountTokensNew;
     // 发射铸造事件和转账事件
     emit Mint(minter, vars.actualMintAmount, vars.mintTokens);
     emit Transfer(address(this), minter, vars.mintTokens);
 	return (uint(Error.NO_ERROR), vars.actualMintAmount);
+}
+```
+
+**赎回redeem**
+
+赎回存款，即用 cToken 换回标的资产，会根据最新的兑换率计算能换回多少标的资产。
+
+```typescript
+function redeemInternal(uint redeemTokens) internal nonReentrant returns (uint) {
+    // 计算汇率
+    uint error = accrueInterest();
+    if (error != uint(Error.NO_ERROR)) {
+        return fail(Error(error), FailureInfo.REDEEM_ACCRUE_INTEREST_FAILED);
+    }
+    // 计算最新赎回数量
+    return redeemFresh(msg.sender, redeemTokens, 0);
+}
+function redeemFresh(
+    address payable redeemer, //    用户地址
+    uint redeemTokensIn,    //  赎回cToken数量
+    uint redeemAmountIn     //  赎回标的资产数量
+) internal returns (uint) {
+    require(redeemTokensIn == 0 || redeemAmountIn == 0, "one of redeemTokensIn or redeemAmountIn must be zero");
+    RedeemLocalVars memory vars;
+    // 计算兑换率
+    (vars.mathErr, vars.exchangeRateMantissa) = exchangeRateStoredInternal();
+    if (vars.mathErr != MathError.NO_ERROR) {
+        return failOpaque(Error.MATH_ERROR, FailureInfo.REDEEM_EXCHANGE_RATE_READ_FAILED, uint(vars.mathErr));
+    }
+
+    if (redeemTokensIn > 0) {
+        // 计算兑换率和待赎回标的金额
+        vars.redeemTokens = redeemTokensIn;
+        // 计算可以得到的cToken数量， redeemAmount = 存款利率 * 全部额度
+        (vars.mathErr, vars.redeemAmount) = mulScalarTruncate(Exp({mantissa: vars.exchangeRateMantissa}), redeemTokensIn);
+        if (vars.mathErr != MathError.NO_ERROR) {
+            return failOpaque(Error.MATH_ERROR, FailureInfo.REDEEM_EXCHANGE_TOKENS_CALCULATION_FAILED, uint(vars.mathErr));
+        }
+    }
+    // 根据传入标的资产数量能换多少cToken
+    else {
+        /*
+         * 获得当前汇率并计算要兑换的金额：
+         *  redeemTokens = redeemAmountIn / exchangeRate
+         *  redeemAmount = redeemAmountIn
+         */
+        // cToken的数量 = 标的资产数量 / 汇率
+        (vars.mathErr, vars.redeemTokens) = divScalarByExpTruncate(redeemAmountIn, Exp({mantissa: vars.exchangeRateMantissa}));
+        if (vars.mathErr != MathError.NO_ERROR) {
+            return failOpaque(Error.MATH_ERROR, FailureInfo.REDEEM_EXCHANGE_AMOUNT_CALCULATION_FAILED, uint(vars.mathErr));
+        }
+
+        // 赎回的额度
+        vars.redeemAmount = redeemAmountIn;
+    }
+    // console.log("vars.redeemTokens",vars.redeemTokens);
+    // console.log("vars.redeemAmount 价格",vars.redeemAmount);
+
+    // 检查账户是否允许兑换
+    uint allowed = comptroller.redeemAllowed(address(this), redeemer, vars.redeemTokens);
+    if (allowed != 0) {
+        return failOpaque(Error.COMPTROLLER_REJECTION, FailureInfo.REDEEM_COMPTROLLER_REJECTION, allowed);
+    }
+
+    /* 验证市场的区块数 == 当前区块数*/
+    if (accrualBlockNumber != getBlockNumber()) {
+        return fail(Error.MARKET_NOT_FRESH, FailureInfo.REDEEM_FRESHNESS_CHECK);
+    }
+
+    /*
+     * 计算新的总供应和赎回余额，并检查下溢：
+     */
+    // totalSupplyNew = totalSupply - redeemTokens
+    (vars.mathErr, vars.totalSupplyNew) = subUInt(totalSupply, vars.redeemTokens);
+    if (vars.mathErr != MathError.NO_ERROR) {
+        return failOpaque(Error.MATH_ERROR, FailureInfo.REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED, uint(vars.mathErr));
+    }
+    // accountTokensNew = accountTokens[redeemer] - redeemTokens
+    (vars.mathErr, vars.accountTokensNew) = subUInt(accountTokens[redeemer], vars.redeemTokens);
+    if (vars.mathErr != MathError.NO_ERROR) {
+        return failOpaque(Error.MATH_ERROR, FailureInfo.REDEEM_NEW_ACCOUNT_BALANCE_CALCULATION_FAILED, uint(vars.mathErr));
+    }
+
+    /* Fail gracefully if protocol has insufficient cash */
+    // 计算价格
+    // console.log("vars.redeemAmount 价格", vars.redeemAmount);
+    if (getCashPrior() < vars.redeemAmount) {
+        return fail(Error.TOKEN_INSUFFICIENT_CASH, FailureInfo.REDEEM_TRANSFER_OUT_NOT_POSSIBLE);
+    }
+
+    /////////////////////////
+    // EFFECTS & INTERACTIONS
+    // (No safe failures beyond this point)
+
+    /*
+    *我们为赎回者和赎回金额调用doTransferOut。
+    *注意：cToken必须处理ERC-20和ETH基础之间的变化。
+    *成功后，cToken的兑换金额减去现金。
+    *如果出现任何问题，doTransferOut将恢复，因为我们无法确定是否发生了副作用。
+    */
+    doTransferOut(redeemer, vars.redeemAmount);
+
+    /* 将先前计算的值写入存储 */
+    totalSupply = vars.totalSupplyNew;
+    accountTokens[redeemer] = vars.accountTokensNew;
+
+    /* We emit a Transfer event, and a Redeem event */
+    emit Transfer(redeemer, address(this), vars.redeemTokens);
+    emit Redeem(redeemer, vars.redeemAmount, vars.redeemTokens);
+
+    /* We call the defense hook */
+    // 检查两个是否为0
+    comptroller.redeemVerify(address(this), redeemer, vars.redeemAmount, vars.redeemTokens);
+
+    return uint(Error.NO_ERROR);
 }
 ```
 
