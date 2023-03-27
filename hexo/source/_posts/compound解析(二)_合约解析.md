@@ -448,13 +448,9 @@ function redeemFresh(
         if (vars.mathErr != MathError.NO_ERROR) {
             return failOpaque(Error.MATH_ERROR, FailureInfo.REDEEM_EXCHANGE_AMOUNT_CALCULATION_FAILED, uint(vars.mathErr));
         }
-
         // 赎回的额度
         vars.redeemAmount = redeemAmountIn;
     }
-    // console.log("vars.redeemTokens",vars.redeemTokens);
-    // console.log("vars.redeemAmount 价格",vars.redeemAmount);
-
     // 检查账户是否允许兑换
     uint allowed = comptroller.redeemAllowed(address(this), redeemer, vars.redeemTokens);
     if (allowed != 0) {
@@ -482,7 +478,6 @@ function redeemFresh(
 
     /* Fail gracefully if protocol has insufficient cash */
     // 计算价格
-    // console.log("vars.redeemAmount 价格", vars.redeemAmount);
     if (getCashPrior() < vars.redeemAmount) {
         return fail(Error.TOKEN_INSUFFICIENT_CASH, FailureInfo.REDEEM_TRANSFER_OUT_NOT_POSSIBLE);
     }
@@ -498,19 +493,14 @@ function redeemFresh(
     *如果出现任何问题，doTransferOut将恢复，因为我们无法确定是否发生了副作用。
     */
     doTransferOut(redeemer, vars.redeemAmount);
-
     /* 将先前计算的值写入存储 */
     totalSupply = vars.totalSupplyNew;
     accountTokens[redeemer] = vars.accountTokensNew;
-
-    /* We emit a Transfer event, and a Redeem event */
+    // 发送事件
     emit Transfer(redeemer, address(this), vars.redeemTokens);
     emit Redeem(redeemer, vars.redeemAmount, vars.redeemTokens);
-
-    /* We call the defense hook */
     // 检查两个是否为0
     comptroller.redeemVerify(address(this), redeemer, vars.redeemAmount, vars.redeemTokens);
-
     return uint(Error.NO_ERROR);
 }
 ```
