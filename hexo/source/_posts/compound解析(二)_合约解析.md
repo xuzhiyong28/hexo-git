@@ -485,7 +485,6 @@ function redeemFresh(
     /////////////////////////
     // EFFECTS & INTERACTIONS
     // (No safe failures beyond this point)
-
     /*
     *我们为赎回者和赎回金额调用doTransferOut。
     *注意：cToken必须处理ERC-20和ETH基础之间的变化。
