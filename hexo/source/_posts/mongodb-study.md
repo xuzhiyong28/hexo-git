@@ -28,9 +28,10 @@ date: 2022-01-01 15:46:34
 # 使用testdb数据库
 use testdb
 
+
 # 创建集合 集合规则可以省略
 # capped :选填bool类型：设置改集合是否为一个固定集合true:代表固定集合，集合中的数据不可修改，与size配对使用，代表当集合达到指定大小后，会自动覆盖历史数据（最先添加的数据）
-# size:选填数字类型：指定集合的最大存储数据（字节数），当集合达到指定大小后，会自动覆盖历史数据（最先添加的数据） }
+# size:选填数字类型：指定集合的最大存储数据（字节数），当集合达到指定大小后，会自动覆盖历史数据（最先添加的数据）
 # max: 选填数字类型：指定集合的最大存储的文档总个数，当文档个数大于max值时，会自动替换历史文档
 db.createCollection("集合名称", {集合规则});
 db.createCollection("user001", {capped : true, size : 10000000, max});
@@ -50,6 +51,7 @@ db.user001.insert([{name: "xzy01", age : 10},{name: "xzy01", age : 20}]);
 # upsert:非必填参数，如果不存在是否新增，当值为true时，如果没有符合条件的数据，就插入数据, ，默认为false
 # multi: 非必填参数，是否更新符合要求的所有数据，当值为true时，符合条件的数据全部更新，默认为false
 db.集合名称.update(query, update, option);
+db.user001.update({name: "程序员修炼之旅"}, {$set: {age: 66, from: "CDU"}});
 
 # 删除数据
 # query :（可选）删除的文档的条件。
@@ -59,6 +61,43 @@ db.集合名称.remove(query, justOne);
 # 查询数据
 db.集合名称.find(json对象查询条件)
 
+```
+
+## MongoDB用户与权限
+
+MongoDB的用户权限包括如下
+
+| 权限名称             | 权限说明                                                     |
+| -------------------- | ------------------------------------------------------------ |
+| read                 | 允许用户读取指定数据库                                       |
+| readWrite            | 允许用户读写指定数据库                                       |
+| dbAdmin              | 允许用户在指定数据库中执行管理函数，如索引创建、删除，查看统计或访问system.profile |
+| userAdmin            | 允许用户向system.users集合写入，可以找指定数据库里创建、删除和管理用户 |
+| clusterAdmin         | **只在admin数据库中可用**，赋予用户所有分片和复制集相关函数的管理权限 |
+| readAnyDatabase      | **只在admin数据库中可用**，赋予用户所有数据库的读权限        |
+| readWriteAnyDatabase | **只在admin数据库中可用**，赋予用户所有数据库的读写权限      |
+| userAdminAnyDatabase | **只在admin数据库中可用**，赋予用户所有数据库的userAdmin权限 |
+| dbAdminAnyDatabase   | **只在admin数据库中可用**，赋予用户所有数据库的dbAdmin权限   |
+| root                 | **只在admin数据库中可用**，超级账号，超级权限                |
+
+```sql
+// 新增用户
+// 针对全部数据库权限初始化命令格式
+db.createUser({user:"用户名",pwd:"密码",roles:["权限值"]})
+// 针对指定数据库权限初始化命令格式
+db.createUser({user:"用户名",pwd:"密码",roles:[ {role:"权限值",db:"对应的数据库"},{role:"权限值",db:"对应的数据库"}]})
+
+// 查看所有创建的用户
+use admin;
+db.system.users.find();
+
+// 修改用户密码
+use admin;
+db.changeUserPassword("用户名", "密码")
+
+// 删除用户
+use admin;
+db.dropUser("用户名")
 ```
 
 ## MongoDB数据类型
@@ -98,7 +137,7 @@ mongodb的单个查询符包括 :
 - **取模符：**实际上就是取余数
 - **正则表达式：**js正则表达式
 
-```
+```SQL
 use testdb
 db.user001.insert({name:".net",age:88,author: ["xiaoxu","xiaozhang","xiaoliu"]});
 
@@ -321,7 +360,30 @@ db.inventory.find( { "instock": { $elemMatch: { qty: { $gt: 10, $lte: 20 } } } }
 db.inventory.find( { "instock.qty": { $gt: 10,  $lte: 20 } } )
 ```
 
+### 聚合
 
+​	聚合管道是由aggregation framework将文档进入一个由多个阶段（stage）组成的管道，可以对每个阶段的管道进行分组、过滤等功能，然后经过一系列的处理，输出相应的聚合结果。如图所示：
+
+![](mongodb-study/4.png)
+
+- $match阶段 : 通过status字段过滤出符合条件的Document（即是Status等于“A”的Document)
+- $group阶段 : 按cust_id字段对Document进行分组，以计算每个唯一cust_id的金额总和
+
+| 常用管道 | 解析                                                         | SQL            |
+| -------- | ------------------------------------------------------------ | -------------- |
+| $group   | 将collection中的document分组，可用于统计结果                 | group by       |
+| $match   | 过滤数据，只输出符合结果的文档                               | where / having |
+| $project | 修改输入文档的结构(例如重命名，增加、删除字段，创建结算结果等) | select         |
+| $sort    | 将结果进行排序后输出                                         | order by       |
+| $limit   | 限制管道输出的结果个数                                       | limit          |
+| $skip    | 跳过制定数量的结果，并且返回剩下的结果                       |                |
+| $unwind  | 将数组类型的字段进行拆分                                     |                |
+
+### 更新
+
+更新常用的操作符
+
+![](mongodb-study/5.png)
 
 ## 参考
 
