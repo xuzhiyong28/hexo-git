@@ -168,3 +168,11 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
 ## AccessControlEnumerable.sol
 
 AccessControl.sol的可升级版本，具体方法和AccessControl一样。
+
+## Ownable2Step.sol
+
+与`Ownable.sol`的区别是这个合约实现了设置合约拥有者的两阶段设置的流程。
+
+- 调用`transferOwnership`设置`_pendingOwner`为msg.sender, 此步骤的意义在于`预设置Owner,但是实际上没有设置owner`
+- 调用`acceptOwnership`判断msg.sender与第一个阶段的`_pendingOwner`是否一致，若一致则将msg.sender设置成owner。
+
