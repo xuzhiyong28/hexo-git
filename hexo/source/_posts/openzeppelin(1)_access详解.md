@@ -1,3 +1,12 @@
+---
+title: openzeppelin(1)_assess详解
+tags:
+  - 区块链
+  - openzeppelin
+categories:  区块链
+date: 2020-08-30 16:04:21
+---
+
 ## Ownable.sol
 
 合同模块提供了一个基本的访问控制机制，其中有一个账户（所有者），可以被授予对特定功能的独家访问。

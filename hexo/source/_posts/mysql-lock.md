@@ -228,3 +228,28 @@ commit;	// 不执行，模拟事务还没有提交的时候
 - 对于`id <= 11`,他锁定的范围就是(50, 负无穷)
 
 ![](mysql-lock/12.png)
+
+### 快照读和当前读
+
+怎么知道执行的语句是快照读还是当前读？
+
+- 默认隔离级别下，select语句默认是快照读
+
+  - ```
+    select a from t where id = 1
+    ```
+
+- SELECT加锁或UPDATE语句是当前读
+
+  - ```
+    # 共享锁
+    select a from t where id = 1 lock in share mode;
+    #排他锁
+    select a from t where id = 1 for update;
+    update t set a = a + 1;
+    ```
+
+mysql如何实现避免幻读？
+
+- 在快照读读情况下，mysql通过mvcc来避免幻读
+- 在当前读读情况下，mysql通过next-key来避免幻读
