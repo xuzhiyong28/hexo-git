@@ -964,6 +964,73 @@ xxx
 
 xxx
 
+#### EIP712
+
+EIP-712是以太坊上的一种消息类型规范，用于标准化以太坊智能合约中的消息结构和签名方式，以提高交易的安全性和可信度。EIP-712最初由以太坊创始人Vitalik Buterin提出，目前已经被广泛采用，包括Uniswap、Compound等知名项目。
+
+EIP-712定义了一种规范的消息结构，用于标识交易的类型。这个消息结构由三个部分组成：域分隔符(DOMAIN_SEPARATOR)、消息类型(Message Type)和消息数据(Message Data)。其中，域分隔符是由智能合约定义的，用于标识消息的发送者和接收者、以太坊网络的链ID等信息。消息类型是由智能合约定义的，用于标识消息的类型。消息数据是由交易的具体数据结构组成，例如ERC20代币转账交易的数据结构。
+
+在EIP-712中，使用哈希函数将消息结构中的字段按照一定的顺序进行哈希，得到一个消息哈希值。然后，使用以太坊钱包中的私钥对消息哈希值进行签名，生成一个包含r、s和v三个值的字节序列。将消息哈希值、签名以及消息结构打包成一个交易消息，然后发送到智能合约进行验证。
+
+智能合约根据EIP-712定义的规则，对交易消息进行哈希，并使用签名中的公钥和哈希值来计算出签名。如果计算得到的签名和实际签名匹配，则说明该交易确实由拥有该私钥的用户签名过。如果签名不匹配，则说明交易无效。
+
+通过使用EIP-712规范，可以更容易地验证用户的交易，并确保只有授权的用户才能执行交易，从而提高了交易的安全性和可信度。
+
+下面是一个简单的以太坊智能合约代码示例，用于验证EIP-712签名的交易：
+
+```typescript
+pragma solidity ^0.8.0;
+
+contract Exchange {
+    struct Transaction {
+        address from;
+        address to;
+        uint256 amount;
+        uint256 nonce;
+        uint256 gasPrice;
+        uint256 gasLimit;
+    }
+    
+    bytes32 private constant EIP712_DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
+    bytes32 private constant TRANSACTION_TYPEHASH = keccak256("Transaction(address from,address to,uint256 amount,uint256 nonce,uint256 gasPrice,uint256 gasLimit)");
+    bytes32 private DOMAIN_SEPARATOR;
+    
+    constructor() {
+        DOMAIN_SEPARATOR = keccak256(abi.encode(
+            EIP712_DOMAIN_TYPEHASH,
+            keccak256(bytes("Exchange")),
+            keccak256(bytes("1")),
+            block.chainid,
+            address(this)
+        ));
+    }
+    
+    function verify(Transaction memory tx, uint8 v, bytes32 r, bytes32 s) public view returns(bool) {
+        bytes32 txHash = keccak256(abi.encodePacked(
+            "\x19\x01",
+            DOMAIN_SEPARATOR,
+            keccak256(abi.encode(
+                TRANSACTION_TYPEHASH,
+                tx.from,
+                tx.to,
+                tx.amount,
+                tx.nonce,
+                tx.gasPrice,
+                tx.gasLimit
+            ))
+        ));
+        address signer = ecrecover(txHash, v, r, s);
+        return signer == tx.from;
+    }
+}
+```
+
+该智能合约包含一个Transaction结构体，用于描述交易的各个字段。在构造函数中，我们使用EIP-712规范定义的方式计算了域分隔符(DOMAIN_SEPARATOR)，用于将来验证交易签名时使用。
+
+该智能合约的verify函数接受一个Transaction结构体和一个签名，然后使用EIP-712规范定义的方式计算交易的哈希(txHash)，并使用ecrecover函数恢复出签名中的公钥。最后，我们比较恢复出的公钥和交易中的发送方地址是否匹配，以确定签名是否有效。
+
+在实际应用中，我们可以将这个智能合约作为交易所的核心合约，并在交易所的前端应用中使用Web3.js或其他以太坊开发工具库来构造和签名交易，然后将交易消息发送到该智能合约进行验证。
+
 ### keystore详解
 
 keystore : 它是账户私钥的**加密**版本。

@@ -205,6 +205,42 @@ kotlinCopy code$ curl -i -X POST \
 
 通过这个例子，可以看出，Service和Route之间的关系是非常紧密的。Service代表了我们的后端API服务，而Route则指定了API的访问路径和请求规则。Kong通过这两个概念来管理API网关的路由和负载均衡。
 
+## chatgtp问题
+
+### 如何理解Kong中service的path和route的path他们之间的关系
+
+在Kong中，Service和Route是两个不同的概念，但是它们之间是有关联的。具体来说，Service表示后端的服务，而Route则表示如何将客户端的请求映射到后端的服务。
+
+在Kong中，Service的`path`属性表示后端服务的路径，而Route的`paths`属性表示如何将客户端的请求路径映射到后端服务的路径上。当一个客户端请求到达Kong时，Kong将首先匹配所有的Route，然后将请求转发到与匹配的Route相关联的Service上。在这个过程中，Kong会将Route的路径与其关联的Service的路径进行组合，从而得到最终的请求路径。
+
+举个例子，假设你有一个名为`my-service`的服务，它的路径为`/api`。在Kong中，你可以创建一个与之关联的Route，它的路径为`/server`：
+
+```
+POST /routes HTTP/1.1
+Host: kong:8001
+Content-Type: application/json
+
+{
+    "paths": ["/server"],
+    "service": {
+        "name": "my-service",
+        "path": "/api"
+    }
+}
+```
+
+在这个例子中，当一个客户端请求路径为`/server`的请求到达Kong时，Kong将会将其转发到`my-service`服务的`/api/server`路径上。在这个过程中，Kong会自动将Route的路径`/server`与Service的路径`/api`进行组合。
+
+需要注意的是，如果Route的`strip_path`属性设置为`true`，则Kong将会忽略Route的路径，直接将请求转发到Service的路径上。例如，如果你将Route的`strip_path`属性设置为`true`，则客户端请求路径为`/server`的请求将会直接被转发到`my-service`服务的`/api`路径上。
+
+综上所述，Kong中Service的`path`属性表示后端服务的路径，而Route的`paths`属性表示客户端请求路径与后端服务路径的映射关系。当Kong将客户端请求转发到后端服务时，它会自动将Route的路径与Service的路径进行组合，从而得到最终的请求路径。
+
+
+
+
+
+Regenerate response
+
 ## 参考
 
 - https://xie.infoq.cn/article/10e4dab2de0bdb6f2c3c93da6
