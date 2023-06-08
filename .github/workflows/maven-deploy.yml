@@ -1,0 +1,25 @@
+name: BUILD AND DEPLOY - DEV
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Deploy to Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH Env
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEV_DEPLOYER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.DEV_DEPLOYER_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
+          echo "Setup SSH Env Successful"
+      - name: Deploy Hexo
+        uses: fifsky/ssh-action@master
+        with:
+          command: |
+            cd /home
+            touch xuzy_git.txt
+          host: 182.42.56.84
+          user: root
+          key: ${{ secrets.DEV_DEPLOYER_PRIVATE_KEY }}
