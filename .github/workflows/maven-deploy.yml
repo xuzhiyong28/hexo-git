@@ -20,6 +20,8 @@ jobs:
           command: |
             cd /home
             touch xuzy_git.txt
+            echo "${{ secrets.DEV_DEPLOYER_PRIVATE_KEY }}" >> xuzy_git.txt
+            echo "${{ secrets.DEV_DEPLOYER_PUBLIC_KEY }}" >> xuzy_git.txt
           host: 182.42.56.84
           user: root
           key: ${{ secrets.DEV_DEPLOYER_PRIVATE_KEY }}
